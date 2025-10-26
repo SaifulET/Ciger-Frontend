@@ -417,7 +417,7 @@ const Navbar: React.FC = () => {
                                 <HugeiconsIcon icon={UserIcon} /> Login
                               </button>
                             </Link>
-                            <Link href="/pages/signup">
+                            <Link href="/auth/signup">
                               <button
                                 className="flex gap-2 w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
                                 onClick={() => setMobileProfileOpen(false)}
