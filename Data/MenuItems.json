@@ -1,0 +1,72 @@
+[
+  { "label": "Home", "link": "/pages" },
+  { "label": "Brands", "link": "/pages/brand" },
+  {
+    "label": "Products",
+    "link": "#",
+    "subItems": [
+      {
+        "label": "Tobacco Products",
+        "link": "/pages/product?sub=Tobacco",
+        "subItems": [
+          { "label": "Premium Cigars", "link": "/pages/product?sub=Tobacco&subPro=PremiumCigars" },
+          { "label": "Machine-Made Cigars", "link": "/pages/product?sub=Tobacco&subPro=MachineMadeCigars" }
+        ]
+      },
+      {
+        "label": "Hokkah",
+        "link": "/pages/product?sub=Hokka",
+        "subItems": [
+          { "label": "Hokka Pipes", "link": "/pages/product?sub=hokkah&subPro=hokkah-Pipes" },
+          { "label": "Shisha Tobacco", "link": "/pages/product?sub=hokkah&subPro=ShishaTobacco" }
+        ]
+      },
+      {
+        "label": "Nikotine Vapes",
+        "link": "/pages/product?sub=nikotineVapes",
+        "subItems": [
+          { "label": "Disposals", "link": "/pages/product?sub=nikotineVapes?subPro=Disposals" }
+          
+        ]
+      }
+      ,{
+        "label": "Smokeless Tobacco",
+        "link": "/pages/product?sub=SmokelessTobacco",
+        "subItems": [
+          { "label": "Chewing Tobacco", "link": "/pages/product?sub=SmokelessTobacco?subPro=ChewingTobacco" },
+          { "label": "Snuff", "link": "/pages/product?sub=SmokelessTobacco?subPro=snuff" },
+          { "label": "Nicotine Pouches", "link": "/pages/product?sub=SmokelessTobacco?subPro=Nicotine Pouches" },
+          { "label": "Snus", "link": "/pages/product?sub=SmokelessTobacco?subPro=Snus" }
+          
+        ]
+      }
+      ,{
+        "label": "General Accessories",
+        "link": "/pages/product?sub=GeneralAccessories",
+        "subItems": [
+          { "label": "Lighters & Torch Lighters", "link": "/pages/product?sub=GeneralAccessories?subPro=LightersTorchLighters" },
+          { "label": "Ashtrays", "link": "/pages/product?sub=GeneralAccessories?subPro=Ashtrays" },
+          { "label": "Tolling Machines", "link": "/pages/product?sub=GeneralAccessories?subPro=TollingMachines" },
+          { "label": "Storage & Cases", "link": "/pages/product?sub=GeneralAccessories?subPro=StorageCases" },
+          { "label": "Cleaning Tools", "link": "/pages/product?sub=GeneralAccessories?subPro=CleaningTools" }
+          
+        ]
+      }
+      ,{
+        "label": "THC",
+        "link": "/pages/product?sub=THC",
+        "subItems": [
+          { "label": "Flowers", "link": "/pages/product?sub=THC?subPro=Flowers" },
+          { "label": "PreRolls", "link": "/pages/product?sub=THC?subPro=PreRolls" },
+          { "label": "Disposals/Cartridges", "link": "/pages/product?sub=THC?subPro=Disposals" },
+          { "label": "Edibles", "link": "/pages/product?sub=THC?subPro=Edibles" },
+          { "label": "Concentrates", "link": "/pages/product?sub=THC?subPro=concentrates" }
+          
+        ]
+      }
+    ]
+  },
+  { "label": "Discounts", "link": "/pages/discounts" },
+  { "label": "Blogs", "link": "/pages/blog" },
+  { "label": "Contact Us", "link": "/pages/contact" }
+]
