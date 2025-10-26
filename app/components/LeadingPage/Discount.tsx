@@ -80,7 +80,7 @@ export default function Discount() {
       <div className="md:max-w-7xl md:mx-auto px-2 md:px-4 relative">
         {/* Carousel container */}
         <div className="overflow-hidden" ref={emblaRef}>
-          <div className="flex -ml-4">
+          <div className="flex md:-ml-4">
             {products.map((product) => (
               <div
                 key={product.id}

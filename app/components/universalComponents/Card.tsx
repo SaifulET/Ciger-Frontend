@@ -81,11 +81,11 @@ export default function ProductCard({
       <div className="flex gap-3 mt-4">
         <button
           onClick={() => onAddCart(product.id)}
-          className="flex-1 bg-[#C9A040] hover:bg-yellow-600 text-white font-medium py-2 rounded-lg flex items-center justify-center gap-1 transition"
+          className="flex-1 bg-[#C9A040] hover:bg-yellow-600 text-white  font-normal md:font-medium py-2 rounded-lg flex items-center justify-center gap-1 transition "
         >
           <Plus className="w-5 h-5" /> Cart
         </button>
-        <Link href={"/pages/product/123"} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium py-2 rounded-lg transition text-center">
+        <Link href={"/pages/product/123"} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 font-normal md:font-medium py-2 rounded-lg transition text-center">
           <button
             onClick={() => onView(product.id)}
             className=""

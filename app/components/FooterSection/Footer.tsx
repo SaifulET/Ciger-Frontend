@@ -10,13 +10,13 @@ import logo from "@/public/logo1.svg"
 import Link from "next/link";
 export default function Footer() {
   return (
-    <footer className="bg-[#212121] text-white px-8 md:px-16 py-16 flex flex-col gap-10">
+    <footer className="bg-[#212121] w-full text-white px-8 md:px-16 py-16 flex flex-col md:gap-10">
       {/* Main Container */}
       <div className="w-full  flex flex-col gap-12">
         {/* Top Section */}
         <div className="flex flex-col md:flex-row justify-between gap-12 md:gap-[303px]">
           {/* Left: Logo & Description */}
-          <div className="flex flex-col gap-12 w-full md:w-[345px]">
+          <div className="flex flex-col gap-12 w-full ">
             <p className="text-white font-[600] text-[16px] leading-[24px] font-[Open_Sans]">
               The Finest in Tobacco, Vapes, and Lifestyle Accessories.
             </p>
@@ -52,9 +52,9 @@ export default function Footer() {
           </div>
 
           {/* Right: Contact + Socials */}
-          <div className="flex flex-col gap-6 w-full md:w-[353px]">
+          <div className="flex flex-col  ">
             <Link href="/pages/contact">
-            <button className="bg-[#C9A040] text-[#0C0C0C] font-semibold px-8 py-3 rounded-xl w-fit hover:bg-[#d4ae56] transition">
+            <button className="bg-[#C9A040] text-[#0C0C0C] font-semibold px-8 py-3 rounded-xl hover:bg-[#d4ae56] transition">
               Contact Us
             </button>
             </Link>

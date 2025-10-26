@@ -67,11 +67,11 @@ export default function BlogCarousal() {
 
         {/* Carousel container */}
         <div className="overflow-hidden" ref={emblaRef}>
-          <div className="flex -ml-4">
+          <div className="flex md:-ml-4">
             {products.map((product) => (
               <div
                 key={product.id}
-                className="pl-4 basis-1/2 sm:basis-1/2 lg:basis-1/3 xl:basis-1/3 flex-shrink-0"
+                className="md:pl-5 basis-full sm:basis-full lg:basis-1/3 xl:basis-1/3 flex-shrink-0"
               >
                 <BlogCard
                   product={product}
