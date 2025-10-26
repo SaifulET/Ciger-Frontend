@@ -107,7 +107,7 @@ export default function CartDrawer({ items, subtotal }: CartDrawerProps) {
           <div
             className={`relative h-full w-full bg-[#F9F9F9] shadow-2xl flex flex-col overflow-y-auto transform transition-all duration-300 ease-in-out ${
               isMobile
-                ? `fixed bottom-0 left-0 right-0 max-h-[90vh]  ${
+                ? `fixed bottom-0 left-0 right-0 max-h-[100vh]  ${
                     showDrawer ? "translate-y-0" : "translate-y-full"
                   }`
                 : `ml-auto w-full sm:w-[500px] md:w-[700px] lg:w-[800px] ${

@@ -58,10 +58,10 @@ export default function BlogCarousal() {
 
   return (
     <section className="bg-white py-10 md:mx-[32px]">
-      <div className="md:max-w-7xl md:mx-auto px-4 relative">
+      <div className="md:max-w-7xl md:mx-auto md:px-4 relative">
         {/* Header */}
         <div className="flex justify-center items-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Blog Preview</h2>
+          <h2 className="text-xl md:text-3xl font-bold text-gray-900">Blog Preview</h2>
         
         </div>
 
