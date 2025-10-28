@@ -25,7 +25,7 @@ const getIconAndColors = (
 
 export default function NotificationsPage() {
   return (
-    <div className="min-h-screen p-4 md:p-8 ">
+    <div className="min-h-screen py-[32px] mx-[16px] lg:mx-[32px] ">
       <div className="">
         <h1 className="font-montserrat font-semibold text-2xl sm:text-3xl md:text-[40px] leading-8 sm:leading-10 md:leading-[48px] tracking-normal mb-4 md:mb-8 bg-white text-center rounded-lg py-2 sm:py-3 md:py-4">
           Notifications

@@ -85,7 +85,7 @@ export default function BlogDetails() {
     return <p className="text-center text-gray-500 py-10">Loading Blog...</p>;
 
   return (
-    <div className="pt-5 md:pt-16">
+    <div className="pt-16">
       <div className="flex flex-col items-center px-8 py-10 gap-8 lg:w-[1376px] bg-white rounded-xl md:mx-auto ">
       <h2 className="text-center text-[32px] md:text-[40px] font-semibold leading-[48px]">
         {blog.title}

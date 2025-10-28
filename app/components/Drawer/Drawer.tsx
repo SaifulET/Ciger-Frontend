@@ -82,7 +82,7 @@ export default function CartDrawer({ items, subtotal }: CartDrawerProps) {
     <>
       {/* 🛒 Button to open drawer */}
       <button onClick={() => setIsOpen(true)}>
-        <div className="relative flex items-center justify-center gap-2 text-sm md:text-base font-semibold leading-6 px-4 md:px-6 py-3 md:py-5 rounded-lg md:bg-[#dddada] hover:bg-gray-400 transition text-[#0C0C0C] flex-shrink-0">
+        <div className="relative flex items-center justify-center gap-2 text-sm md:text-base font-semibold leading-6 px-4 md:px-6 py-3 md:py-5 rounded-lg md:bg-[#F5F5F5] hover:bg-gray-400 transition text-[#0C0C0C] flex-shrink-0">
           <HugeiconsIcon icon={ShoppingCart02Icon} />
           {cartCount > 0 && (
             <span className="absolute -top-2 md:-top-1 -right-1 bg-[#C9A040] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">

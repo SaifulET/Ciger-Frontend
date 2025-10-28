@@ -15,7 +15,7 @@ export default function LayoutWrapper({ children }: { children: ReactNode }) {
           <Navbar />
         </div>
       </div>
-      <div className="bg-[#f1eeee] m-0 p-0">
+      <div className="bg-[#f1eeee] m-0 p-0 ">
         {children}
       </div>
       <div className="">

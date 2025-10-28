@@ -219,7 +219,7 @@ const CheckoutPage = () => {
 
   return (
     <div className="min-h-screen ">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className=" px-4 py-8">
         <h1 className=" py-5 bg-white rounded-lg text-3xl text-[40px] font-semibold leading-[48px] text-gray-900 mb-8 text-center">Checkout</h1>
 
         {/* Desktop Layout */}

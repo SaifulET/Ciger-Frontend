@@ -15,7 +15,7 @@ export default function Footer() {
       {/* Main Container */}
       <div className="w-full flex flex-col gap-12">
         {/* Top Section */}
-        <div className="flex flex-col lg:flex-row justify-between gap-8 lg:gap-4">
+        <div className="flex flex-col lg:flex-row justify-evenly gap-8 lg:gap-4">
           {/* Left: Logo & Description */}
           <div className="flex flex-col gap-6 lg:gap-12 w-full max-w-md">
             <p className="text-white font-[600] text-[16px] leading-[24px] font-[Open_Sans]">
@@ -38,11 +38,11 @@ export default function Footer() {
                 "Discounts",
                 "Contact",
                 "RefundPolicy",
-                "Terms&Policies",
+                "Terms & Policies",
               ].map((item) => (
                 <li key={item}>
                   <a
-                    href={`/pages/${item==="Home"?``:item.toLowerCase()}`}
+                    href={`/pages/${item === "Home" ? "" : item.toLowerCase().replace(/\s+/g, "")}`}
                     className="hover:text-[#C9A040] transition-colors duration-300"
                   >
                     {item==="RefundPolicy"?"Refund Policy":item}

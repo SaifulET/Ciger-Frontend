@@ -3,7 +3,7 @@ import React from 'react'
 
 function page() {
   return (
-    <div className='m-16 py-16 rounded-xl'>
+    <div className=' py-[16px] md:py-[60px]  px-[16px] md:px-[32px]'>
       <OrderConfirmation/>
     </div>
   )

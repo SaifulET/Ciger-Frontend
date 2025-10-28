@@ -33,7 +33,7 @@ export default function FaqSection() {
   };
 
   return (
-    <section className="py-16 px-6 mx-[32px] bg-white ">
+    <section className="py-16 px-6 mx-[32px] bg-white  rounded-lg">
       <div className="max-w-4xl mx-auto text-center  w-full">
         <h2 className="text-2xl md:text-3xl font-bold text-[#212121]">
           Frequently Asked Questions

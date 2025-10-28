@@ -25,8 +25,8 @@ export default function BlogPage({ blogs }: BlogPageProps) {
   );
 
   return (
-    <div className="">
-        <div className="flex flex-col items-center md:px-8 gap-8  bg-white rounded-xl md:mx-auto pt-16">
+    <div className="py-[16px] md:py-[32px]  mx-[16px] lg:mx-[32px]">
+        <div className="flex flex-col items-center px-4 md:px-8 gap-8  bg-white rounded-xl md:mx-auto pt-16">
       <h2 className="text-center font-montserrat text-[40px] font-semibold leading-[48px] pb-8">
         Blog
       </h2>

@@ -20,7 +20,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ Review }) => {
   const { image , name, review, location,rating } = Review;
 
   return (
-     <div className="flex flex-col items-start px-[24px] py-[12px] gap-3 w-[362.67px] h-[172px] bg-[#F5F5F5] rounded-[12px]">
+     <div className="flex flex-col items-start px-[24px] py-[12px] gap-3 w-[362.67px]  bg-[#F5F5F5] rounded-[12px]">
       {/* Quote Icon */}
       <Image src={quoteIcon} alt="quote" width={24} height={24} />
 

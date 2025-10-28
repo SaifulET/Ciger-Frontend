@@ -4,7 +4,7 @@ import React from 'react'
 
 function page() {
   return (
-    <div className='  pt-5 md:pt-24  pb-0 md:pb-24'>
+    <div className=' py-[16px] md:py-[60px]  px-[16px] md:px-[32px]'>
      
        <ContactForm/>
         

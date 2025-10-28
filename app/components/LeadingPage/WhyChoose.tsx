@@ -32,23 +32,29 @@ const values = [
     title: "Personalized Attention",
     desc: "Tailored support for every client",
   },
- 
+  {
+    id: 6,
+    icon: "/credit-card-pos.svg",
+    title: "Personalized Attention",
+    desc: "Tailored support for every client",
+  },
 ];
 
 export default function ValueSection() {
   return (
-    <section className="py-16 px-6 mx-[32px] my-[32px] bg-white">
+    <section className="py-16 px-6 mx-[32px] my-[32px] bg-white rounded-lg">
       <div className="max-w-6xl mx-auto text-center mb-12">
         <h2 className="text-3xl md:text-4xl font-bold text-[#212121]">
           Why Choose Us
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 max-w-6xl mx-auto ">
-        {values.slice(0,3).map((item) => (
+      {/* Main grid container */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 max-w-6xl mx-auto justify-items-center">
+        {values.map((item) => (
           <div
             key={item.id}
-            className="flex flex-col items-center text-center gap-4"
+            className="flex flex-col items-center text-center gap-4 max-w-xs w-full"
           >
             <div className="w-16 h-16 flex items-center justify-center rounded-full bg-[#FFCF00]">
               <Image
@@ -65,33 +71,7 @@ export default function ValueSection() {
             <p className="text-sm text-gray-600">{item.desc}</p>
           </div>
         ))}
-       
-       
       </div>
-       <div className="lg:flex lg:justify-center items-center gap-32 ">
- {values.slice(3,5).map((item) => (
-          <div
-            key={item.id}
-            className="flex flex-col items-center text-center gap-4 mt-10"
-          >
-            <div className="w-16 h-16 flex items-center justify-center rounded-full bg-[#FFCF00]">
-              <Image
-                src={item.icon}
-                alt={item.title}
-                width={48}
-                height={48}
-                className="object-contain"
-              />
-            </div>
-            <h3 className="font-semibold text-lg text-[#212121]">
-              {item.title}
-            </h3>
-            <p className="text-sm text-gray-600">{item.desc}</p>
-          </div>
-        ))}
-        </div>
     </section>
   );
 }
-
- 

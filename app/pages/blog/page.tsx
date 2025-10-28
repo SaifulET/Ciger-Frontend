@@ -16,7 +16,7 @@ function page() {
   ]
   return (
  
-    <div className='md:p-12'>
+    <div className='p-8 py-16'>
         <BlogPage
   blogs={blog}
 />

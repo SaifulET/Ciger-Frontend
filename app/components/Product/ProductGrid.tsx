@@ -38,7 +38,7 @@ export default function ProductGrid({
         Showing {Math.min(currentPage * pageSize, totalCount)} of {totalCount} products
       </div>
 
-      <div className={`grid ${isList===true?"grid-cols-1":"grid-cols-2"} sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8`}>
+      <div className={`grid ${isList===true?"grid-cols-1":"grid-cols-2"} sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[16px] sm:gap-6 lg:gap-[32px] `}>
         {products.map((item) => (
           <ProductCard key={item.id} product={item} onAddCart={onAddCart} />
         ))}

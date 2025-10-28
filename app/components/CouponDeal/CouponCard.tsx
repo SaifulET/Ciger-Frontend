@@ -12,8 +12,8 @@ interface CouponDealsProps {
 
 const CouponDeals: React.FC<CouponDealsProps> = ({ coupons }) => {
   return (
-    <div className='pt-16'>
-       <div className='md:mx-32 bg-white md:p-16 border rounded-2xl'>
+    <div className='py-[32px]  '>
+       <div className='mx-[16px]  lg:mx-[32px] bg-white p-[8px] lg:p-[16px] border rounded-2xl'>
       <h2 className="text-center font-montserrat text-[40px] font-semibold leading-[48px] mb-4">Smokenza Deals</h2>
       <p className="font-open-sans text-[16px] font-semibold leading-[24px] text-center mb-16">
         Coupon Deals are valid only while supplies last and are not guaranteed. Offers cannot be combined.

@@ -3,6 +3,7 @@ import { Star, Plus } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ProductType } from "./ProductType";
+import Link from "next/link";
 
 interface ProductCardProps {
   product: ProductType;
@@ -18,7 +19,9 @@ export default function ProductCard({ product, onAddCart}: ProductCardProps) {
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col h-full shadow-sm hover:shadow-md transition">
-      <div className="flex-1 flex flex-col">
+      <Link href="/pages/product/12">
+      
+       <div className="flex-1 flex flex-col">
         {newbestSeller && (
           <div className="relative">
             <h1 className="px-3 py-1.5 absolute top-[-15px] left-[-16px] bg-[#DD2C2C] rounded-tl-[12px] rounded-br-[12px] z-[3] text-white text-sm font-semibold text-center">
@@ -28,7 +31,7 @@ export default function ProductCard({ product, onAddCart}: ProductCardProps) {
         )}
         {product?.newSeller && (
           <div className="relative">
-            <h1 className="px-3 py-1.5 absolute top-[-15px] right-[-16px] bg-[#6E1E2D] rounded-tl-[12px] rounded-br-[12px] z-[3] text-white text-sm font-semibold text-center">
+            <h1 className="px-3 py-1.5 absolute top-[-15px] right-[-16px] bg-[#6E1E2D] rounded-tr-[12px] rounded-bl-[12px] z-[3] text-white text-sm font-semibold text-center">
               New
             </h1>
           </div>
@@ -53,6 +56,8 @@ export default function ProductCard({ product, onAddCart}: ProductCardProps) {
           </div>
         </div>
       </div>
+      </Link>
+     
 
       <div className="flex gap-3 mt-4">
         <button
@@ -61,13 +66,7 @@ export default function ProductCard({ product, onAddCart}: ProductCardProps) {
         >
           <Plus className="w-5 h-5" /> Cart
         </button>
-        <button
-          // onClick={() => router.push(`/pages/product/${product.id}`)}
-          onClick={() => router.push(`/pages/product/12`)}
-          className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium py-2 rounded-lg transition"
-        >
-          View
-        </button>
+       
       </div>
     </div>
   );

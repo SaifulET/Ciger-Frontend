@@ -27,8 +27,11 @@ export default function ProductCard({
   onView,
 }: ProductCardProps) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col h-full shadow-sm hover:shadow-md transition">
-      <div className="flex-1 flex flex-col">
+   
+ <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col h-full shadow-sm hover:shadow-md transition">
+
+<Link href="/pages/product/123">
+ <div className="flex-1 flex flex-col">
         {product.newBestSeller && (
           <div className="relative">
             <h1 className="  px-3 py-1.5   absolute top-[-15px] left-[-16px] bg-[#DD2C2C] rounded-tl-[12px] rounded-br-[12px] z-[3] text-white text-sm font-semibold text-center">
@@ -38,7 +41,7 @@ export default function ProductCard({
         )}
         {product.newSeller && (
           <div className="relative">
-            <h1 className="  px-3 py-1.5   absolute top-[-15px] right-[-16px] bg-[#6E1E2D] rounded-tl-[12px] rounded-br-[12px] z-[3] text-white text-sm font-semibold text-center">
+            <h1 className="  px-3 py-1.5   absolute top-[-15px] right-[-16px] bg-[#6E1E2D] rounded-tr-[12px] rounded-bl-[12px] z-[3] text-white text-sm font-semibold text-center">
               New
             </h1>
           </div>
@@ -76,24 +79,20 @@ export default function ProductCard({
           </div>
         </div>
       </div>
+</Link>
+     
 
       {/* Action Buttons */}
       <div className="flex gap-3 mt-4">
         <button
           onClick={() => onAddCart(product.id)}
-          className="flex-1 bg-[#C9A040] hover:bg-yellow-600 text-white  font-normal md:font-medium py-2 rounded-lg flex items-center justify-center gap-1 transition "
+          className="w-full bg-[#C9A040] hover:bg-yellow-600 text-white  font-normal md:font-medium py-2 rounded-lg flex items-center justify-center gap-1 transition  "
         >
           <Plus className="w-5 h-5" /> Cart
         </button>
-        <Link href={"/pages/product/123"} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 font-normal md:font-medium py-2 rounded-lg transition text-center">
-          <button
-            onClick={() => onView(product.id)}
-            className=""
-          >
-            View
-          </button>
-        </Link>
+      
       </div>
-    </div>
+    </div>   
+   
   );
 }

@@ -85,8 +85,8 @@ export default function TermsAndPolicy() {
   return (
     <div className="min-h-screen ">
       {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className=" px-4 sm:px-6 lg:px-8 py-8">
+      <div className="bg-white shadow-sm  px-4 sm:px-6 lg:px-8 py-8 mx-4 md:mx-8 rounded-lg">
+        <div className=" ">
           <h1 className="text-4xl font-bold text-gray-900 text-center">
             Terms & Policy
           </h1>

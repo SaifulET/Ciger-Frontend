@@ -107,10 +107,10 @@ export default function ShoppingCart() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-full">
+    <div className="min-h-screen bg-white rounded-lg">
+      <div className="max-w-full ">
         {/* Header with title and buttons */}
-        <div className="border-b border-gray-200 bg-white">
+        <div className="border-b border-gray-200 bg-white rounded-t-lg">
           <div className="px-4 md:px-8 py-4 md:py-6">
             <div className="flex flex-col md:flex-row gap-3 md:gap-4 justify-between items-start md:items-center">
               <h1 className="text-xl md:text-3xl font-bold text-gray-900 mb-2 md:mb-0">
@@ -201,7 +201,7 @@ export default function ShoppingCart() {
                       <div className="flex justify-center gap-0 mt-1 border border-gray-300 rounded w-fit mx-auto">
                         <button
                           onClick={() => updateQuantity(item.id, "decrease")}
-                          className="w-8 h-8 bg-yellow-300 hover:bg-yellow-400 text-sm font-bold"
+                          className="w-8 h-8 bg-[#C9A040] hover:bg-[#9b7a2f] text-sm font-bold"
                         >
                           −
                         </button>
@@ -211,7 +211,7 @@ export default function ShoppingCart() {
                         <button
                           onClick={() => updateQuantity(item.id, "increase")}
                           disabled={item.quantity >= item.available}
-                          className="w-8 h-8 bg-yellow-300 hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold"
+                          className="w-8 h-8 bg-[#C9A040] hover:bg-[#a78435] disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold"
                         >
                           +
                         </button>

@@ -69,7 +69,7 @@ export default function BrandsPage() {
   };
 
   return (
-    <section className="bg-white py-16 px-4 md:px-8 lg:px-16">
+    <section className="bg-white py-16 px-4 md:px-8 lg:px-16 rounded-lg">
       <div className="max-w-full mx-auto">
         <h1 className="text-4xl font-bold text-gray-900 mb-12 text-center">
           Our Brands
@@ -86,10 +86,11 @@ export default function BrandsPage() {
             </div>
 
             <div className="flex justify-center gap-4 flex-wrap">
+              {/* Previous button - hidden on small screens */}
               <button
                 onClick={handlePrevPage}
                 disabled={currentPage === 0}
-                className="w-10 h-10 rounded-full bg-white border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                className="hidden md:flex w-10 h-10 rounded-full bg-white border border-gray-300 items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
                 <HugeiconsIcon icon={ArrowLeft01Icon} />
               </button>
@@ -111,10 +112,11 @@ export default function BrandsPage() {
                 ))}
               </div>
 
+              {/* Next button - hidden on small screens */}
               <button
                 onClick={handleNextPage}
                 disabled={currentPage === totalPages - 1}
-                className="w-10 h-10 rounded-full bg-white border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                className="hidden md:flex w-10 h-10 rounded-full bg-white border border-gray-300 items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
                 <HugeiconsIcon icon={ArrowRight01Icon} />
               </button>

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import rightArrow from "@/public/rightArrow.svg";
 import Image from "next/image";
@@ -37,6 +37,71 @@ export default function ReviewSection() {
 
   const handlePrev = () => emblaApi && emblaApi.scrollPrev();
   const handleNext = () => emblaApi && emblaApi.scrollNext();
+   const barRef = useRef<HTMLDivElement>(null); // ✅ declared once here
+      const [isDragging, setIsDragging] = useState(false);
+    const handleMouseDown = (e: React.MouseEvent) => setIsDragging(true);
+   
+     const handleMouseMove = (e: MouseEvent) => {
+       if (!isDragging || !barRef.current) return;
+   
+       const rect = barRef.current.getBoundingClientRect();
+       const x = e.clientX - rect.left;
+       const clampedX = Math.max(0, Math.min(x, rect.width));
+       const index = Math.round(
+         (clampedX / rect.width) * (scrollSnaps.length - 1)
+       );
+   
+       if (emblaApi) emblaApi.scrollTo(index);
+     };
+   
+     const handleMouseUp = () => setIsDragging(false);
+   
+     useEffect(() => {
+       if (isDragging) {
+         window.addEventListener("mousemove", handleMouseMove);
+         window.addEventListener("mouseup", handleMouseUp);
+       } else {
+         window.removeEventListener("mousemove", handleMouseMove);
+         window.removeEventListener("mouseup", handleMouseUp);
+       }
+       return () => {
+         window.removeEventListener("mousemove", handleMouseMove);
+         window.removeEventListener("mouseup", handleMouseUp);
+       };
+     }, [isDragging]);
+
+  <div className="flex justify-center mt-6">
+          <div
+            className="flex items-center gap-0 bg-gray-300 rounded-full h-1 relative overflow-hidden"
+            ref={barRef}
+          >
+            {scrollSnaps.map((_, i) => (
+              <div
+                key={i}
+                onClick={() => emblaApi && emblaApi.scrollTo(i)}
+                className={`h-1 cursor-pointer transition-all duration-300
+                  ${i === 0 ? "rounded-l-full" : ""}
+                  ${i === scrollSnaps.length - 1 ? "rounded-r-full" : ""}
+                  ${
+                    i === selectedIndex
+                      ? "bg-[#C9A040] w-12"
+                      : "bg-transparent w-8"
+                  }
+                `}
+              />
+            ))}
+
+            {/* draggable golden overlay */}
+            <div
+              className="absolute top-0 h-1 bg-[#C9A040] rounded-full cursor-grab active:cursor-grabbing transition-all duration-100"
+              style={{
+                width: `${100 / scrollSnaps.length}%`,
+                left: `${(selectedIndex / scrollSnaps.length) * 100}%`,
+              }}
+              onMouseDown={handleMouseDown}
+            />
+          </div>
+        </div>
 
   // 🔹 track scroll positions for bubble updates
   useEffect(() => {
@@ -58,7 +123,7 @@ export default function ReviewSection() {
   }, [emblaApi]);
 
   return (
-    <section className="bg-white py-24 mx-[32px]">
+    <section className="bg-white py-24 mx-[32px] rounded-lg">
       <div className="max-w-7xl mx-auto px-4 relative">
         {/* Header */}
         <div className="flex justify-center items-center mb-8">
@@ -68,7 +133,7 @@ export default function ReviewSection() {
         </div>
 
         {/* Carousel container */}
-        <div className="overflow-hidden mb-[64px]" ref={emblaRef}>
+        <div className="overflow-hidden h-auto mb-[64px]" ref={emblaRef}>
           <div className="flex -ml-4">
             {reviews.map((Review) => (
               <div
@@ -84,30 +149,49 @@ export default function ReviewSection() {
         {/* Navigation Arrows */}
         <button
           onClick={handlePrev}
-          className="absolute left-[-25px] md:left-[-50px] top-1/2 -translate-y-1/2 bg-white  w-12 h-12 rounded-full flex items-center justify-center hover:bg-gray-100  transition"
+          className="hidden absolute left-[-25px] md:left-[-50px] top-1/2 -translate-y-1/2 bg-white  w-12 h-12 rounded-full lg:flex items-center justify-center hover:bg-gray-100  transition"
         >
           <Image src={Leftarrow} width={12} height={12} alt="rightArrow" />
         </button>
         <button
           onClick={handleNext}
-          className="absolute right-[-25px] md:right-[-50px] top-1/2 -translate-y-1/2 bg-white  w-12 h-12 rounded-full flex items-center justify-center hover:bg-gray-100  transition"
+          className="hidden absolute right-[-25px] md:right-[-50px] top-1/2 -translate-y-1/2 bg-white  w-12 h-12 rounded-full lg:flex items-center justify-center hover:bg-gray-100  transition"
         >
           <Image src={rightArrow} width={12} height={12} alt="rightArrow" />
         </button>
 
         {/* 🔸 Pagination Bubbles */}
-        <div className="flex justify-center gap-2 mt-6">
-          {scrollSnaps.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => emblaApi && emblaApi.scrollTo(i)}
-              className={`w-3 h-3 rounded-full transition-all ${
-                i === selectedIndex
-                  ? "bg-[#C9A040] scale-110"
-                  : "bg-gray-300 hover:bg-gray-400"
-              }`}
+        <div className="flex justify-center mt-6">
+          <div
+            className="flex items-center gap-0 bg-gray-300 rounded-full h-1 relative overflow-hidden"
+            ref={barRef}
+          >
+            {scrollSnaps.map((_, i) => (
+              <div
+                key={i}
+                onClick={() => emblaApi && emblaApi.scrollTo(i)}
+                className={`h-1 cursor-pointer transition-all duration-300
+                  ${i === 0 ? "rounded-l-full" : ""}
+                  ${i === scrollSnaps.length - 1 ? "rounded-r-full" : ""}
+                  ${
+                    i === selectedIndex
+                      ? "bg-[#C9A040] w-12"
+                      : "bg-transparent w-8"
+                  }
+                `}
+              />
+            ))}
+
+            {/* draggable golden overlay */}
+            <div
+              className="absolute top-0 h-1 bg-[#C9A040] rounded-full cursor-grab active:cursor-grabbing transition-all duration-100"
+              style={{
+                width: `${100 / scrollSnaps.length}%`,
+                left: `${(selectedIndex / scrollSnaps.length) * 100}%`,
+              }}
+              onMouseDown={handleMouseDown}
             />
-          ))}
+          </div>
         </div>
       </div>
     </section>

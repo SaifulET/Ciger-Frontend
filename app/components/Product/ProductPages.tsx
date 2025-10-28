@@ -217,7 +217,7 @@ export default function ProductsPage() {
   return (
     <div className="flex w-full relative">
       {/* Desktop sidebar */}
-      <aside className="hidden md:block w-2/7 p-4 border-r border-gray-200 flex-shrink-0">
+      <aside className="hidden lg:block w-[220px] p-4 border-r border-gray-200 flex-shrink-0">
         <FiltersSidebar
           filters={filters}
           setFilters={setFilters}
@@ -229,8 +229,8 @@ export default function ProductsPage() {
 
       {/* Mobile drawer */}
       {isSidebarOpen && (
-        <div className="fixed inset-0 z-50 flex md:hidden">
-          <div className="w-4/5 bg-white shadow-lg p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex lg:hidden">
+          <div className="w-4/5 md:w-1/2 bg-white shadow-lg p-4 overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-semibold text-lg">Filters</h2>
               <button onClick={() => setIsSidebarOpen(false)}>
@@ -252,7 +252,7 @@ export default function ProductsPage() {
 
       {/* Product grid */}
       <main className="w-full px-2 sm:px-4 md:px-8 lg:px-16 py-4 md:py-0">
-        <div className="flex justify-between  items-center md:hidden w-full px-4 py-2">
+        <div className="flex justify-between  items-center lg:hidden w-full px-4 py-2">
           <button
             onClick={() => setIsSidebarOpen(true)}
             className="flex items-center gap-2 bg-gray-200 px-4 py-2 rounded-md shadow-sm"

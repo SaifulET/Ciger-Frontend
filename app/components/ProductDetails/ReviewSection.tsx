@@ -66,22 +66,22 @@ export default function ReviewsSection({
             <img src="https://www.selectmarket.ae/wp-content/uploads/2016/05/5ed0bc59411f1356d4fdf40b_dummy-person.png" alt="user" className="w-[50px] h-[50px]"></img>
           </div>
           <div className="flex-1">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2 sm:text-center">
-              <div className="text-center md:text-left">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2 s">
+              <div className="text-left">
                 
                 <p className="font-semibold text-gray-900 text-sm md:text-base">{rev.author}</p>
                 <p className="text-xs md:text-sm text-gray-600">{rev.location}</p>
               </div>
-              <p className="text-xs md:text-sm text-center text-gray-500 mt-1 md:mt-0">{rev.date}</p>
+              <p className="text-xs md:text-sm text-left text-gray-500 mt-1 md:mt-0">{rev.date}</p>
             </div>
-            <div className="flex justify-center md:justify-start items-center gap-1 mb-2">
+            <div className="flex justify-start items-center gap-1 mb-2">
               <div className="flex text-yellow-400">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-3 h-3 md:w-4 md:h-4 fill-current" style={{ opacity: i < rev.rating ? 1 : 0.3 }} />
                 ))}
               </div>
             </div>
-            <p className="text-gray-700 text-xs md:text-sm leading-relaxed text-center md:text-left">{rev.text}</p>
+            <p className="text-gray-700 text-xs md:text-sm leading-relaxed text-left">{rev.text}</p>
           </div>
         </div>
       </div>

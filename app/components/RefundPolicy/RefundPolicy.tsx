@@ -103,8 +103,8 @@ export default function RefundPolicy() {
   return (
     <div className="min-h-screen ">
       {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className=" px-4 sm:px-6 lg:px-8 py-8">
+      <div className="bg-white shadow-sm px-4 sm:px-6 lg:px-8 py-8 mx-4 md:mx-8 rounded-lg">
+        <div className="  ">
           <h1 className="text-4xl font-bold text-gray-900 text-center">
             Refund Policy
           </h1>
@@ -112,7 +112,7 @@ export default function RefundPolicy() {
       </div>
 
       {/* Main Content */}
-      <div className=" px-4 sm:px-6 lg:px-8 py-12">
+      <div className=" px-4 sm:px-6 lg:px-8 py-12  ">
         <div className="bg-white rounded-lg shadow-sm p-8 md:p-12">
           <div className="space-y-6">
             {allPoints.map((item, index) => (

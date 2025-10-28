@@ -25,7 +25,7 @@ export default function OrderHistoryPage() {
   );
 
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen py-[32px] mx-[16px] lg:mx-[32px] ">
       <div className=" md:px-16 py-8">
         <h1 className=" bg-white rounded-lg font-montserrat font-semibold text-[40px] leading-[48px] tracking-normal text-center mb-8 py-4">Order History</h1>
 
