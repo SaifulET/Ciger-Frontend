@@ -32,7 +32,7 @@ const product: Product = {
   bestSeller: true,
   images: ["https://www.smoke-king.co.uk/cdn/shop/files/3lhu0xaylcd.jpg?v=1715968268&width=360", "https://www.smoke-king.co.uk/cdn/shop/files/tp2wcc2x0bl.jpg?v=1716906307&width=360", "https://www.smoke-king.co.uk/cdn/shop/files/lqnt4yywaq2.jpg?v=1716906474&width=360"],
   colors: ["Red", "Black", "Brown", "Blue"],
-  description: "A rich blend of premium pipe tobacco. Enjoy smooth and flavorful smoking experience.",
+  description: "A rich blend of premium pipe tobacco. Enjoy smooth and flavorful smoking experience.A rich blend of premium pipe tobacco. Enjoy smooth and flavorful smoking experience.A rich blend of premium pipe tobacco. Enjoy smooth and flavorful smoking experience.A rich blend of premium pipe tobacco. Enjoy smooth and flavorful smoking experience.A rich blend of premium pipe tobacco. Enjoy smooth and flavorful smoking experience.A rich blend of premium pipe tobacco. Enjoy smooth and flavorful smoking experience.",
   reviews: mockReviews,
   totalReviews: 26,
   averageRating: 4.9,
@@ -90,7 +90,7 @@ export default function ProductDetailPage() {
   // Prevent hydration by not rendering until client-side
   if (!isClient) {
     return (
-      <div className="min-h-screen px-[42px] py-8 m-10">
+      <div className="min-h-screen ">
         <div className="animate-pulse">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="bg-gray-300 h-[500px] rounded"></div>
@@ -102,10 +102,10 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="min-h-screen">
-      <main className="px-[10px] md:px-[42px] py-8 space-y-12 md:m-10">
+    <div className="min-h-screen mx-[16px] md:mx-[32px]">
+      <main className="">
         {/* Product Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className=" pt-[16px] md:pt-[32px] grid grid-cols-1 lg:grid-cols-2 gap-[16px] md:gap-[32px]">
           <ProductImages 
             images={product.images} 
             currentImageIndex={currentImageIndex} 

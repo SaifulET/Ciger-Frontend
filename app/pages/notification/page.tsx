@@ -3,7 +3,7 @@ import React from 'react'
 
 function page() {
   return (
-    <div className='md:p-16'><NotificationsPage/></div>
+    <div className=''><NotificationsPage/></div>
   )
 }
 

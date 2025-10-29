@@ -19,6 +19,8 @@ import {
   Mail01FreeIcons,
   Discount01FreeIcons,
   File01Icon,
+  Search01Icon,
+  Menu01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useRouter, usePathname } from "next/navigation";
@@ -43,7 +45,9 @@ const Navbar: React.FC = () => {
     {}
   );
   const [isClient, setIsClient] = useState<boolean>(false);
+  const [isProduct, setIsProduct] = useState<boolean>(false);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
+  
 
   const router = useRouter();
   const pathname = usePathname();
@@ -69,12 +73,18 @@ const Navbar: React.FC = () => {
 
   // Function to check if a menu item is selected based on current path
   const isMenuItemSelected = (item: SubItem): boolean => {
+
     if (!pathname) return false;
+   
+    
+    
+
 
     // Special handling for Home menu - only selected for exact /pages or /pages/
     if (item.label === "Home") {
       return pathname === "/pages" || pathname === "/pages/";
     }
+  
 
     // Check if current path matches the item's link
     if (pathname === item.link) {
@@ -95,6 +105,10 @@ const Navbar: React.FC = () => {
     if (item.subItems) {
       return item.subItems.some((subItem) => isMenuItemSelected(subItem));
     }
+
+
+
+     
 
     return false;
   };
@@ -279,9 +293,9 @@ const Navbar: React.FC = () => {
   }
 
   return (
-    <header className="relative">
+    <header className="relative ">
       {/* ---------- Top bar (desktop & mobile) ---------- */}
-      <div className="w-full lg:h-auto lg:pt-5 text-black flex flex-col md:flex-row items-center  md:px-10 gap-4 md:gap-6 bg-white relative z-50">
+      <div className="w-full  lg:pt-5 text-black flex flex-col md:flex-row items-center  md:px-10 gap-4 md:gap-6 bg-white relative z-50">
         {/* Logo (top in mobile, left in desktop) */}
         <Link href="/pages/">
           <div className="flex-shrink-0   ">
@@ -609,14 +623,12 @@ const Navbar: React.FC = () => {
                     onClick={toggleMobileMenu}
                   >
                     <div className="relative w-6 h-6">
-                      <Menu
-                        size={30}
-                        className={`absolute top-0 left-0 transition-all duration-300 ${
+                      <HugeiconsIcon icon={Menu01Icon} className={`absolute top-0 left-0 transition-all duration-300 ${
                           mobileModalOpen
                             ? "opacity-0 rotate-90"
                             : "opacity-100 rotate-0"
-                        }`}
-                      />
+                        }`}/>
+                      
                       <X
                         size={30}
                         className={`absolute top-0 left-0 transition-all duration-300 ${
@@ -649,7 +661,7 @@ const Navbar: React.FC = () => {
                     className="p-1 transition-transform hover:scale-110"
                     onClick={toggleMobileSearch}
                   >
-                    <Search size={30} />
+                   <HugeiconsIcon icon={Search01Icon} />
                   </button>
 
                   {/* Cart icon */}
@@ -678,7 +690,7 @@ const Navbar: React.FC = () => {
                         setMobileSearchOpen(false);
                       }}
                     >
-                      <User size={30} />
+                      <HugeiconsIcon icon={UserIcon} />
                     </button>
 
                     {/* Mobile profile dropdown */}
@@ -765,16 +777,16 @@ const Navbar: React.FC = () => {
       </div>
 
       {/* ---------- Desktop Menu (unchanged) ---------- */}
-  <nav className="hidden lg:block bg-white w-full relative">
-  <div className="flex flex-row justify-center items-center gap-[72px] lg:px-16">
-    {menuData.map((item: SubItem) => {
+<nav className="hidden lg:block bg-white w-full relative">
+  <div className="flex flex-row justify-center items-center gap-10 lg:gap-24 ">
+    {menuData.map((item: SubItem, index: number) => {
       const isSelected = isMenuItemSelected(item);
       const isOpen = openMenu === item.label;
 
       return (
         <div 
           key={item.label} 
-          className="relative md:min-w-[80px]"
+          className="relative"
           onMouseEnter={() => item.subItems && setOpenMenu(item.label)}
           onMouseLeave={(e) => {
             // Check if mouse is moving to dropdown
@@ -785,25 +797,39 @@ const Navbar: React.FC = () => {
           }}
         >
           <Link href={item.link}>
-            <div className="flex items-center gap-2 py-2 cursor-pointer select-none justify-center md:justify-start relative">
-              <span className={`font-['Open Sans'] font-semibold text-[16px] leading-[24px] transition-colors duration-300 ${
-                isOpen ? 'text-[#C9A040]' : 'text-[#0C0C0C] hover:text-[#C9A040]'
-              }`}>
-                {item.label}
-              </span>
+            <div className="flex items-center gap-2 pt-4 pb-2 cursor-pointer select-none justify-center relative group">
+              <div className="relative">
+                <span className={`font-['Open Sans'] font-semibold text-[16px] leading-[24px] transition-colors duration-300 ${
+                  isOpen ? 'text-[#C9A040]' : 'text-[#0C0C0C] group-hover:text-[#C9A040]'
+                }  `}>
+                  {item.label}
+                  
+                </span>
+                {isSelected  && (
+                  <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#C9A040] transition-all duration-300" />
+                )}
+                {
+                  item.label ==="Products"&& pathname==="/pages/products" && 
+                  <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#C9A040] transition-all duration-300" />
+                }
+               
+
+
+               
+                
+              </div>
               {item.subItems && (
                 <ChevronDown
                   size={20}
-                  className={`md:ml-1 transition-all duration-300 ${
+                  className={`transition-all duration-300 ${
                     isOpen 
                       ? 'text-[#C9A040] rotate-180' 
-                      : 'text-[#0C0C0C] rotate-0 hover:text-[#C9A040]'
+                      : 'text-[#0C0C0C] rotate-0 group-hover:text-[#C9A040]'
                   }`}
                 />
+
               )}
-              {isSelected && (
-                <span className="absolute bottom-0 w-3/5 h-1 bg-[#C9A040] transition-all duration-300" />
-              )}
+              
             </div>
           </Link>
 
@@ -862,7 +888,7 @@ const Navbar: React.FC = () => {
 
       {/* ---------- Mobile Modal Menu ---------- */}
       {mobileModalOpen && (
-        <div className="fixed inset-0 z-100 flex items-start justify-start pt-30">
+        <div className="fixed inset-0 z-100 flex items-start justify-start pt-25">
           {/* Black Background */}
           <div
             className="absolute inset-0  transition-opacity duration-300 animate-fadeIn"

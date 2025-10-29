@@ -41,9 +41,9 @@ export default function ReviewsSection({
   const displayedReviews = product.reviews.slice(currentReviewPage * reviewsPerPage, (currentReviewPage + 1) * reviewsPerPage);
 
   return (
-   <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 lg:p-8 mb-12">
+   <div className="bg-white rounded-lg shadow-sm mt-[16px] md:mt-[32px]  p-[16px] md:p-[32px]">
   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-    <div className="w-full md:w-auto text-center md:text-left">
+    <div className="w-full md:w-auto text-center md:text-left pb-[16px] md:pb-[32px]">
       <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900">Reviews</h2>
       <p className="text-xs md:text-sm text-gray-600 mt-1">{product.totalReviews} reviews</p>
     </div>

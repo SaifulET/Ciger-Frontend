@@ -85,17 +85,18 @@ export default function BrandsPage() {
               Page {currentPage + 1} of {totalPages}
             </div>
 
-            <div className="flex justify-center gap-4 flex-wrap">
-              {/* Previous button - hidden on small screens */}
+            <div className="flex items-center gap-4">
+              {/* Previous button */}
               <button
                 onClick={handlePrevPage}
                 disabled={currentPage === 0}
-                className="hidden md:flex w-10 h-10 rounded-full bg-white border border-gray-300 items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                className="flex w-10 h-10 rounded-full bg-white border border-gray-300 items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
                 <HugeiconsIcon icon={ArrowLeft01Icon} />
               </button>
 
-              <div className="flex gap-2 items-center flex-wrap">
+              {/* Page numbers */}
+              <div className="flex gap-2 items-center">
                 {Array.from({ length: totalPages }).map((_, i) => (
                   <button
                     key={i}
@@ -103,20 +104,22 @@ export default function BrandsPage() {
                       setCurrentPage(i);
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
-                    className={`w-3 h-3 rounded-full transition-all ${
+                    className={`w-10 h-10 rounded-full border flex items-center justify-center text-sm font-medium transition-all ${
                       i === currentPage
-                        ? "bg-[#C9A040] scale-110"
-                        : "bg-gray-300 hover:bg-gray-400"
+                        ? "bg-[#C9A040] text-white border-[#C9A040]"
+                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
                     }`}
-                  />
+                  >
+                    {i + 1}
+                  </button>
                 ))}
               </div>
 
-              {/* Next button - hidden on small screens */}
+              {/* Next button */}
               <button
                 onClick={handleNextPage}
                 disabled={currentPage === totalPages - 1}
-                className="hidden md:flex w-10 h-10 rounded-full bg-white border border-gray-300 items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                className="flex w-10 h-10 rounded-full bg-white border border-gray-300 items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
                 <HugeiconsIcon icon={ArrowRight01Icon} />
               </button>

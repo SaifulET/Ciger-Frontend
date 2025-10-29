@@ -2,7 +2,7 @@
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import blogImg from "@/public/blog.svg"
+import blogImg from "@/public/blog.jpg"
 
 interface BlogItem {
   id: number;
@@ -85,16 +85,21 @@ export default function BlogDetails() {
     return <p className="text-center text-gray-500 py-10">Loading Blog...</p>;
 
   return (
-    <div className="pt-16">
-      <div className="flex flex-col items-center px-8 py-10 gap-8 lg:w-[1376px] bg-white rounded-xl md:mx-auto ">
+    <div className="mx-[16px] md:mx-[32px] py-[16px] md:py-[32px]">
+      <div className="flex flex-col items-center px-8 py-10 gap-8 bg-white rounded-xl  ">
       <h2 className="text-center text-[32px] md:text-[40px] font-semibold leading-[48px]">
         {blog.title}
       </h2>
 
       {/* Image */}
-      <div className="w-full h-[350px] relative rounded-lg overflow-hidden">
-        <Image src={blog.image} alt={blog.title} fill className="object-contain"  />
-      </div>
+      <div className="w-full lg:w-3/5 xl:w-1/3 h-[350px] relative rounded-lg overflow-hidden">
+  <Image 
+    src={blog.image} 
+    alt={blog.title} 
+    fill 
+    className="object-cover rounded-lg"  
+  />
+</div>
 
       {/* Description Section */}
       <div className="w-full">

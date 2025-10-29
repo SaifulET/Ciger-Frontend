@@ -42,8 +42,8 @@ const values = [
 
 export default function ValueSection() {
   return (
-    <section className="py-16 px-6 mx-[32px] my-[32px] bg-white rounded-lg">
-      <div className="max-w-6xl mx-auto text-center mb-12">
+    <section className=" p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] bg-white rounded-lg">
+      <div className=" text-center pb-[32px]">
         <h2 className="text-3xl md:text-4xl font-bold text-[#212121]">
           Why Choose Us
         </h2>

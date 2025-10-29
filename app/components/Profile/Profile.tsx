@@ -89,7 +89,7 @@ export default function ProfilePage() {
     placeholder?: string;
   }) => (
     <div className="w-full">
-      <label className="block text-sm font-medium text-gray-700 mb-2">
+      <label className="block text-sm font-medium text-gray-700 ">
         {label} <span className="text-red-500">*</span>
       </label>
       {isEditing ? (
@@ -109,15 +109,15 @@ export default function ProfilePage() {
   );
 
   return (
-    <div className="min-h-screen  py-[32px] mx-[16px] lg:mx-[32px]">
-      <div className=" px-4 sm:px-6 lg:px-8">
-        <div className="">
-          <h1 className="font-montserrat font-semibold text-2xl sm:text-3xl md:text-[40px] leading-8 sm:leading-10 md:leading-[48px] tracking-normal mb-4 md:mb-8 bg-white text-center rounded-lg py-2 sm:py-3 md:py-4">
+    <div className="min-h-screen  p-[16px] md:p-[32px]">
+      <div className=" ">
+        <div className="pb-[16px] md:pb-[32px]">
+          <h1 className="font-montserrat font-semibold text-2xl sm:text-3xl md:text-[40px] leading-8 sm:leading-10 md:leading-[48px] tracking-normal bg-white text-center rounded-lg p-[16px] md:p-[32px]">
             Profile
           </h1>
         </div>
         {/* Profile Header */}
-        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 md:p-8 mb-6">
+        <div className="bg-white rounded-lg shadow-sm p-[16px] md:p-[32px]  mb-[16px] md:mb-[32px]">
           <div className="flex flex-row justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
@@ -157,16 +157,16 @@ export default function ProfilePage() {
               <div className="flex gap-2 self-start sm:self-center">
                 <button
                   onClick={handleSave}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
+                  className="flex items-center gap-2 px-2 md:px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
                 >
-                  <Save size={18} />
+                  <Save  />
                   Save
                 </button>
                 <button
                   onClick={handleCancel}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg font-medium transition-colors"
+                  className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg font-medium transition-colors"
                 >
-                  <X size={18} />
+                  <X  />
                   Cancel
                 </button>
               </div>
@@ -175,7 +175,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Personal Info Section */}
-        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 md:p-8 mb-6">
+        <div className="bg-white rounded-lg shadow-sm p-[16px] md:p-[32px] mb-[16px] md:mb-[32px]">
           <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-6">
             Personal Info
           </h2>

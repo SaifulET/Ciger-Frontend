@@ -123,22 +123,22 @@ export default function ReviewSection() {
   }, [emblaApi]);
 
   return (
-    <section className="bg-white py-24 mx-[32px] rounded-lg">
-      <div className="max-w-7xl mx-auto px-4 relative">
+    <section className="bg-white  p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg">
+      <div className=" relative">
         {/* Header */}
-        <div className="flex justify-center items-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-[64px] text-center">
+        <div className="flex justify-center items-center pb-[32px]">
+          <h2 className="text-3xl font-bold text-gray-900  text-center">
             Words of praise from others about our products
           </h2>
         </div>
 
         {/* Carousel container */}
-        <div className="overflow-hidden h-auto mb-[64px]" ref={emblaRef}>
-          <div className="flex -ml-4">
+        <div className="overflow-hidden md:mx-[64px]" ref={emblaRef}>
+          <div className="flex ">
             {reviews.map((Review) => (
               <div
                 key={Review.id}
-                className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/3 flex-shrink-0 "
+                className="pl-4 basis-full md:basis-1/3 lg:basis-1/4 flex-shrink-0 "
               >
                 <ReviewCard Review={Review} />
               </div>
@@ -149,13 +149,13 @@ export default function ReviewSection() {
         {/* Navigation Arrows */}
         <button
           onClick={handlePrev}
-          className="hidden absolute left-[-25px] md:left-[-50px] top-1/2 -translate-y-1/2 bg-white  w-12 h-12 rounded-full lg:flex items-center justify-center hover:bg-gray-100  transition"
+          className="hidden absolute left-0 top-1/2 -translate-y-1/2 bg-white  w-12 h-12 rounded-full lg:flex items-center justify-center hover:bg-gray-100  transition"
         >
           <Image src={Leftarrow} width={12} height={12} alt="rightArrow" />
         </button>
         <button
           onClick={handleNext}
-          className="hidden absolute right-[-25px] md:right-[-50px] top-1/2 -translate-y-1/2 bg-white  w-12 h-12 rounded-full lg:flex items-center justify-center hover:bg-gray-100  transition"
+          className="hidden absolute right-0 top-1/2 -translate-y-1/2 bg-white  w-12 h-12 rounded-full lg:flex items-center justify-center hover:bg-gray-100  transition"
         >
           <Image src={rightArrow} width={12} height={12} alt="rightArrow" />
         </button>

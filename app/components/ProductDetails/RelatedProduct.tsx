@@ -8,6 +8,7 @@ import Leftarrow from "@/public/leftArrow.svg";
 import productImg from "@/public/product.svg";
 import Link from "next/link";
 import { RelatedProduct } from "./product";
+import { div } from "framer-motion/client";
 
 type Product = {
   id: number;
@@ -110,14 +111,15 @@ export default function RelatedProducts({
     };
   }, [emblaApi]);
   return (
-    <div className="mb-12 bg-white p-8 rounded-lg">
-      <h2 className="text-2xl font-bold text-gray-900 mb-8">
+    <div className="pb-[16px] md:pb-[32px]">
+ <div className=" bg-white p-[16px] md:p-[32px]   mt-[16px] md:mt-[32px] rounded-lg ">
+      <h2 className="text-2xl font-bold text-gray-900 pb-[16px] md:pb-[32px]">
         Products related to this item
       </h2>
-     <div className="max-w-7xl mx-auto px-4 relative">
+     <div className="  relative md:px-[64px]">
         {/* Carousel container */}
         <div className="overflow-hidden" ref={emblaRef}>
-          <div className="flex -ml-4">
+          <div className="flex ">
             {products.map((product) => (
               <div
                 key={product.id}
@@ -142,13 +144,13 @@ export default function RelatedProducts({
         {/* Navigation Arrows */}
         <button
           onClick={handlePrev}
-          className=" hidden absolute left-[-5px] md:left-[-50px] top-1/2 -translate-y-1/2 bg-white w-10 h-10 md:w-12 md:h-12 rounded-full md:flex items-center justify-center hover:bg-gray-100 transition"
+          className=" hidden absolute left-0 top-1/2 -translate-y-1/2 bg-white w-10 h-10 md:w-12 md:h-12 rounded-full md:flex items-center justify-center hover:bg-gray-100 transition"
         >
           <Image src={Leftarrow} width={12} height={12} alt="leftArrow" />
         </button>
         <button
           onClick={handleNext}
-          className="hidden absolute right-[-5px] md:right-[-50px] top-1/2 -translate-y-1/2 bg-white w-10 h-10 md:w-12 md:h-12 rounded-full md:flex items-center justify-center hover:bg-gray-100 transition"
+          className="hidden absolute right-0 top-1/2 -translate-y-1/2 bg-white w-10 h-10 md:w-12 md:h-12 rounded-full md:flex items-center justify-center hover:bg-gray-100 transition"
         >
           <Image src={rightArrow} width={12} height={12} alt="rightArrow" />
         </button>
@@ -188,5 +190,7 @@ export default function RelatedProducts({
         </div>
       </div>
     </div>
+    </div>
+   
   );
 }

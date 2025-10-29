@@ -158,7 +158,7 @@ export default function FiltersSidebar({
               <div key={category} className="border rounded-lg">
                 <button
                   onClick={() => toggleSubcategory(category)}
-                  className="w-full flex justify-between items-center bg-gray-50 hover:bg-gray-200 px-4 py-3 rounded-md font-medium text-gray-800 transition "
+                  className="w-full flex justify-between items-center bg-gray-50 hover:bg-gray-200 px-3 py-3 rounded-md font-medium text-gray-800 transition "
                 >
                   <span>{category}</span>
                   <span className="flex items-center gap-2">
@@ -170,7 +170,7 @@ export default function FiltersSidebar({
                 {openSubcategories[category] && (
                   <div className="pl-4 pb-2 space-y-1">
                     {/* Category level radio option */}
-                    <label className="flex justify-between text-sm items-center cursor-pointer py-1">
+                    <label className="flex justify-center text-sm items-center cursor-pointer py-1">
                       <div className="flex items-center gap-2 font-sans text-base font-normal leading-6">
                         <input
                           type="checkbox"

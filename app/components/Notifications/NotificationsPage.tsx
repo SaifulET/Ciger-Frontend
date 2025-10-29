@@ -25,13 +25,13 @@ const getIconAndColors = (
 
 export default function NotificationsPage() {
   return (
-    <div className="min-h-screen py-[32px] mx-[16px] lg:mx-[32px] ">
+    <div className="  p-[16px] md:p-[32px] ">
       <div className="">
-        <h1 className="font-montserrat font-semibold text-2xl sm:text-3xl md:text-[40px] leading-8 sm:leading-10 md:leading-[48px] tracking-normal mb-4 md:mb-8 bg-white text-center rounded-lg py-2 sm:py-3 md:py-4">
+        <h1 className="font-montserrat font-semibold text-2xl sm:text-3xl md:text-[40px] leading-8 sm:leading-10 md:leading-[48px] tracking-normal  bg-white text-center rounded-lg p-[16px] md:p-[32px] mb-[16px] md:mb-[32px]">
           Notifications
         </h1>
 
-        <div className="space-y-4 bg-white rounded-lg p-4 sm:p-8 md:p-16">
+        <div className="space-y-4 bg-white rounded-lg p-[16px] md:p-[32px]">
           {notificationsData.map((notification) => {
             const { icon, bgColor, iconColor } = getIconAndColors(notification.status);
 

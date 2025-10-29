@@ -30,7 +30,7 @@ export default function ProductCard({
    
  <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col h-full shadow-sm hover:shadow-md transition">
 
-<Link href="/pages/product/123">
+<Link href="/pages/products/123">
  <div className="flex-1 flex flex-col">
         {product.newBestSeller && (
           <div className="relative">

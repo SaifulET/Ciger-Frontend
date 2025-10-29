@@ -25,12 +25,12 @@ export default function OrderHistoryPage() {
   );
 
   return (
-    <div className="min-h-screen py-[32px] mx-[16px] lg:mx-[32px] ">
-      <div className=" md:px-16 py-8">
-        <h1 className=" bg-white rounded-lg font-montserrat font-semibold text-[40px] leading-[48px] tracking-normal text-center mb-8 py-4">Order History</h1>
+    <div className="min-h-screen p-[16px] md:p-[32px]">
+      <div className="">
+        <h1 className=" bg-white rounded-lg font-montserrat font-semibold text-[40px] leading-[48px] tracking-normal text-center mb-[16px] md:mb-[32px] p-[16px] md:p-[32px]">Order History</h1>
 
         {/* Search & Filter */}
-        <div className="flex gap-4 mb-4 py-6 px-8 bg-white rounded-lg">
+        <div className="flex flex-col md:flex-row  md:gap-4 gap-[16px] p-[16px] md:p-[32px] bg-white rounded-lg">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-3 text-gray-400" size={18} />
             <input
@@ -45,7 +45,7 @@ export default function OrderHistoryPage() {
             />
           </div>
 
-          <div className="w-64 relative">
+          <div className="w-full md:w-64 relative">
             <select
               value={statusFilter}
               onChange={(e) => {
@@ -65,23 +65,23 @@ export default function OrderHistoryPage() {
         </div>
 
         {/* Orders List */}
-        <div className="space-y-6">
+        <div className="space-y-6 mt-[16px] md:mt-[32px] ">
           {paginatedOrders.map((order) => (
-            <div key={order.id} className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+            <div key={order.id} className="border border-gray-200 rounded-lg overflow-hidden shadow-sm ">
               <OrderCard order={order} />
             </div>
           ))}
         </div>
 
         {filteredOrders.length === 0 && (
-          <div className="text-center py-12 text-gray-600">
+          <div className="text-center  text-gray-600">
             <p>No orders found</p>
           </div>
         )}
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 mt-12">
+          <div className="flex items-center justify-center gap-2 mt-[16px] md:mt-[32px]">
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}

@@ -83,9 +83,9 @@ export default function TermsAndPolicy() {
   const allPoints = termsData.sections.flatMap(section => section.content);
   
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen  p-[16px] md:p-[32px]">
       {/* Header */}
-      <div className="bg-white shadow-sm  px-4 sm:px-6 lg:px-8 py-8 mx-4 md:mx-8 rounded-lg">
+      <div className="bg-white shadow-sm   rounded-lg  p-[16px] md:p-[32px]  mb-[16px] md:mb-[32px]">
         <div className=" ">
           <h1 className="text-4xl font-bold text-gray-900 text-center">
             Terms & Policy
@@ -94,8 +94,8 @@ export default function TermsAndPolicy() {
       </div>
 
       {/* Main Content */}
-      <div className="px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-white rounded-lg shadow-sm p-8 md:p-12">
+      <div className="">
+        <div className="bg-white rounded-lg shadow-sm  p-[16px] md:p-[32px]">
           <div className="space-y-6">
             {allPoints.map((item, index) => (
               <div key={index} className="pl-6">

@@ -22,13 +22,13 @@ export default function TrackingPage() {
   };
 
   return (
-    <div className="min-h-screen  py-8 px-4">
+    <div className="min-h-screen  p-[16px] md:p-[32px]">
       <div className="">
         {/* Header */}
-        <h1 className="font-montserrat font-semibold text-2xl sm:text-3xl md:text-[40px] leading-8 sm:leading-10 md:leading-[48px] tracking-normal mb-4 md:mb-8 bg-white text-center rounded-lg py-2 sm:py-3 md:py-4">Tracking Number</h1>
+        <h1 className="font-montserrat font-semibold text-2xl sm:text-3xl md:text-[40px] leading-8 sm:leading-10 md:leading-[48px] tracking-normal p-[16px] md:p-[32px] mb-[16px] md:mb-[32px] bg-white text-center rounded-lg  ">Tracking Number</h1>
 
         {/* Search Card */}
-        <div className="bg-gray-50 rounded-lg p-8 mb-8">
+        <div className="bg-gray-50 rounded-lg p-[16px] md:p-[32px]">
           <label className="block font-semibold text-base leading-6 mb-3">
             Tracking Number
           </label>
@@ -45,7 +45,7 @@ export default function TrackingPage() {
             </div>
             <button
               onClick={handleSearch}
-              className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold py-2 px-8 rounded transition"
+              className="bg-[#C9A040] hover:bg-yellow-600 text-gray-900 font-semibold py-2 px-8  transition rounded-lg"
             >
               Get
             </button>

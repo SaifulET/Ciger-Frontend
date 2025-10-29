@@ -25,9 +25,9 @@ export default function BlogPage({ blogs }: BlogPageProps) {
   );
 
   return (
-    <div className="py-[16px] md:py-[32px]  mx-[16px] lg:mx-[32px]">
-        <div className="flex flex-col items-center px-4 md:px-8 gap-8  bg-white rounded-xl md:mx-auto pt-16">
-      <h2 className="text-center font-montserrat text-[40px] font-semibold leading-[48px] pb-8">
+    <div className=" mx-[16px] md:mx-[32px] py-[16px] md:py-[32px]">
+        <div className="flex flex-col items-center gap-8  bg-white rounded-xl  p-[16px] md:p-[32px]  ">
+      <h2 className="text-center font-montserrat text-[40px] font-semibold ">
         Blog
       </h2>
 
@@ -71,7 +71,7 @@ export default function BlogPage({ blogs }: BlogPageProps) {
       </div>
 
       {/* Footer Pagination */}
-      <div className="flex   justify-between w-full items-center pb-16">
+      <div className="flex   justify-between w-full items-center ">
         <p className="text-sm text-gray-500">
           Showing {paginatedBlogs.length + (currentPage - 1) * 5} of{" "}
           {blogs.length} results

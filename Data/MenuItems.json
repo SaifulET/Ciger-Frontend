@@ -7,60 +7,60 @@
     "subItems": [
       {
         "label": "Tobacco Products",
-        "link": "/pages/product?sub=Tobacco",
+        "link": "/pages/products?sub=Tobacco",
         "subItems": [
-          { "label": "Premium Cigars", "link": "/pages/product?sub=Tobacco&subPro=PremiumCigars" },
-          { "label": "Machine-Made Cigars", "link": "/pages/product?sub=Tobacco&subPro=MachineMadeCigars" }
+          { "label": "Premium Cigars", "link": "/pages/products?sub=Tobacco&subPro=PremiumCigars" },
+          { "label": "Machine-Made Cigars", "link": "/pages/products?sub=Tobacco&subPro=MachineMadeCigars" }
         ]
       },
       {
-        "label": "Hokkah",
-        "link": "/pages/product?sub=Hokka",
+        "label": "Hookah",
+        "link": "/pages/products?sub=Hokka",
         "subItems": [
-          { "label": "Hokka Pipes", "link": "/pages/product?sub=hokkah&subPro=hokkah-Pipes" },
-          { "label": "Shisha Tobacco", "link": "/pages/product?sub=hokkah&subPro=ShishaTobacco" }
+          { "label": "Hookah Pipes", "link": "/pages/products?sub=hookah&subPro=hokkah-Pipes" },
+          { "label": "Shisha Tobacco", "link": "/pages/products?sub=hookah&subPro=ShishaTobacco" }
         ]
       },
       {
         "label": "Nikotine Vapes",
-        "link": "/pages/product?sub=nikotineVapes",
+        "link": "/pages/products?sub=nikotineVapes",
         "subItems": [
-          { "label": "Disposals", "link": "/pages/product?sub=nikotineVapes?subPro=Disposals" }
+          { "label": "Disposals", "link": "/pages/products?sub=nikotineVapes?subPro=Disposals" }
           
         ]
       }
       ,{
         "label": "Smokeless Tobacco",
-        "link": "/pages/product?sub=SmokelessTobacco",
+        "link": "/pages/products?sub=SmokelessTobacco",
         "subItems": [
-          { "label": "Chewing Tobacco", "link": "/pages/product?sub=SmokelessTobacco?subPro=ChewingTobacco" },
-          { "label": "Snuff", "link": "/pages/product?sub=SmokelessTobacco?subPro=snuff" },
-          { "label": "Nicotine Pouches", "link": "/pages/product?sub=SmokelessTobacco?subPro=Nicotine Pouches" },
-          { "label": "Snus", "link": "/pages/product?sub=SmokelessTobacco?subPro=Snus" }
+          { "label": "Chewing Tobacco", "link": "/pages/products?sub=SmokelessTobacco?subPro=ChewingTobacco" },
+          { "label": "Snuff", "link": "/pages/products?sub=SmokelessTobacco?subPro=snuff" },
+          { "label": "Nicotine Pouches", "link": "/pages/products?sub=SmokelessTobacco?subPro=Nicotine Pouches" },
+          { "label": "Snus", "link": "/pages/products?sub=SmokelessTobacco?subPro=Snus" }
           
         ]
       }
       ,{
         "label": "General Accessories",
-        "link": "/pages/product?sub=GeneralAccessories",
+        "link": "/pages/products?sub=GeneralAccessories",
         "subItems": [
-          { "label": "Lighters & Torch Lighters", "link": "/pages/product?sub=GeneralAccessories?subPro=LightersTorchLighters" },
-          { "label": "Ashtrays", "link": "/pages/product?sub=GeneralAccessories?subPro=Ashtrays" },
-          { "label": "Tolling Machines", "link": "/pages/product?sub=GeneralAccessories?subPro=TollingMachines" },
-          { "label": "Storage & Cases", "link": "/pages/product?sub=GeneralAccessories?subPro=StorageCases" },
-          { "label": "Cleaning Tools", "link": "/pages/product?sub=GeneralAccessories?subPro=CleaningTools" }
+          { "label": "Lighters & Torch Lighters", "link": "/pages/products?sub=GeneralAccessories?subPro=LightersTorchLighters" },
+          { "label": "Ashtrays", "link": "/pages/products?sub=GeneralAccessories?subPro=Ashtrays" },
+          { "label": "Tolling Machines", "link": "/pages/products?sub=GeneralAccessories?subPro=TollingMachines" },
+          { "label": "Storage & Cases", "link": "/pages/products?sub=GeneralAccessories?subPro=StorageCases" },
+          { "label": "Cleaning Tools", "link": "/pages/products?sub=GeneralAccessories?subPro=CleaningTools" }
           
         ]
       }
       ,{
         "label": "THC",
-        "link": "/pages/product?sub=THC",
+        "link": "/pages/products?sub=THC",
         "subItems": [
-          { "label": "Flowers", "link": "/pages/product?sub=THC?subPro=Flowers" },
-          { "label": "PreRolls", "link": "/pages/product?sub=THC?subPro=PreRolls" },
-          { "label": "Disposals/Cartridges", "link": "/pages/product?sub=THC?subPro=Disposals" },
-          { "label": "Edibles", "link": "/pages/product?sub=THC?subPro=Edibles" },
-          { "label": "Concentrates", "link": "/pages/product?sub=THC?subPro=concentrates" }
+          { "label": "Flowers", "link": "/pages/products?sub=THC?subPro=Flowers" },
+          { "label": "PreRolls", "link": "/pages/products?sub=THC?subPro=PreRolls" },
+          { "label": "Disposals/Cartridges", "link": "/pages/products?sub=THC?subPro=Disposals" },
+          { "label": "Edibles", "link": "/pages/products?sub=THC?subPro=Edibles" },
+          { "label": "Concentrates", "link": "/pages/products?sub=THC?subPro=concentrates" }
           
         ]
       }

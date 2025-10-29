@@ -62,7 +62,7 @@ const OrderItemsTable: React.FC<OrderItemsTableProps> = ({
 
       {/* Tax / Discount / Shipping Row */}
         
-          <div  className="grid grid-cols-12 gap-4 mb-8 items-center">
+          <div  className="grid grid-cols-12 gap-4 mb-[16px] md:mb-[32px] items-center">
          <div className='col-span-2'><p className="font-semibold text-[16px] leading-6 tracking-normal">Tax</p></div> 
          <div className='col-span-3'></div>
           <div><p className="text-sm text-gray-900 font-medium">{tax}%</p></div>
@@ -100,7 +100,7 @@ const OrderItemsTable: React.FC<OrderItemsTableProps> = ({
         </div>
 
       {/* Subtotal / Payment */}
-      <div className="mb-6  p-8 bg-[#dddcdc] rounded-lg">
+      <div className="mb-6  p-8 bg-[#F5F5F5] rounded-lg">
           <p className="font-semibold text-[18px] leading-[26px] tracking-[0%] mb-4">Payment</p>
           <div className=' p-4 bg-white rounded-lg'>
           <div className="flex justify-between items-center mb-3"> 

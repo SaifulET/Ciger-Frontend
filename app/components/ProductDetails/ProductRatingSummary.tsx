@@ -28,7 +28,7 @@ export default function ProductRatingSummary({ averageRating, totalReviews, rati
   hoveredRating,
   setHoveredRating,handleAddReview, }: ProductRatingSummaryProps) {
   return (
-   <div className="bg-white rounded-lg shadow-sm p-6 md:p-10 lg:p-16 mb-12 flex flex-col md:flex-col lg:flex-row gap-6 md:gap-10 lg:gap-8">
+   <div className="p-[16px] md:p-[32px] mt-[16px] md:mt-[32px] bg-white rounded-lg shadow-sm  flex flex-col md:flex-col lg:flex-row gap-6 md:gap-10 lg:gap-8">
 
   {/* Left Section */}
   <div className="flex flex-col lg:flex-row items-center lg:items-start justify-center lg:justify-end gap-6 md:gap-8 w-full lg:w-2/5">
@@ -65,11 +65,11 @@ export default function ProductRatingSummary({ averageRating, totalReviews, rati
   </div>
 
   {/* Right Section */}
-  <div className="w-full lg:w-2/5 text-center lg:text-left mt-6 lg:mt-0">
-    <div className="flex justify-center lg:justify-start w-full mt-6 md:mt-10 lg:mt-16 text-gray-700 text-sm md:text-base">
+  <div className="w-full lg:w-2/5 text-center  ">
+    <div className="flex justify-center  w-full mt-6 md:mt-10 lg:mt-16 text-gray-700 text-sm md:text-base">
       Hi, steve your opinion helps us serve better
     </div>
-    <div className="flex justify-center lg:justify-start w-full">
+    <div className="flex justify-center  w-full">
       <button
         onClick={() => setShowReviewModal(true)}
         className="bg-[#C9A040] hover:bg-yellow-700 text-gray-900 text-xs md:text-sm font-semibold leading-[22px] px-4 md:px-6 py-2 md:py-3 rounded-lg mt-4 flex items-center gap-2"

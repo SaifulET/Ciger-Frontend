@@ -1,6 +1,6 @@
 import BlogPage from '@/app/components/Blogpage/BlogComponent'
 import React from 'react'
-import  blogImg from "@/public/blog.svg"
+import  blogImg from "@/public/blog.jpg"
 
 function page() {
        const blog=[
@@ -16,7 +16,7 @@ function page() {
   ]
   return (
  
-    <div className='p-8 py-16'>
+    <div className=''>
         <BlogPage
   blogs={blog}
 />

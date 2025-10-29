@@ -32,7 +32,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
   const statusConfig = STATUS_CONFIG[order.status];
 
   return (
-    <div className="bg-white p-6">
+    <div className="bg-white p-[16px] md:p-[32px]">
       {/* Header */}
       <div className="flex justify-between items-start mb-6">
         <div>

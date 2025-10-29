@@ -1,12 +1,12 @@
 "use client";
 
 import { Mail, Phone } from "lucide-react";
-import fbIcon from "@/public/Facebook.svg"
-import instaIcon from "@/public/instagram.svg"
-import youtubeIcon from "@/public/youtube.svg"
-import tiktokIcon from "@/public/TikTok.svg"
+import fbIcon from "@/public/Facebook.svg";
+import instaIcon from "@/public/instagram.svg";
+import youtubeIcon from "@/public/youtube.svg";
+import tiktokIcon from "@/public/TikTok.svg";
 import Image from "next/image";
-import logo from "@/public/logo1.svg"
+import logo from "@/public/logo1.svg";
 import Link from "next/link";
 
 export default function Footer() {
@@ -18,12 +18,20 @@ export default function Footer() {
         <div className="flex flex-col lg:flex-row justify-evenly gap-8 lg:gap-4">
           {/* Left: Logo & Description */}
           <div className="flex flex-col gap-6 lg:gap-12 w-full max-w-md">
-            <p className="text-white font-[600] text-[16px] leading-[24px] font-[Open_Sans]">
+            <p className="text-white text-center md:text-right font-[500] text-[16px] leading-[24px] font-[Open_Sans]">
               The Finest in Tobacco, Vapes, and Lifestyle Accessories.
             </p>
-            <h2 className="text-white font-[Montserrat] font-semibold">
-             <Image className='' src={logo} alt="Logo" width={220} height={220}/>
-            </h2>
+
+            <Link href="/pages/">
+              <h2 className="text-white font-[Montserrat] font-semibold">
+                <Image
+                  className="object-cover w-full h-[80px] "
+                  src={logo}
+                  alt="Logo"
+                  
+                />
+              </h2>
+            </Link>
           </div>
 
           {/* Center: Quick Links */}
@@ -42,10 +50,14 @@ export default function Footer() {
               ].map((item) => (
                 <li key={item}>
                   <a
-                    href={`/pages/${item === "Home" ? "" : item.toLowerCase().replace(/\s+/g, "")}`}
+                    href={`/pages/${
+                      item === "Home"
+                        ? ""
+                        : item.toLowerCase().replace(/\s+/g, "")
+                    }`}
                     className="hover:text-[#C9A040] transition-colors duration-300"
                   >
-                    {item==="RefundPolicy"?"Refund Policy":item}
+                    {item === "RefundPolicy" ? "Refund Policy" : item}
                   </a>
                 </li>
               ))}

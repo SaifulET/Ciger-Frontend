@@ -18,13 +18,13 @@ const BlogCard: React.FC<BlogCardProps> = ({ product }) => {
   const { image, title, description, link } = product;
 
   return (
-    <div className="flex flex-col items-start mx-5 md:mx-0   border border-[#B0B0B0] rounded-[12px] overflow-hidden bg-white ">
+    <div className="flex flex-col items-start   border border-[#B0B0B0] rounded-[14px] overflow-hidden bg-white ">
       {/* Image */}
-      <div className="relative w-full  bg-[#D9D9D9]">
+      <div className="relative w-full  ">
         <Image
           src={image}
           alt={title}
-          className="object-cover w-full rounded-t-[12px]"
+          className="object-cover w-full "
           sizes="(max-width: 362px) 100vw, 362px"
         />
       </div>

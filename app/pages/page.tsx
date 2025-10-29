@@ -19,31 +19,31 @@ export default function Home() {
   return (
     <div className="bg-[#f1eeee]">
       
-      <div className=" mb-16">
+      <div className=" ">
           <Slider />
-        </div>
-      <div className="mt-16">
+      </div>
+      <div className="">
         <ProductCarousel/>
       </div>
-      <div className="mt-16">
+      <div className="">
         <Discount/>
       </div>
-      <div className="mt-16">
+      <div className="">
         <BestSeller/>
       </div>
-      <div className="mt-16">
+      <div className="">
         <NewArrival/>
       </div>
-      <div className="mt-16">
+      <div className="">
         <BlogCarousal/>
       </div>
-      <div className="mt-16">
+      <div className="">
         <ValueSection/>
       </div>
-      <div className="mt-16">
+      <div className="">
         <ReviewSection/>
       </div>
-      <div className="mt-16 pb-16 ">
+      <div className="pb-[16px] md:pb-[32px] ">
         <FaqSection/>
       </div>
       

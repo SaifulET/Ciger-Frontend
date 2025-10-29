@@ -19,7 +19,7 @@ export default function ProductCard({ product, onAddCart}: ProductCardProps) {
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col h-full shadow-sm hover:shadow-md transition">
-      <Link href="/pages/product/12">
+      <Link href="/pages/products/12">
       
        <div className="flex-1 flex flex-col">
         {newbestSeller && (

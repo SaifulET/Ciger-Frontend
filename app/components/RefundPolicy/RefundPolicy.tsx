@@ -101,9 +101,9 @@ export default function RefundPolicy() {
   const allPoints = refundData.sections.flatMap(section => section.content);
 
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen p-[16px] md:p-[32px] ">
       {/* Header */}
-      <div className="bg-white shadow-sm px-4 sm:px-6 lg:px-8 py-8 mx-4 md:mx-8 rounded-lg">
+      <div className="bg-white shadow-sm  rounded-lg p-[16px] md:p-[32px] mb-[16px] md:mb-[32px]">
         <div className="  ">
           <h1 className="text-4xl font-bold text-gray-900 text-center">
             Refund Policy
@@ -112,11 +112,11 @@ export default function RefundPolicy() {
       </div>
 
       {/* Main Content */}
-      <div className=" px-4 sm:px-6 lg:px-8 py-12  ">
-        <div className="bg-white rounded-lg shadow-sm p-8 md:p-12">
+      <div className="   ">
+        <div className="bg-white rounded-lg shadow-sm p-[16px] md:p-[32px] ">
           <div className="space-y-6">
             {allPoints.map((item, index) => (
-              <div key={index} className="pl-6">
+              <div key={index} className="">
                 <div className="flex items-start">
                   <span className="flex-shrink-0 w-2 h-2 rounded-full bg-amber-500 mt-2 mr-4"></span>
                   <div className="flex-1">

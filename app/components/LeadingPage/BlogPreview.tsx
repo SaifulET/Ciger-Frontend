@@ -5,7 +5,7 @@ import rightArrow from "@/public/rightArrow.svg"
 import Image from "next/image";
 import Leftarrow from "@/public/leftArrow.svg"
 import BlogCard from "../universalComponents/BlogCard";
-import blogImg from "@/public/blog.svg"
+import blogImg from "@/public/blog.jpg"
 type Product = {
   id: number;
   description: string;
@@ -89,21 +89,21 @@ export default function BlogCarousal() {
   }, [emblaApi]);
 
   return (
-    <section className="bg-white py-10 md:mx-[32px] rounded-lg">
-      <div className="md:max-w-7xl md:mx-auto md:px-4 relative">
+    <section className="bg-white  p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg ">
+      <div className="  relative ">
         {/* Header */}
-        <div className="flex justify-center items-center mb-8">
+        <div className="flex justify-center items-center pb-[32px]">
           <h2 className="text-xl md:text-3xl font-bold text-gray-900">Blog Preview</h2>
         
         </div>
 
         {/* Carousel container */}
-        <div className="overflow-hidden" ref={emblaRef}>
-          <div className="flex md:-ml-4">
+        <div className="overflow-hidden md:mx-[62px] " ref={emblaRef}>
+          <div className="flex ">
             {products.map((product) => (
               <div
                 key={product.id}
-                className="md:pl-5 basis-full sm:basis-full lg:basis-1/3 xl:basis-1/3 flex-shrink-0"
+                className="md:pl-5 basis-full sm:basis-full md:basis-1/2 lg:basis-1/3 xl:basis-1/3 flex-shrink-0"
               >
                 <BlogCard
                   product={product}
@@ -118,13 +118,13 @@ export default function BlogCarousal() {
         {/* Navigation Arrows */}
         <button
           onClick={handlePrev}
-          className="hidden absolute left-[-5px] md:left-[-50px] top-1/2 -translate-y-1/2 bg-white  w-12 h-12 rounded-full lg:flex items-center justify-center hover:bg-gray-100  transition"
+          className="hidden absolute left-0  top-1/2 -translate-y-1/2 bg-white  w-12 h-12 rounded-full lg:flex items-center justify-center hover:bg-gray-100  transition"
         >
           <Image src={Leftarrow} width={12}height={12}alt="rightArrow"/>
         </button>
         <button
           onClick={handleNext}
-          className="hidden absolute right-[-5px] md:right-[-50px] top-1/2 -translate-y-1/2 bg-white  w-12 h-12 rounded-full lg:flex items-center justify-center hover:bg-gray-100  transition"
+          className="hidden absolute right-0 top-1/2 -translate-y-1/2 bg-white  w-12 h-12 rounded-full lg:flex items-center justify-center hover:bg-gray-100  transition"
         >
           <Image src={rightArrow} width={12}height={12}alt="rightArrow"/>
         </button>

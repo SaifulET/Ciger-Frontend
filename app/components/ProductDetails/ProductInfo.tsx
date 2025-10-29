@@ -13,25 +13,25 @@ interface Props {
 
 export default function ProductInfo({ product, quantity, setQuantity, selectedColor, setSelectedColor, handleAddToCart }: Props) {
   return (
-    <div className="space-y-6 bg-gray-50 p-16  rounded-lg ">
+    <div className="space-y-6 bg-white p-[16px] md:p-[32px] rounded-lg shadow-sm ">
       {/* Badges */}
-      <div className="font-semibold text-[16px] leading-[24px] text-[#0C0C0C] flex-none order-0 flex-grow-0">
+      <div className="font-semibold text-[16px] leading-[24px] text-[#0C0C0C] flex-none order-0 flex-grow-0 ">
         Category/SubCategory
       </div>
       <div className="flex gap-2 justify-end">
   {product.bestSeller && (
-    <span className="px-4 py-2 bg-red-600 rounded-full text-white text-xs font-semibold">
+    <span className=" flex justify-center items-center px-4 py-2 bg-red-600 rounded-full text-white text-xs font-semibold">
       Best Seller
     </span>
   )}
   {product.newArrival && (
-    <span className="px-4 py-2 bg-purple-900 rounded-full text-white text-xs font-semibold">
+    <span className=" flex justify-center items-center px-4 py-2 bg-purple-900 rounded-[24px] text-white text-xs font-semibold">
       New Arrivals
     </span>
   )}
-  <span className={`px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-1.5 ${
+  <span className={`flex justify-center items-center px-4 py-2 rounded-full text-xs font-semibold gap-1.5 ${
     product.inStock 
-      ? "text-green-700 bg-green-50" 
+      ? "text-green-700 bg-green-50 border-2 border-green-200" 
       : "bg-red-50 text-red-600"
   }`}>
     {product.inStock ? (

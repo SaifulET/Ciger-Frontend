@@ -10,11 +10,11 @@ export type Brand = {
 
 export default function BrandCard({ brand }: { brand: Brand }) {
   return (
-    <div className="flex-shrink-0 basis-1/5 px-2">
+    <div className="flex-shrink-0 basis-1/3 md:basis-1/4 lg:basis-1/5 px-2">
       <div className="flex flex-col items-center gap-4 p-4 border border-gray-200 rounded-lg hover:shadow-md transition bg-white h-full">
         <Link
           href={{
-            pathname: "/pages/product",
+            pathname: "/pages/products",
             query: { brand: "camel"},
           }}
         >

@@ -5,7 +5,10 @@ import FiltersSidebar from "./FiltersSidebar";
 import ProductGrid from "./ProductGrid";
 import { ProductType } from "./ProductType";
 import { useRouter } from "next/navigation";
-import { DashboardSquare01Icon, LeftToRightListBulletIcon } from "@hugeicons/core-free-icons";
+import {
+  DashboardSquare01Icon,
+  LeftToRightListBulletIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
 const dummyProducts: ProductType[] = [
@@ -159,7 +162,7 @@ export default function ProductsPage() {
   const router = useRouter();
 
   const pageSize = 6;
-  const [isList,setIsList]= useState(false)
+  const [isList, setIsList] = useState(false);
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -215,9 +218,9 @@ export default function ProductsPage() {
   const handleView = (id: number) => router.push(`/pages/product/`);
 
   return (
-    <div className="flex w-full relative">
+    <div className="flex  relative  py-[16px] md:py[32px] mx-[16px] md:mx-[32px]">
       {/* Desktop sidebar */}
-      <aside className="hidden lg:block w-[220px] p-4 border-r border-gray-200 flex-shrink-0">
+      <aside className="hidden lg:block w-[320px] p-4 border-r border-gray-200 flex-shrink-0">
         <FiltersSidebar
           filters={filters}
           setFilters={setFilters}
@@ -251,21 +254,36 @@ export default function ProductsPage() {
       )}
 
       {/* Product grid */}
-      <main className="w-full px-2 sm:px-4 md:px-8 lg:px-16 py-4 md:py-0">
-        <div className="flex justify-between  items-center lg:hidden w-full px-4 py-2">
+      <main className="w-full ">
+        <div className="flex justify-between  items-center lg:hidden w-full ">
           <button
             onClick={() => setIsSidebarOpen(true)}
             className="flex items-center gap-2 bg-gray-200 px-4 py-2 rounded-md shadow-sm"
           >
-            Filter & Sort<SlidersHorizontal size={18} /> 
+            Filter & Sort
+            <SlidersHorizontal size={18} />
           </button>
           <div className="flex gap-3">
-            <button className={`${isList===true?"text-gray-500":"text-gray-900"} `} onClick={()=>{setIsList(true)}}>
-            <HugeiconsIcon icon={LeftToRightListBulletIcon} />
-          </button>
-          <button className={`${isList===false?"text-gray-500":"text-gray-900"} `} onClick={()=>{setIsList(false)}}>
-            <HugeiconsIcon icon={DashboardSquare01Icon} />
-          </button>
+            <button
+              className={`${
+                isList === true ? "text-gray-500" : "text-gray-900"
+              } `}
+              onClick={() => {
+                setIsList(true);
+              }}
+            >
+              <HugeiconsIcon icon={LeftToRightListBulletIcon} />
+            </button>
+            <button
+              className={`${
+                isList === false ? "text-gray-500" : "text-gray-900"
+              } `}
+              onClick={() => {
+                setIsList(false);
+              }}
+            >
+              <HugeiconsIcon icon={DashboardSquare01Icon} />
+            </button>
           </div>
         </div>
         <ProductGrid

@@ -218,16 +218,16 @@ const CheckoutPage = () => {
 
 
   return (
-    <div className="min-h-screen ">
-      <div className=" px-4 py-8">
-        <h1 className=" py-5 bg-white rounded-lg text-3xl text-[40px] font-semibold leading-[48px] text-gray-900 mb-8 text-center">Checkout</h1>
+    <div className="min-h-screen  p-[16px] md:p-[32px]">
+      <div className=" ">
+        <h1 className=" bg-white rounded-lg text-3xl text-[40px] font-semibold leading-[48px] text-gray-900 text-center  p-[16px] md:p-[32px]   mb-[16px] md:mb-[32px]">Checkout</h1>
 
         {/* Desktop Layout */}
-        <div className="hidden lg:grid lg:grid-cols-2 lg:gap-8">
+        <div className="hidden lg:grid lg:grid-cols-2 lg:gap-[32px]">
           {/* LEFT COLUMN: Contact Info + Date of Birth */}
           <div className="space-y-6">
             {/* Contact Information */}
-            <div className="bg-white p-6 rounded-lg">
+            <div className="bg-white  rounded-lg  p-[16px] md:p-[32px]  mb-[16px] md:mb-[32px]">
               <h2 className="text-lg font-semibold mb-4">Contact Information</h2>
               
               <div className="mb-4">
@@ -278,14 +278,20 @@ const CheckoutPage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Country <span className="text-red-500">*</span>
                 </label>
-                <select
-                  name="country"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                  value={formData.country}
-                  onChange={handleInputChange}
-                >
-                  <option>Dhaka</option>
-                </select>
+              <select
+  name="country"
+  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md text-sm appearance-none"
+  style={{
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")`,
+    backgroundPosition: 'right 0.5rem center',
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: '1.5em 1.5em',
+  }}
+  value={formData.country}
+  onChange={handleInputChange}
+>
+  <option>Dhaka</option>
+</select>
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-4">
@@ -389,7 +395,7 @@ const CheckoutPage = () => {
             </div>
 
             {/* Date of Birth */}
-            <div className="bg-white p-6 rounded-lg">
+            <div className="bg-white rounded-lg  p-[16px] md:p-[32px]">
               <h3 className="font-semibold mb-2">Enter your date of birth</h3>
               <p className="text-xs text-gray-600 mb-4">
                 Age verification is required by law. Most customers can be verified instantly. Your information will only be used to verify your age.
@@ -453,7 +459,7 @@ const CheckoutPage = () => {
           {/* RIGHT COLUMN: Order Summary + Discount + Payment */}
           <div className="space-y-6">
             {/* Order Summary */}
-            <div className="bg-white p-6 rounded-lg">
+            <div className="bg-white  p-[16px] md:p-[32px] rounded-lg   mb-[16px] md:mb-[32px]">
               <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
 
               <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
@@ -629,9 +635,9 @@ const CheckoutPage = () => {
         </div>
 
         {/* Mobile Layout */}
-        <div className="lg:hidden space-y-6">
+        <div className="lg:hidden space-y-6  ">
           {/* Contact Information */}
-          <div className="bg-white p-6 rounded-lg">
+          <div className="bg-white  p-[16px]  rounded-lg">
             <h2 className="text-lg font-semibold mb-4">Contact Information</h2>
             
             <div className="mb-4">
@@ -683,13 +689,19 @@ const CheckoutPage = () => {
                 Country <span className="text-red-500">*</span>
               </label>
               <select
-                name="country"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                value={formData.country}
-                onChange={handleInputChange}
-              >
-                <option>Dhaka</option>
-              </select>
+  name="country"
+  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md text-sm appearance-none"
+  style={{
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")`,
+    backgroundPosition: 'right 0.5rem center',
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: '1.5em 1.5em',
+  }}
+  value={formData.country}
+  onChange={handleInputChange}
+>
+  <option>Dhaka</option>
+</select>
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-4">
@@ -793,7 +805,7 @@ const CheckoutPage = () => {
           </div>
 
           {/* Date of Birth */}
-          <div className="bg-white p-6 rounded-lg">
+          <div className="bg-white  p-[16px]  rounded-lg">
             <h3 className="font-semibold mb-2">Enter your date of birth</h3>
             <p className="text-xs text-gray-600 mb-4">
               Age verification is required by law. Most customers can be verified instantly. Your information will only be used to verify your age.
@@ -854,7 +866,7 @@ const CheckoutPage = () => {
           </div>
 
           {/* Order Summary */}
-          <div className="bg-white p-6 rounded-lg">
+          <div className="bg-white  p-[16px]  rounded-lg">
             <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
 
             <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
@@ -913,24 +925,24 @@ const CheckoutPage = () => {
           </div>
 
           {/* Discount Code */}
-          <div className="bg-white p-6 rounded-lg">
+          <div className="bg-white  p-[16px] rounded-lg">
             <h3 className="font-semibold mb-3">Discount Code</h3>
             <div className="flex gap-2">
               <input
                 type="text"
                 placeholder="Code"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="flex-1 px-2 md:px-3 py-2 border border-gray-300 rounded-md text-sm"
                 value={formData.discountCode}
                 onChange={(e) => setFormData(prev => ({ ...prev, discountCode: e.target.value }))}
               />
-              <button className="bg-yellow-600 hover:bg-yellow-700 text-white font-medium px-6 py-2 rounded-md text-sm">
+              <button className="bg-yellow-600 hover:bg-yellow-700 text-white font-medium px-4 md:px-6 py-2 rounded-md text-sm">
                 Apply
               </button>
             </div>
           </div>
 
           {/* Payment */}
-          <div className="bg-white p-6 rounded-lg">
+          <div className="bg-white  p-[16px]  rounded-lg">
             <h2 className="text-lg font-semibold mb-4">Payment</h2>
 
             <div className="mb-4">

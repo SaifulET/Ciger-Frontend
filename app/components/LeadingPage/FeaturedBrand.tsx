@@ -77,23 +77,23 @@ export default function ProductCarousel() {
   }, [emblaApi]);
 
   return (
-    <section className="bg-white py-10 mx-[10px] md:mx-[32px] rounded-lg">
-      <div className="md:max-w-7xl md:mx-auto px-4 relative">
+    <section className="bg-white mt-[16px] md:mt-[32px]   mx-[16px] md:mx-[32px] rounded-lg">
+      <div className="p-[32px] relative">
         {/* Header */}
-        <div className="flex justify-center items-center mb-[76px]">
+        <div className="flex justify-center items-center pb-[32px]">
           <h2 className="text-[28px] md:text-[40px] font-bold text-gray-900 text-center">
             Featured Brand
           </h2>
         </div>
 
         {/* Carousel container */}
-        <div className="overflow-hidden" ref={emblaRef}>
+        <div className="overflow-hidden " ref={emblaRef}>
           <div className="flex mb-[32px]">
             {products.map((product) => (
               <div
                 key={product.id}
                 className="
-                  pl-4 flex justify-center flex-shrink-0
+                  px-2 flex justify-center flex-shrink-0
                   basis-1/2                
                   sm:basis-1/2
                   md:basis-1/3
@@ -102,7 +102,7 @@ export default function ProductCarousel() {
               >
                 <Link
                   href={{
-                    pathname: "/pages/product",
+                    pathname: "/pages/products",
                     query: { brand: "Camel" },
                   }}
                   className="block bg-white duration-300"
@@ -127,13 +127,13 @@ export default function ProductCarousel() {
         {/* Navigation Arrows */}
         <button
           onClick={handlePrev}
-          className="hidden absolute left-[-15px] md:left-[-50px] top-3/5 -translate-y-1/2 bg-white w-10 h-10 md:w-12 md:h-12 rounded-full lg:flex items-center justify-center hover:bg-gray-100 transition"
+          className="hidden absolute left-[-15px] md:left-[32px] top-3/5 -translate-y-1/2 bg-white w-10 h-10 md:w-12 md:h-12 rounded-full lg:flex items-center justify-center hover:bg-gray-100 transition"
         >
           <Image src={Leftarrow} width={12} height={12} alt="leftArrow" />
         </button>
         <button
           onClick={handleNext}
-          className="hidden absolute right-[-15px] md:right-[-50px] top-3/5 -translate-y-1/2 bg-white w-10 h-10 md:w-12 md:h-12 rounded-full lg:flex items-center justify-center hover:bg-gray-100 transition"
+          className="hidden absolute right-[-15px] md:right-[32px] top-3/5 -translate-y-1/2 bg-white w-10 h-10 md:w-12 md:h-12 rounded-full lg:flex items-center justify-center hover:bg-gray-100 transition"
         >
           <Image src={rightArrow} width={12} height={12} alt="rightArrow" />
         </button>
