@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -7,7 +7,7 @@ interface BlogItem {
   id: number;
   title: string;
   description: string;
-  image: string;
+  image: StaticImageData;
 }
 
 interface BlogPageProps {

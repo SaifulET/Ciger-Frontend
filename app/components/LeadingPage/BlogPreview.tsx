@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import rightArrow from "@/public/rightArrow.svg"
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 import Leftarrow from "@/public/leftArrow.svg"
 import BlogCard from "../universalComponents/BlogCard";
 import blogImg from "@/public/blog.jpg"
@@ -10,7 +10,7 @@ type Product = {
   id: number;
   description: string;
   title: string;
-  image: string;
+  image: StaticImageData;
  link:string;
 };
 

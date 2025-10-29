@@ -1,6 +1,6 @@
 "use client";
 import { useParams } from "next/navigation";
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 import { useEffect, useState } from "react";
 import blogImg from "@/public/blog.jpg"
 
@@ -10,7 +10,7 @@ interface BlogItem {
   description: string;
   content: string;
   tag?: string;
-  image: string;
+  image: StaticImageData;
 }
 
 export default function BlogDetails() {

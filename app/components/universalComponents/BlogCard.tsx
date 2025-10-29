@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 import Link from "next/link";
 
 interface Product {
-  image: string;
+  image: StaticImageData;
   title: string;
   description: string;
   link?: string;
