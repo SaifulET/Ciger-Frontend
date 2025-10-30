@@ -61,27 +61,38 @@ export default function ProductCarousel() {
       const { limit, location, target, offsetLocation, scrollBody, translate } =
         engine;
 
-      // Calculate target position based on progress
       const targetPosition = limit.max + (limit.min - limit.max) * progress;
 
-      // Disable animation duration and friction for instant movement
       scrollBody.useDuration(0);
       scrollBody.useFriction(0);
 
-      // Update all position trackers
       offsetLocation.set(targetPosition);
       location.set(targetPosition);
       target.set(targetPosition);
-
-      // Apply the translation (this updates the visual position)
       translate.to(targetPosition);
       translate.toggleActive(true);
     },
     [emblaApi]
   );
 
+  // ✅ Type-safe unified handler for mouse + touch (SAME AS BESTSELLER)
+  const getClientX = (
+    event:
+      | MouseEvent
+      | TouchEvent
+      | React.MouseEvent<HTMLDivElement>
+      | React.TouchEvent<HTMLDivElement>
+  ): number => {
+    if ("touches" in event && event.touches.length > 0) {
+      return event.touches[0].clientX;
+    }
+    // @ts-expect-error - clientX exists on MouseEvent
+    return event.clientX;
+  };
+
+  // ✅ Updated onThumbDrag with touch support (SAME AS BESTSELLER)
   const onThumbDrag = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
+    (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
       if (!scrollbarRef.current || !emblaApi) return;
 
       e.preventDefault();
@@ -100,39 +111,45 @@ export default function ProductCarousel() {
         scrollToProgress(newProgress);
       };
 
-      const onMouseMove = (moveEvent: MouseEvent) => {
+      const onMove = (moveEvent: MouseEvent | TouchEvent) => {
         moveEvent.preventDefault();
-        updateProgress(moveEvent.clientX);
+        updateProgress(getClientX(moveEvent));
       };
 
-      const onMouseUp = () => {
+      const onUp = () => {
         setIsDraggingThumb(false);
 
-        // Reset animation settings to defaults after drag
         if (emblaApi) {
           const engine = emblaApi.internalEngine();
           engine.scrollBody.useDuration(25);
           engine.scrollBody.useFriction(0.68);
         }
 
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", onMouseUp);
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup", onUp);
+        document.removeEventListener("touchmove", onMove);
+        document.removeEventListener("touchend", onUp);
       };
 
-      updateProgress(e.clientX);
-      document.addEventListener("mousemove", onMouseMove);
-      document.addEventListener("mouseup", onMouseUp);
+      updateProgress(getClientX(e));
+
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
+      document.addEventListener("touchmove", onMove, { passive: false });
+      document.addEventListener("touchend", onUp);
     },
     [emblaApi, scrollToProgress]
   );
 
+  // ✅ Updated onTrackClick with touch support (SAME AS BESTSELLER)
   const onTrackClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
+    (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
       if (!scrollbarRef.current || !emblaApi) return;
 
       const scrollbarRect = scrollbarRef.current.getBoundingClientRect();
       const thumbWidth = scrollbarRect.width * 0.25;
-      const offsetX = e.clientX - scrollbarRect.left - thumbWidth / 2;
+      const clientX = getClientX(e);
+      const offsetX = clientX - scrollbarRect.left - thumbWidth / 2;
       const maxOffset = scrollbarRect.width - thumbWidth;
       const newProgress = Math.max(0, Math.min(1, offsetX / maxOffset));
 
@@ -142,6 +159,7 @@ export default function ProductCarousel() {
     [emblaApi, scrollToProgress]
   );
 
+  // ✅ Fixed useEffect hooks (SAME AS BESTSELLER)
   useEffect(() => {
     if (!emblaApi) return;
 
@@ -160,12 +178,9 @@ export default function ProductCarousel() {
   useEffect(() => {
     if (!emblaApi) return;
 
-    const onSettle = () => {
-      setIsUsingButtons(false);
-    };
-
+    const onSettle = () => setIsUsingButtons(false);
     emblaApi.on("settle", onSettle);
-
+    
     return () => {
       emblaApi.off("settle", onSettle);
     };
@@ -205,48 +220,48 @@ export default function ProductCarousel() {
             </button>
           </Link>
         </div>
-            <div className="relative md:px-[64px] ">
-{/* Carousel container */}
-        <div
-          className="overflow-hidden cursor-grab active:cursor-grabbing"
-          ref={emblaRef}
-        >
+        
+        <div className="relative md:px-[64px]">
+          {/* Carousel container */}
           <div
-            className="flex  gap-4"
-            style={{
-              touchAction: "pan-y pinch-zoom",
-            }}
+            className="overflow-hidden cursor-grab active:cursor-grabbing"
+            ref={emblaRef}
           >
-            {products.map((product) => (
-              <div
-                key={product.id}
-                className="flex-shrink-0 w-[calc(50%-16px)] sm:w-[calc(50%-16px)] md:w-[calc(33.333%-16px)] lg:w-[calc(25%-16px)] px-2 flex justify-center"
-              >
-                <Link
-                  href={{
-                    pathname: "/pages/products",
-                    query: { brand: "Camel" },
-                  }}
-                  className="block bg-white duration-300"
+            <div
+              className="flex gap-4"
+              style={{
+                touchAction: "pan-y pinch-zoom",
+              }}
+            >
+              {products.map((product) => (
+                <div
+                  key={product.id}
+                  className="flex-shrink-0 w-[calc(50%-16px)] sm:w-[calc(50%-16px)] md:w-[calc(33.333%-16px)] lg:w-[calc(25%-16px)] px-2 flex justify-center"
                 >
-                  <div className="mb-16">
-                    <Image
-                      src={product.image}
-                      alt={product.name}
-                      width={256}
-                      height={180}
-                    />
-                  </div>
-                  <div className="flex justify-center text-center font-montserrat text-[20px] md:text-[28px] font-semibold leading-[28px] md:leading-[36px]">
-                    {product.name}
-                  </div>
-                </Link>
-              </div>
-            ))}
+                  <Link
+                    href={{
+                      pathname: "/pages/products",
+                      query: { brand: "Camel" },
+                    }}
+                    className="block bg-white duration-300"
+                  >
+                    <div className="mb-16">
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        width={256}
+                        height={180}
+                      />
+                    </div>
+                    <div className="flex justify-center text-center font-montserrat text-[20px] md:text-[28px] font-semibold leading-[28px] md:leading-[36px]">
+                      {product.name}
+                    </div>
+                  </Link>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-            </div>
-        
 
         {/* Navigation Arrows */}
         <button
@@ -262,12 +277,13 @@ export default function ProductCarousel() {
           <Image src={rightArrow} width={12} height={12} alt="rightArrow" />
         </button>
 
-        {/* Custom Scrollbar - Same as Discount component */}
+        {/* ✅ Updated Custom Scrollbar with touch support (SAME AS BESTSELLER) */}
         <div className="flex justify-center mt-6">
           <div
             ref={scrollbarRef}
-            className="relative w-64 h-1 bg-gray-300 rounded-full overflow-visible cursor-pointer select-none"
+            className="relative w-64 h-2 bg-gray-300 rounded-full overflow-visible cursor-pointer select-none"
             onClick={onTrackClick}
+            onTouchStart={onTrackClick}
           >
             <div
               className={`absolute top-0 h-full bg-[#C9A040] rounded-full ${
@@ -282,6 +298,7 @@ export default function ProductCarousel() {
                     : "left 100ms ease-out",
               }}
               onMouseDown={onThumbDrag}
+              onTouchStart={onThumbDrag}
             />
           </div>
         </div>

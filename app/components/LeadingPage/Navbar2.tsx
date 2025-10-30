@@ -954,7 +954,7 @@ const Navbar: React.FC = () => {
                                   </Link>
 
                                   {sub.subItems && (
-                                    <div className="pl-3 mt-1">
+                                    <div className=" mt-1">
                                       {sub.subItems.map((inner) => {
                                         const isInnerSelected =
                                           isMenuItemSelected(inner);
