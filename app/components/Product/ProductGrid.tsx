@@ -34,7 +34,7 @@ export default function ProductGrid({
 
   return (
     <div className="w-full  lg:ml-[32px]">
-      <div className="text-sm mb-4 text-gray-600">
+      <div className="text-sm mb-4 text-gray-600 mt-[16px] ">
         Showing {Math.min(currentPage * pageSize, totalCount)} of {totalCount} products
       </div>
 

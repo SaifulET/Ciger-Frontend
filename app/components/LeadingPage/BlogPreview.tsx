@@ -213,7 +213,7 @@ export default function BlogCarousal() {
       <div className="relative">
         {/* Header */}
         <div className="flex pb-[32px]">
-          <h2 className=" flex-1 text-3xl font-bold text-gray-900 pl-[32px] flex  justify-center">
+          <h2 className=" flex-1 text-[28px] font-bold text-gray-900 pl-[32px] flex  justify-center">
             Blogs
           </h2>
           <Link

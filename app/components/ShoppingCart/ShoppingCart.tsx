@@ -114,7 +114,7 @@ export default function ShoppingCart() {
         <div className="border-b border-gray-200 bg-white rounded-t-lg">
           <div className="px-4 md:px-8 py-4 md:py-6">
             <div className="flex flex-col md:flex-row gap-[16px] md:gap-[32px] justify-between items-start md:items-center">
-              <h1 className="text-xl md:text-3xl font-bold text-gray-900 ">
+              <h1 className="text-[28px] font-bold text-gray-900 ">
                 Shopping Cart
               </h1>
               <div className="flex flex-wrap md:flex-nowrap gap-2 md:gap-4 w-full md:w-auto">

@@ -27,7 +27,7 @@ export default function OrderHistoryPage() {
   return (
     <div className="min-h-screen p-[16px] md:p-[32px]">
       <div className="">
-        <h1 className=" bg-white rounded-lg font-montserrat font-semibold text-[40px] leading-[48px] tracking-normal text-center mb-[16px] md:mb-[32px] p-[16px] md:p-[32px]">Order History</h1>
+        <h1 className=" bg-white rounded-lg font-montserrat font-semibold text-[28px] leading-[48px] tracking-normal text-center mb-[16px] md:mb-[32px] p-[16px] md:p-[32px]">Order History</h1>
 
         {/* Search & Filter */}
         <div className="flex flex-col md:flex-row  md:gap-4 gap-[16px] p-[16px] md:p-[32px] bg-white rounded-lg">

@@ -233,7 +233,7 @@ export default function RelatedProducts({
   return (
     <div className="pb-[16px] md:pb-[32px]">
       <div className="bg-white p-[16px] md:p-[32px] mt-[16px] md:mt-[32px] rounded-lg">
-        <h2 className="text-2xl font-bold text-gray-900 pb-[16px] md:pb-[32px]">
+        <h2 className="text-[28px] font-semibold text-gray-900 pb-[16px] md:pb-[32px]">
           Products related to this item
         </h2>
         

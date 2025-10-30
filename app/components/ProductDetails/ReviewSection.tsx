@@ -44,11 +44,11 @@ export default function ReviewsSection({
    <div className="bg-white rounded-lg shadow-sm mt-[16px] md:mt-[32px]  p-[16px] md:p-[32px]">
   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
     <div className="w-full md:w-auto text-center md:text-left md:pb-[32px]">
-      <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 text-left  ">Reviews</h2>
-      <p className="text-left text-xs md:text-sm text-gray-600 mt-1">{product.totalReviews} reviews</p>
+      <h2 className="text-[28px] font-semibold text-gray-900 text-left  ">Reviews</h2>
+      <p className="text-left  text-gray-600 mt-1">{product.totalReviews} reviews</p>
     </div>
 
-    <div className="w-full flex justify-start lg:justify-end ">
+    <div className="w-full hidden  lg:flex justify-start lg:justify-end ">
       <button
       onClick={() => setShowReviewModal(true)}
       className="bg-[#C9A040] hover:bg-yellow-700 text-gray-900 text-xs md:text-sm font-semibold leading-[22px] px-3 py-2 md:px-5 md:py-3 rounded-lg flex items-center gap-2 "
@@ -70,9 +70,9 @@ export default function ReviewsSection({
               <div className="text-left">
                 
                 <p className="font-semibold text-gray-900 text-sm md:text-base">{rev.author}</p>
-                <p className="text-xs md:text-sm text-gray-600">{rev.location}</p>
+                <p className="text-[14px] text-gray-600">{rev.location}</p>
               </div>
-              <p className="text-xs md:text-sm text-left text-gray-500 mt-1 md:mt-0">{rev.date}</p>
+              <p className="text-[14px] text-left text-gray-500 mt-1 md:mt-0">{rev.date}</p>
             </div>
             <div className="flex justify-start items-center gap-1 mb-2">
               <div className="flex text-yellow-400">
@@ -81,7 +81,7 @@ export default function ReviewsSection({
                 ))}
               </div>
             </div>
-            <p className="text-gray-700 text-xs md:text-sm leading-relaxed text-left">{rev.text}</p>
+            <p className="text-gray-700 text-[14px] leading-relaxed text-left">{rev.text}</p>
           </div>
         </div>
       </div>

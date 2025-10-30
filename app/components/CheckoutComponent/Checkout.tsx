@@ -220,7 +220,7 @@ const CheckoutPage = () => {
   return (
     <div className="min-h-screen  p-[16px] md:p-[32px]">
       <div className=" ">
-        <h1 className=" bg-white rounded-lg text-3xl text-[40px] font-semibold leading-[48px] text-gray-900 text-center  p-[16px] md:p-[32px]   mb-[16px] md:mb-[32px]">Checkout</h1>
+        <h1 className=" bg-white rounded-lg  text-[28px] font-semibold leading-[48px] text-gray-900 text-center  p-[16px] md:p-[32px]   mb-[16px] md:mb-[32px] ">Checkout</h1>
 
         {/* Desktop Layout */}
         <div className="hidden lg:grid lg:grid-cols-2 lg:gap-[32px]">

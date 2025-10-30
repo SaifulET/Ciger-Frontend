@@ -218,7 +218,7 @@ export default function ProductsPage() {
   const handleView = (id: number) => router.push(`/pages/product/`);
 
   return (
-    <div className="flex  relative  py-[16px] md:py[32px] mx-[16px] md:mx-[32px]">
+    <div className="flex  relative  py-[16px] md:py-0 mx-[16px] md:mx-[32px]">
       {/* Desktop sidebar */}
       <aside className="hidden lg:block w-[320px] p-4 border-r border-gray-200 flex-shrink-0">
         <FiltersSidebar
@@ -258,7 +258,7 @@ export default function ProductsPage() {
         <div className="flex justify-between  items-center lg:hidden w-full ">
           <button
             onClick={() => setIsSidebarOpen(true)}
-            className="flex items-center gap-2 bg-gray-200 px-4 py-2 rounded-md shadow-sm"
+            className="flex items-center gap-2 bg-white px-4 py-2 rounded-md shadow-sm"
           >
             Filter & Sort
             <SlidersHorizontal size={18} />

@@ -25,7 +25,7 @@ export default function TrackingPage() {
     <div className="min-h-screen  p-[16px] md:p-[32px]">
       <div className="">
         {/* Header */}
-        <h1 className="font-montserrat font-semibold text-2xl sm:text-3xl md:text-[40px] leading-8 sm:leading-10 md:leading-[48px] tracking-normal p-[16px] md:p-[32px] mb-[16px] md:mb-[32px] bg-white text-center rounded-lg  ">Tracking Number</h1>
+        <h1 className="font-montserrat font-semibold text-[28px] leading-8 sm:leading-10 md:leading-[48px] tracking-normal p-[16px] md:p-[32px] mb-[16px] md:mb-[32px] bg-white text-center rounded-lg  ">Tracking Number</h1>
 
         {/* Search Card */}
         <div className="bg-gray-50 rounded-lg p-[16px] md:p-[32px]">

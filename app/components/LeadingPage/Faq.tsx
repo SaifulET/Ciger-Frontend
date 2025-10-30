@@ -35,7 +35,7 @@ export default function FaqSection() {
   return (
     <section className="p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] bg-white  rounded-lg">
       <div className=" text-center  pb-[32px]">
-        <h2 className="text-2xl md:text-3xl font-bold text-[#212121]">
+        <h2 className="text-[28px] font-bold text-[#212121]">
           Frequently Asked Questions
         </h2>
       </div>

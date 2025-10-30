@@ -15,25 +15,9 @@ export default function Footer() {
       {/* Main Container */}
       <div className="w-full flex flex-col ">
         {/* Top Section */}
-        <div className="flex flex-col lg:flex-row justify-between mb-[32px]">
+        <div className="flex flex-col lg:flex-row justify-around mb-[32px]">
           {/* Left: Logo & Description */}
-          <div className="flex flex-col gap-[32px] lg:w-[345px] lg:h-[254px] justify-start mb-[32px] ">
-            <Link href="/pages/">
-              <h2 className="text-white font-[Montserrat] font-semibold">
-                <Image
-                  className="w-[322px]"
-                  src={logo}
-                  alt="Logo"
-                  width={322}
-                  height={80} // Adjust height according to your logo's aspect ratio
-                  priority // Optional: if it's above the fold
-                />
-              </h2>
-            </Link>
-            <p className="text-white text-left  font-montserrat font-semibold text-lg leading-[26px] ">
-              The Finest in Tobacco, Vapes, and Lifestyle Accessories.
-            </p>
-          </div>
+         
 
           {/* Center: Quick Links */}
           <div className="flex flex-col gap-4 justify-center mb-[32px]">
@@ -45,6 +29,33 @@ export default function Footer() {
                 "Home",
                 "Brand",
                 "Discounts",
+               
+              ].map((item) => (
+                <li key={item}>
+                  <a
+                    href={`/pages/${
+                      item === "Home"
+                        ? ""
+                        : item.toLowerCase().replace(/\s+/g, "")
+                    }`}
+                    className="hover:text-[#C9A040] transition-colors duration-300 font-open-sans font-normal text-base leading-[24px] text-white flex-none order-3 flex-grow-0"
+                  >
+                    {item === "RefundPolicy" ? "Refund Policy" : item}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          
+          {/* Center: Get in touch */}
+          <div className="flex flex-col gap-4 justify-end mb-[32px] ">
+            <h4 className="font-montserrat font-semibold text-[18px] leading-[26px] text-white flex-none order-0 flex-grow-0">
+              Get in touch
+            </h4>
+            <ul className="flex flex-col gap-2 text-[16px] ">
+              {[
+               
                 "Contact",
                 "RefundPolicy",
                 "Terms & Policies",
@@ -66,10 +77,10 @@ export default function Footer() {
           </div>
 
           {/* Right: Contact + Socials */}
-          <div className="flex flex-col gap-4 lg:gap-4 lg:w-[345px] justify-start ">
+          <div className="flex flex-col gap-4  justify-start ">
            
 <h4 className="font-montserrat font-semibold text-[18px] leading-[26px] text-white flex-none order-0 flex-grow-0">
-              Contacts
+              Contact Us
             </h4>
             <div className="flex items-center gap-3">
               <Phone className="w-5 h-5" />

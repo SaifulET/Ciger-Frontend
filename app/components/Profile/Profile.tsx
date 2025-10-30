@@ -112,7 +112,7 @@ export default function ProfilePage() {
     <div className="min-h-screen  p-[16px] md:p-[32px]">
       <div className=" ">
         <div className="pb-[16px] md:pb-[32px]">
-          <h1 className="font-montserrat font-semibold text-2xl sm:text-3xl md:text-[40px] leading-8 sm:leading-10 md:leading-[48px] tracking-normal bg-white text-center rounded-lg p-[16px] md:p-[32px]">
+          <h1 className="font-montserrat font-semibold text-[28px] leading-8 sm:leading-10 md:leading-[48px] tracking-normal bg-white text-center rounded-lg p-[16px] md:p-[32px]">
             Profile
           </h1>
         </div>

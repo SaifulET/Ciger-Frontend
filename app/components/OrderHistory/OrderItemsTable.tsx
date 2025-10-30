@@ -31,30 +31,30 @@ const OrderItemsTable: React.FC<OrderItemsTableProps> = ({
   return (
     <div>
       <div className="mb-6">
-        <div className="grid grid-cols-12 gap-4 mb-3 pb-3 border-b border-gray-200">
-          <div className="col-span-2 text-sm font-medium text-gray-700">Image</div>
-          <div className="col-span-3 text-sm font-medium text-gray-700">Product</div>
-          <div className="col-span-2 text-sm font-medium text-gray-700">Unit Price</div>
-          <div className="col-span-2 text-sm font-medium text-gray-700">Quantity</div>
-          <div className="col-span-3 text-sm font-medium text-gray-700 text-right">Total</div>
+        <div className="grid  grid-cols-12 md:grid-cols-7 gap-4 mb-3 pb-3 border-b border-gray-200">
+          <div className="hidden md:flex md:col-span-2 text-sm font-medium text-gray-700">Image</div>
+          <div className="col-span-5 md:col-span-2  text-sm font-medium text-gray-700">Product</div>
+          <div className="col-span-2 md:col-span-1 text-sm font-medium text-gray-700 text-center ">Unit Price</div>
+          <div className="col-span-2 md:col-span-1 text-sm font-medium text-gray-700 text-center ">Quantity</div>
+          <div className="col-span-3 md:col-span-1 text-sm font-medium text-gray-700 text-right">Total</div>
         </div>
 
         {items.map((item) => (
-          <div key={item.id} className="grid grid-cols-12 gap-4 mb-8 items-center">
-            <div className="col-span-2">
+          <div key={item.id} className="grid grid-cols-5 md:grid-cols-7  gap-4 mb-8 items-center">
+            <div className="hidden md:flex md:col-span-2">
               <img src={item.image} alt={item.name} className="w-14 h-14 rounded border border-gray-200" />
             </div>
-            <div className="col-span-3">
-              <p className="text-sm text-gray-900">{item.name}</p>
+            <div className="col-span-2 md:col-span-2 ">
+              <p className="text-sm text-gray-900 ">{item.name}</p>
             </div>
-            <div className="col-span-2">
-              <p className="text-sm text-gray-900">${item.unitPrice.toFixed(2)}</p>
+            <div className="col-span-1">
+              <p className="text-sm text-gray-900 md:text-center ">${item.unitPrice.toFixed(2)}</p>
             </div>
-            <div className="col-span-2">
-              <p className="text-sm text-gray-900">{item.quantity}</p>
+            <div className="col-span-1">
+              <p className="text-sm text-gray-900 text-center ">{item.quantity}</p>
             </div>
-            <div className="col-span-3 text-right">
-              <p className="text-sm font-medium text-gray-900">${(item.unitPrice * item.quantity).toFixed(2)}</p>
+            <div className="col-span-1 ">
+              <p className="text-sm font-medium text-gray-900 text-right">${(item.unitPrice * item.quantity).toFixed(2)}</p>
             </div>
           </div>
         ))}
@@ -62,24 +62,34 @@ const OrderItemsTable: React.FC<OrderItemsTableProps> = ({
 
       {/* Tax / Discount / Shipping Row */}
         
-          <div  className="grid grid-cols-12 gap-4 mb-[16px] md:mb-[32px] items-center">
-         <div className='col-span-2'><p className="font-semibold text-[16px] leading-6 tracking-normal">Tax</p></div> 
+ <div className='grid grid-cols-12 gap-4 mb-8 items-center'>
+         <div className='col-span-2'><p className="font-semibold text-[16px] leading-6 tracking-normal">Sub Total</p></div> 
          <div className='col-span-3'></div>
-          <div><p className="text-sm text-gray-900 font-medium">{tax}%</p></div>
-          <div className='col-span-2'><p></p></div>
-          <div className='col-span-2'><p></p></div>
-          <div className='col-span-2 text-right'><p className="text-sm text-gray-900 font-medium">$120</p></div>
+          <div className='col-span-2'><p className="text-sm text-gray-900 font-medium"></p></div>
+          <div className='col-span-3'></div>
+          <div className='col-span-2'><p className="text-sm text-right text-gray-900 font-medium">$</p>
+          </div>
+        </div>
+
+          <div  className="grid grid-cols-5 md:grid-cols-7 gap-4 mb-[16px] md:mb-[32px] items-center">
+         <div className='col-span-3 md:col-span-5'><p className="font-semibold text-[16px] leading-6 tracking-normal">Tax</p></div> 
+         
+          <div className='col-span-1 text-right md:text-center'><p className="text-sm text-gray-900 font-medium text-center ">{tax}%</p></div>
+        
+          <div className='col-span-1 md:col-span-1 text-right '><p className="text-sm text-gray-900 font-medium">$120</p></div>
+        </div>
+
+
+          <div  className="grid grid-cols-5 md:grid-cols-7 gap-4 mb-[16px] md:mb-[32px] items-center">
+         <div className='col-span-3 md:col-span-5'><p className="font-semibold text-[16px] leading-6 tracking-normal">Discount</p></div> 
+         
+          <div className='col-span-1 text-right md:text-center'><p className="text-sm text-gray-900 font-medium text-center ">{discount}%</p></div>
+        
+          <div className='col-span-1 md:col-span-1 text-right '><p className="text-sm text-gray-900 font-medium">$120</p></div>
         </div>
     
           
-          <div  className="grid grid-cols-12 gap-4 mb-8 items-center">
-         <div className='col-span-2'><p className="font-semibold text-[16px] leading-6 tracking-normal">Discount</p></div> 
-         <div className='col-span-3'></div>
-          <div><p className="text-sm text-gray-900 font-medium">{discount}%</p></div>
-          <div className='col-span-2'></div>
-          <div className='col-span-2'></div>
-          <div className='col-span-2'><p className="text-sm text-gray-900 font-medium text-right">$200</p></div>
-        </div>
+        
       
         <div className='grid grid-cols-12 gap-4 mb-8 items-center'>
          <div className='col-span-2'><p className="font-semibold text-[16px] leading-6 tracking-normal">Shipping</p></div> 
@@ -91,7 +101,7 @@ const OrderItemsTable: React.FC<OrderItemsTableProps> = ({
         </div>
 
         <div className='grid grid-cols-12 gap-4 mb-8 items-center'>
-         <div className='col-span-2'><p className="font-semibold text-[16px] leading-6 tracking-normal">Sub Total</p></div> 
+         <div className='col-span-2'><p className="font-semibold text-[16px] leading-6 tracking-normal">Total</p></div> 
          <div className='col-span-3'></div>
           <div className='col-span-2'><p className="text-sm text-gray-900 font-medium"></p></div>
           <div className='col-span-3'></div>
@@ -100,7 +110,7 @@ const OrderItemsTable: React.FC<OrderItemsTableProps> = ({
         </div>
 
       {/* Subtotal / Payment */}
-      <div className="mb-6  p-8 bg-[#F5F5F5] rounded-lg">
+      <div className="  p-[16px] md:p-[32px] bg-[#F5F5F5] rounded-lg">
           <p className="font-semibold text-[18px] leading-[26px] tracking-[0%] mb-4">Payment</p>
           <div className=' p-4 bg-white rounded-lg'>
           <div className="flex justify-between items-center mb-3"> 

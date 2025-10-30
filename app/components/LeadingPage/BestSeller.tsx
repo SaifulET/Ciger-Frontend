@@ -216,7 +216,7 @@ export default function BestSeller() {
   return (
     <section className="bg-white p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg">
       <div className="flex pb-[32px] items-center">
-        <h2 className="text-2xl flex-1 md:text-3xl font-bold text-gray-900 flex justify-center pl-[50px]">
+        <h2 className="text-[28px] flex-1  font-bold text-gray-900 flex justify-center pl-[50px]">
           <span>Best Seller</span>
         </h2>
         <Link

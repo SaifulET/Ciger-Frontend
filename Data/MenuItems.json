@@ -65,6 +65,17 @@
           
         ]
       }
+      ,{
+        "label": "7-Hydroxy",
+        "link": "/pages/products?sub=7Hydroxy",
+        "subItems": [
+          { "label": "Tabs", "link": "/pages/products?sub=7Hydroxy?subPro=Tabs" },
+          { "label": "Vapes", "link": "/pages/products?sub=7Hydroxy?subPro=Vapes" },
+          { "label": "Shots", "link": "/pages/products?sub=7Hydroxy?subPro=shots" }
+         
+          
+        ]
+      }
     ]
   },
   { "label": "Discounts", "link": "/pages/discounts" },

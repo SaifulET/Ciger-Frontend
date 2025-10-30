@@ -27,7 +27,7 @@ export default function NotificationsPage() {
   return (
     <div className="  p-[16px] md:p-[32px] ">
       <div className="">
-        <h1 className="font-montserrat font-semibold text-2xl sm:text-3xl md:text-[40px] leading-8 sm:leading-10 md:leading-[48px] tracking-normal  bg-white text-center rounded-lg p-[16px] md:p-[32px] mb-[16px] md:mb-[32px]">
+        <h1 className="font-montserrat font-semibold text-[28px] leading-8 sm:leading-10 md:leading-[48px] tracking-normal  bg-white text-center rounded-lg p-[16px] md:p-[32px] mb-[16px] md:mb-[32px]">
           Notifications
         </h1>
 

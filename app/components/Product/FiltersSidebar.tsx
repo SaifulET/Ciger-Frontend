@@ -153,7 +153,7 @@ export default function FiltersSidebar({
         </button>
 
         {openSection === "Product" && (
-          <div className="mt-4 space-y-2 px-2 py-2 ml-5">
+          <div className="mt-4 space-y-2  py-2 ">
             {categories.map(category => (
               <div key={category} className="border rounded-lg">
                 <button
@@ -168,7 +168,7 @@ export default function FiltersSidebar({
                 </button>
                 
                 {openSubcategories[category] && (
-                  <div className="pl-4 pb-2 space-y-1">
+                  <div className=" pb-2 space-y-1">
                     {/* Category level radio option */}
                     <label className="flex justify-center text-sm items-center cursor-pointer py-1">
                       <div className="flex items-center gap-2 font-sans text-base font-normal leading-6">
@@ -187,7 +187,7 @@ export default function FiltersSidebar({
                     {subcategoriesByCategory[category]?.map(subcategory => {
                       const key = `${category}|${subcategory}`;
                       return (
-                        <label key={key} className="flex justify-between text-sm items-center cursor-pointer py-1 pl-4">
+                        <label key={key} className="flex justify-between text-sm items-center cursor-pointer py-1">
                           <div className="flex items-center gap-2 font-sans text-base font-normal leading-6">
                             <input
                               type="checkbox"

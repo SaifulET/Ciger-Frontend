@@ -38,7 +38,7 @@ export default function FilterSection({
       </button>
 
       {open && (
-        <div className="mt-4 space-y-1 px-2 py-2">
+        <div className="mt-4 space-y-1 py-2">
           {children ? (
             children
           ) : (
@@ -47,7 +47,7 @@ export default function FilterSection({
                 key={item}
                 className="flex justify-between text-sm items-center cursor-pointer"
               >
-                <div className="flex items-center gap-2 font-sans text-base font-normal leading-6 pl-2">
+                <div className="flex items-center gap-2 font-sans text-base font-normal leading-6 pl-[12px]">
                   <input
                     type="checkbox"
                     checked={selectedItems.includes(item)}

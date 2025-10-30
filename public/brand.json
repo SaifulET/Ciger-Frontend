@@ -1,5 +1,5 @@
 {
-  "brands": [
+  "brandss": [
     { "id": 1, "name": "1. First Brand", "image": "/brand.png" },
     { "id": 2, "name": "2. Second Brand", "image": "/brand.png" },
     { "id": 3, "name": "3. Third Brand", "image": "/brand.png" },

@@ -876,7 +876,7 @@ const Navbar: React.FC = () => {
 
       {/* ---------- Mobile Modal Menu ---------- */}
       {mobileModalOpen && (
-        <div className="fixed inset-0 z-100 flex items-start justify-start pt-25">
+        <div className="fixed inset-0 z-100 flex items-start justify-start pt-25 ">
           {/* Black Background */}
           <div
             className="absolute inset-0  transition-opacity duration-300 animate-fadeIn"
@@ -884,7 +884,7 @@ const Navbar: React.FC = () => {
           />
 
           {/* Modal Menu Content - Starts from hamburger bottom with left padding */}
-          <div className="relative w-full lg:w-0  h-full bg-white shadow-xl z-60 transition-all duration-300 transform animate-slideInLeft overflow-hidden">
+          <div className="relative w-full lg:w-0  h-full bg-white shadow-xl z-60 transition-all duration-300 transform animate-slideInLeft overflow-hidden   ">
             {/* Scrollable menu content */}
             <div className="h-full overflow-y-auto pb-20">
               <div className="p-6 pl-8">

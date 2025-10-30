@@ -118,7 +118,7 @@ export default function CartDrawer({ items, subtotal }: CartDrawerProps) {
             {/* Header */}
             <div className="flex justify-between items-center p-6 md:p-8 bg-white border-b border-gray-200 sticky top-0 z-10">
               <div>
-                <h2 className="text-[24px] md:text-[28px] font-semibold text-[#0C0C0C] font-montserrat">
+                <h2 className="text-[28px] md:text-[28px] font-semibold text-[#0C0C0C] font-montserrat">
                   Your Cart
                 </h2>
               </div>
@@ -132,7 +132,7 @@ export default function CartDrawer({ items, subtotal }: CartDrawerProps) {
                 
                 <button
                   onClick={() => {router.push("/pages/shoppingcart");setIsOpen(false)}}
-                  className="text-[16px] md:text-[18px] text-[#0C0C0C] font-openSans cursor-pointer text-left"
+                  className="text-[14px]  text-[#0C0C0C] font-openSans cursor-pointer text-left"
                 >
                   View All
                 </button>
@@ -159,7 +159,7 @@ export default function CartDrawer({ items, subtotal }: CartDrawerProps) {
                     onChange={(e) => setAgree(e.target.checked)}
                     className="w-4 h-4 md:w-5 md:h-5 border border-[#B0B0B0] rounded-md bg-[#F5F5F5]"
                   />
-                  <label className="text-[14px] md:text-[16px] text-[#0C0C0C] font-openSans">
+                  <label className="text-[14px] text-[#0C0C0C] font-openSans">
                     I agree to the terms and refund policy
                   </label>
                 </div>

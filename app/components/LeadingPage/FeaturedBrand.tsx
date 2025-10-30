@@ -206,8 +206,8 @@ export default function ProductCarousel() {
       <div className="p-[32px] relative">
         {/* Header */}
         <div className="flex pb-[32px]">
-          <h2 className="text-[28px] md:text-[40px] font-bold text-gray-900 flex-1 flex justify-center text-center pl-[48px] md:pl-[32px]">
-            Featured Brand
+          <h2 className="text-[28px] font-bold text-gray-900 flex-1 flex justify-center text-center pl-[48px] md:pl-[32px]">
+            Brands
           </h2>
 
           <Link
@@ -253,7 +253,7 @@ export default function ProductCarousel() {
                         height={180}
                       />
                     </div>
-                    <div className="flex justify-center text-center font-montserrat text-[20px] md:text-[28px] font-semibold leading-[28px] md:leading-[36px]">
+                    <div className="flex justify-center text-center font-montserrat text-[18px] font-semibold leading-[28px] md:leading-[36px]">
                       {product.name}
                     </div>
                   </Link>

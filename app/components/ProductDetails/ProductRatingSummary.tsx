@@ -35,9 +35,9 @@ export default function ProductRatingSummary({ averageRating, totalReviews, rati
 
     {/* Average Rating */}
     <div className="text-center lg:text-left">
-      <div className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mt-2">
+      <div className="text-[28px] font-semibold text-gray-900 mt-2">
         {averageRating.toFixed(1)}
-        <p className="text-xs md:text-sm text-gray-600 mt-2">Based on {totalReviews} reviews</p>
+        <p className="text-[14px] text-gray-600 mt-2">Based on {totalReviews} reviews</p>
       </div>
       <div className="flex justify-center lg:justify-start text-yellow-400 gap-1.5 mt-2">
         {[...Array(5)].map((_, i) => (
@@ -66,7 +66,7 @@ export default function ProductRatingSummary({ averageRating, totalReviews, rati
 
   {/* Right Section */}
   <div className="w-full lg:w-2/5 text-center  ">
-    <div className="flex justify-center  w-full mt-6 md:mt-10 lg:mt-16 text-gray-700 text-sm md:text-base">
+    <div className="flex justify-center  w-full mt-6 md:mt-10 lg:mt-16 text-gray-700 text-[14px]">
       Hi, steve your opinion helps us serve better
     </div>
     <div className="flex justify-center  w-full">
