@@ -52,7 +52,7 @@ export default function Home() {
       <div className="">
         <ReviewSection/>
       </div>
-      <div className="">
+      <div className="pb-[16px] md:pb-[32px]">
         <FaqSection/>
       </div>
       <div className="">

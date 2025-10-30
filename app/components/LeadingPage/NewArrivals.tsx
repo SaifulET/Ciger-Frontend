@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import ProductCard from "../universalComponents/Card";
 import rightArrow from "@/public/rightArrow.svg";
@@ -23,11 +23,17 @@ export default function NewArrival() {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
     loop: false,
-    slidesToScroll: 1, // move 1 card per click
+    dragFree: true,
+    containScroll: "trimSnaps",
+    watchDrag: true,
+    skipSnaps: true,
   });
 
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
+  const scrollbarRef = useRef<HTMLDivElement>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [isDraggingThumb, setIsDraggingThumb] = useState(false);
+  const [isDraggingCarousel, setIsDraggingCarousel] = useState(false);
+  const [isUsingButtons, setIsUsingButtons] = useState(false);
 
   const products: Product[] = Array.from({ length: 10 }).map((_, i) => ({
     id: i + 1,
@@ -43,67 +49,165 @@ export default function NewArrival() {
   const handleAddCart = (id: number) => console.log("Add to cart:", id);
   const handleView = (id: number) => console.log("View product:", id);
 
-  const handlePrev = () => emblaApi && emblaApi.scrollPrev();
-  const handleNext = () => emblaApi && emblaApi.scrollNext();
+  const handlePrev = useCallback(() => {
+    if (emblaApi) {
+      setIsUsingButtons(true);
+      emblaApi.scrollPrev();
+    }
+  }, [emblaApi]);
 
-  const barRef = useRef<HTMLDivElement>(null); // ✅ declared once here
-     const [isDragging, setIsDragging] = useState(false);
-   const handleMouseDown = (e: React.MouseEvent) => setIsDragging(true);
-  
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging || !barRef.current) return;
-  
-      const rect = barRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const clampedX = Math.max(0, Math.min(x, rect.width));
-      const index = Math.round(
-        (clampedX / rect.width) * (scrollSnaps.length - 1)
-      );
-  
-      if (emblaApi) emblaApi.scrollTo(index);
-    };
-  
-    const handleMouseUp = () => setIsDragging(false);
-  
-    useEffect(() => {
-      if (isDragging) {
-        window.addEventListener("mousemove", handleMouseMove);
-        window.addEventListener("mouseup", handleMouseUp);
-      } else {
-        window.removeEventListener("mousemove", handleMouseMove);
-        window.removeEventListener("mouseup", handleMouseUp);
-      }
-      return () => {
-        window.removeEventListener("mousemove", handleMouseMove);
-        window.removeEventListener("mouseup", handleMouseUp);
+  const handleNext = useCallback(() => {
+    if (emblaApi) {
+      setIsUsingButtons(true);
+      emblaApi.scrollNext();
+    }
+  }, [emblaApi]);
+
+  const onScroll = useCallback(() => {
+    if (!emblaApi || isDraggingThumb) return;
+    const progress = Math.max(0, Math.min(1, emblaApi.scrollProgress()));
+    setScrollProgress(progress);
+  }, [emblaApi, isDraggingThumb]);
+
+  const scrollToProgress = useCallback(
+    (progress: number) => {
+      if (!emblaApi) return;
+
+      const engine = emblaApi.internalEngine();
+      const { limit, location, target, offsetLocation, scrollBody, translate } =
+        engine;
+
+      // Calculate target position based on progress
+      const targetPosition = limit.max + (limit.min - limit.max) * progress;
+
+      // Disable animation duration and friction for instant movement
+      scrollBody.useDuration(0);
+      scrollBody.useFriction(0);
+
+      // Update all position trackers
+      offsetLocation.set(targetPosition);
+      location.set(targetPosition);
+      target.set(targetPosition);
+
+      // Apply the translation (this updates the visual position)
+      translate.to(targetPosition);
+      translate.toggleActive(true);
+    },
+    [emblaApi]
+  );
+
+  const onThumbDrag = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!scrollbarRef.current || !emblaApi) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDraggingThumb(true);
+
+      const scrollbarRect = scrollbarRef.current.getBoundingClientRect();
+      const thumbWidth = scrollbarRect.width * 0.25;
+
+      const updateProgress = (clientX: number) => {
+        const offsetX = clientX - scrollbarRect.left - thumbWidth / 2;
+        const maxOffset = scrollbarRect.width - thumbWidth;
+        const newProgress = Math.max(0, Math.min(1, offsetX / maxOffset));
+
+        setScrollProgress(newProgress);
+        scrollToProgress(newProgress);
       };
-    }, [isDragging]);
 
-  // 🔹 track scroll positions for bubble updates
+      const onMouseMove = (moveEvent: MouseEvent) => {
+        moveEvent.preventDefault();
+        updateProgress(moveEvent.clientX);
+      };
+
+      const onMouseUp = () => {
+        setIsDraggingThumb(false);
+
+        // Reset animation settings to defaults after drag
+        if (emblaApi) {
+          const engine = emblaApi.internalEngine();
+          engine.scrollBody.useDuration(25);
+          engine.scrollBody.useFriction(0.68);
+        }
+
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+      };
+
+      updateProgress(e.clientX);
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+    },
+    [emblaApi, scrollToProgress]
+  );
+
+  const onTrackClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!scrollbarRef.current || !emblaApi) return;
+
+      const scrollbarRect = scrollbarRef.current.getBoundingClientRect();
+      const thumbWidth = scrollbarRect.width * 0.25;
+      const offsetX = e.clientX - scrollbarRect.left - thumbWidth / 2;
+      const maxOffset = scrollbarRect.width - thumbWidth;
+      const newProgress = Math.max(0, Math.min(1, offsetX / maxOffset));
+
+      setScrollProgress(newProgress);
+      scrollToProgress(newProgress);
+    },
+    [emblaApi, scrollToProgress]
+  );
+
   useEffect(() => {
     if (!emblaApi) return;
 
-    const onSelect = () => {
-      setSelectedIndex(emblaApi.selectedScrollSnap());
-    };
-    setScrollSnaps(emblaApi.scrollSnapList());
-    emblaApi.on("select", onSelect);
-    emblaApi.on("reInit", () => {
-      setScrollSnaps(emblaApi.scrollSnapList());
-    });
-    onSelect();
+    const onPointerDown = () => setIsDraggingCarousel(true);
+    const onPointerUp = () => setIsDraggingCarousel(false);
+
+    emblaApi.on("pointerDown", onPointerDown);
+    emblaApi.on("pointerUp", onPointerUp);
 
     return () => {
-      emblaApi.off("select", onSelect);
+      emblaApi.off("pointerDown", onPointerDown);
+      emblaApi.off("pointerUp", onPointerUp);
     };
   }, [emblaApi]);
 
+  useEffect(() => {
+    if (!emblaApi) return;
+
+    const onSettle = () => {
+      setIsUsingButtons(false);
+    };
+
+    emblaApi.on("settle", onSettle);
+
+    return () => {
+      emblaApi.off("settle", onSettle);
+    };
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+
+    onScroll();
+    emblaApi.on("scroll", onScroll);
+    emblaApi.on("reInit", onScroll);
+    emblaApi.on("settle", onScroll);
+
+    return () => {
+      emblaApi.off("scroll", onScroll);
+      emblaApi.off("reInit", onScroll);
+      emblaApi.off("settle", onScroll);
+    };
+  }, [emblaApi, onScroll]);
+
   return (
-    <section className="bg-white p-[16px] md:p-[32px]  mt-[16px] md:mt-[32px] mx-[16px] md:mx-[32px] rounded-lg">
+    <section className="bg-white p-[16px] md:p-[32px] mt-[16px] md:mt-[32px] mx-[16px] md:mx-[32px] rounded-lg">
       {/* Header */}
-      <div className="flex justify-between  items-center pb-[32px]">
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
-          New Arrivals
+      <div className="flex pb-[32px]">
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 flex-1 flex justify-center items-center pl-[50px]">
+          <span>New Arrivals</span>
         </h2>
         <Link
           href={{
@@ -111,26 +215,28 @@ export default function NewArrival() {
             query: { new: true },
           }}
         >
-          <button className="text-gray-800 font-medium hover:text-yellow-600">
+          <button className="text-gray-800 font-medium text-[12px] hover:text-yellow-600">
             View All
           </button>
         </Link>
       </div>
 
-      <div className=" relative md:px-[64px]">
+      <div className="relative md:px-[64px]">
         {/* Carousel container */}
-        <div className="overflow-hidden" ref={emblaRef}>
-          <div className="flex ">
+        <div
+          className="overflow-hidden cursor-grab active:cursor-grabbing"
+          ref={emblaRef}
+        >
+          <div
+            className="flex gap-4"
+            style={{
+              touchAction: "pan-y pinch-zoom",
+            }}
+          >
             {products.map((product) => (
               <div
                 key={product.id}
-                className="
-                  pl-4 flex-shrink-0 
-                  basis-1/2        /* ✅ show 2 cards per slide on mobile */
-                  sm:basis-1/2
-                  md:basis-1/3     /* ✅ 3 per row on medium screens */
-                  lg:basis-1/4     /* ✅ 4 per row on large screens */
-                "
+                className="flex-shrink-0 w-[calc(50%-8px)] sm:w-[calc(50%-8px)] md:w-[calc(33.333%-11px)] lg:w-[calc(25%-12px)]"
               >
                 <ProductCard
                   product={product}
@@ -145,47 +251,37 @@ export default function NewArrival() {
         {/* Navigation Arrows */}
         <button
           onClick={handlePrev}
-          className=" hidden absolute left-0  top-1/2 -translate-y-1/2 bg-white w-10 h-10 md:w-12 md:h-12 rounded-full md:flex items-center justify-center hover:bg-gray-100 transition"
+          className="hidden absolute left-0 top-1/2 -translate-y-1/2 bg-white w-10 h-10 md:w-12 md:h-12 rounded-full md:flex items-center justify-center hover:bg-gray-100 transition shadow-lg z-10"
         >
           <Image src={Leftarrow} width={12} height={12} alt="leftArrow" />
         </button>
         <button
           onClick={handleNext}
-          className="hidden absolute right-0  top-1/2 -translate-y-1/2 bg-white w-10 h-10 md:w-12 md:h-12 rounded-full md:flex items-center justify-center hover:bg-gray-100 transition"
+          className="hidden absolute right-0 top-1/2 -translate-y-1/2 bg-white w-10 h-10 md:w-12 md:h-12 rounded-full md:flex items-center justify-center hover:bg-gray-100 transition shadow-lg z-10"
         >
           <Image src={rightArrow} width={12} height={12} alt="rightArrow" />
         </button>
 
-        {/* Pagination Bubbles */}
-             <div className="flex justify-center mt-6">
+        {/* Custom Scrollbar - Same as Discount component */}
+        <div className="flex justify-center mt-6">
           <div
-            className="flex items-center gap-0 bg-gray-300 rounded-full h-1 relative overflow-hidden"
-            ref={barRef}
+            ref={scrollbarRef}
+            className="relative w-64 h-1 bg-gray-300 rounded-full overflow-visible cursor-pointer select-none"
+            onClick={onTrackClick}
           >
-            {scrollSnaps.map((_, i) => (
-              <div
-                key={i}
-                onClick={() => emblaApi && emblaApi.scrollTo(i)}
-                className={`h-1 cursor-pointer transition-all duration-300
-                  ${i === 0 ? "rounded-l-full" : ""}
-                  ${i === scrollSnaps.length - 1 ? "rounded-r-full" : ""}
-                  ${
-                    i === selectedIndex
-                      ? "bg-[#C9A040] w-12"
-                      : "bg-transparent w-8"
-                  }
-                `}
-              />
-            ))}
-
-            {/* draggable golden overlay */}
             <div
-              className="absolute top-0 h-1 bg-[#C9A040] rounded-full cursor-grab active:cursor-grabbing transition-all duration-100"
+              className={`absolute top-0 h-full bg-[#C9A040] rounded-full ${
+                isDraggingThumb ? "cursor-grabbing" : "cursor-grab"
+              }`}
               style={{
-                width: `${100 / scrollSnaps.length}%`,
-                left: `${(selectedIndex / scrollSnaps.length) * 100}%`,
+                width: "25%",
+                left: `${scrollProgress * 75}%`,
+                transition:
+                  isDraggingThumb || isDraggingCarousel || isUsingButtons
+                    ? "none"
+                    : "left 100ms ease-out",
               }}
-              onMouseDown={handleMouseDown}
+              onMouseDown={onThumbDrag}
             />
           </div>
         </div>

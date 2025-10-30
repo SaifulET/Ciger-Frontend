@@ -9,23 +9,24 @@
         "label": "Tobacco Products",
         "link": "/pages/products?sub=Tobacco",
         "subItems": [
-          { "label": "Premium Cigars", "link": "/pages/products?sub=Tobacco&subPro=PremiumCigars" },
-          { "label": "Machine-Made Cigars", "link": "/pages/products?sub=Tobacco&subPro=MachineMadeCigars" }
+           { "label": "Cigar", "link": "/pages/products?sub=Tobacco&subPro=Cigar" },
+          { "label": "Premium Cigar", "link": "/pages/products?sub=Tobacco&subPro=PremiumCigar" }
+         
         ]
       },
       {
         "label": "Hookah",
-        "link": "/pages/products?sub=Hokka",
+        "link": "/pages/products?sub=Hookah",
         "subItems": [
-          { "label": "Hookah Pipes", "link": "/pages/products?sub=hookah&subPro=hokkah-Pipes" },
-          { "label": "Shisha Tobacco", "link": "/pages/products?sub=hookah&subPro=ShishaTobacco" }
+          { "label": "Hookah Pipes", "link": "/pages/products?sub=hookah&subPro=hookah-Pipes" },
+          { "label": "Hookah Tobacco", "link": "/pages/products?sub=hookah&subPro=HookahTobacco" }
         ]
       },
       {
-        "label": "Nikotine Vapes",
-        "link": "/pages/products?sub=nikotineVapes",
+        "label": "Nicotine Vapes",
+        "link": "/pages/products?sub=nicotineVapes",
         "subItems": [
-          { "label": "Disposals", "link": "/pages/products?sub=nikotineVapes?subPro=Disposals" }
+          { "label": "Disposables", "link": "/pages/products?sub=nicotineVapes?subPro=Disposables" }
           
         ]
       }
@@ -58,7 +59,7 @@
         "subItems": [
           { "label": "Flowers", "link": "/pages/products?sub=THC?subPro=Flowers" },
           { "label": "PreRolls", "link": "/pages/products?sub=THC?subPro=PreRolls" },
-          { "label": "Disposals/Cartridges", "link": "/pages/products?sub=THC?subPro=Disposals" },
+          { "label": "Disposables/Cartridges", "link": "/pages/products?sub=THC?subPro=Disposables" },
           { "label": "Edibles", "link": "/pages/products?sub=THC?subPro=Edibles" },
           { "label": "Concentrates", "link": "/pages/products?sub=THC?subPro=concentrates" }
           

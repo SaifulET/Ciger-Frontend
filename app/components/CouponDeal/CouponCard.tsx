@@ -14,7 +14,7 @@ const CouponDeals: React.FC<CouponDealsProps> = ({ coupons }) => {
   return (
     <div className=' mx-[16px] md:mx-[32px] py-[16px] md:py-[32px] '>
        <div className=' bg-white  border rounded-2xl p-[16px] md:p-[32px]'>
-      <h2 className="text-center font-montserrat text-[40px] font-semibold leading-[48px] ">Smokenza Deals</h2>
+      <h2 className="text-center font-montserrat text-[40px] font-semibold leading-[48px] pb-[12px]">Smokenza Deals</h2>
       <p className="font-open-sans text-[16px] font-semibold leading-[24px] text-center pb-[16px] md:pb-[32px]">
         Coupon Deals are valid only while supplies last and are not guaranteed. Offers cannot be combined.
       </p>

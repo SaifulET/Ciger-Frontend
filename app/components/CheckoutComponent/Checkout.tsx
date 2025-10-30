@@ -488,12 +488,12 @@ const CheckoutPage = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Sales Tax</span>
-                  <span className="font-medium">5%</span>
+                  <span className="font-medium pl-[32px]">5%</span>
                   <span className="font-medium">${tax.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Discount CODE</span>
-                  <span className="text-gray-600">5%</span>
+                  <span className="font-medium">5%</span>
                   <span className="font-medium text-red-500">${discount.toFixed(2)}</span>
                 </div>
               </div>
@@ -895,7 +895,7 @@ const CheckoutPage = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Sales Tax</span>
-                <span className="font-medium">5%</span>
+                <span className="font-medium pl-[32px]">5%</span>
                 <span className="font-medium">${tax.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">

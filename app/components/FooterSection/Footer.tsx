@@ -11,35 +11,36 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="bg-[#212121] w-full text-white px-4 sm:px-8 lg:px-16 py-16 flex flex-col gap-10">
+    <footer className="bg-[#212121] w-full text-white px-[16px]  lg:px-[64px] py-[16px] lg:py-[32px] flex flex-col">
       {/* Main Container */}
-      <div className="w-full flex flex-col gap-12">
+      <div className="w-full flex flex-col ">
         {/* Top Section */}
-        <div className="flex flex-col lg:flex-row justify-evenly gap-8 lg:gap-4">
+        <div className="flex flex-col lg:flex-row justify-between mb-[32px]">
           {/* Left: Logo & Description */}
-          <div className="flex flex-col gap-6 lg:gap-12 w-full max-w-md">
-            <p className="text-white text-center md:text-right font-[500] text-[16px] leading-[24px] font-[Open_Sans]">
-              The Finest in Tobacco, Vapes, and Lifestyle Accessories.
-            </p>
-
+          <div className="flex flex-col gap-[32px] lg:w-[345px] lg:h-[254px] justify-start mb-[32px] ">
             <Link href="/pages/">
               <h2 className="text-white font-[Montserrat] font-semibold">
                 <Image
-                  className="object-cover w-full h-[80px] "
+                  className="w-[322px]"
                   src={logo}
                   alt="Logo"
-                  
+                  width={322}
+                  height={80} // Adjust height according to your logo's aspect ratio
+                  priority // Optional: if it's above the fold
                 />
               </h2>
             </Link>
+            <p className="text-white text-left  font-montserrat font-semibold text-lg leading-[26px] ">
+              The Finest in Tobacco, Vapes, and Lifestyle Accessories.
+            </p>
           </div>
 
           {/* Center: Quick Links */}
-          <div className="flex flex-col gap-4 w-full lg:w-auto">
-            <h4 className="font-[Montserrat] font-semibold text-[18px] leading-[26px]">
+          <div className="flex flex-col gap-4 justify-center mb-[32px]">
+            <h4 className="font-montserrat font-semibold text-[18px] leading-[26px] text-white flex-none order-0 flex-grow-0">
               Quick Links
             </h4>
-            <ul className="flex flex-col gap-2 text-[16px] font-[Open_Sans]">
+            <ul className="flex flex-col gap-2 text-[16px] ">
               {[
                 "Home",
                 "Brand",
@@ -55,7 +56,7 @@ export default function Footer() {
                         ? ""
                         : item.toLowerCase().replace(/\s+/g, "")
                     }`}
-                    className="hover:text-[#C9A040] transition-colors duration-300"
+                    className="hover:text-[#C9A040] transition-colors duration-300 font-open-sans font-normal text-base leading-[24px] text-white flex-none order-3 flex-grow-0"
                   >
                     {item === "RefundPolicy" ? "Refund Policy" : item}
                   </a>
@@ -65,13 +66,11 @@ export default function Footer() {
           </div>
 
           {/* Right: Contact + Socials */}
-          <div className="flex flex-col gap-4 lg:gap-6">
-            <Link href="/pages/contact">
-              <button className="bg-[#C9A040] text-[#0C0C0C] font-semibold px-6 py-3 rounded-xl hover:bg-[#d4ae56] transition lg:w-auto text-center">
-                Contact Us
-              </button>
-            </Link>
-
+          <div className="flex flex-col gap-4 lg:gap-4 lg:w-[345px] justify-start ">
+           
+<h4 className="font-montserrat font-semibold text-[18px] leading-[26px] text-white flex-none order-0 flex-grow-0">
+              Contacts
+            </h4>
             <div className="flex items-center gap-3">
               <Phone className="w-5 h-5" />
               <span className="font-[Open_Sans] font-semibold text-[16px]">
@@ -104,7 +103,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom Text */}
-        <p className="text-center font-[Open_Sans] font-semibold text-[16px] leading-[24px] mt-8">
+        <p className="text-left lg:text-center  font-semibold text-[16px] leading-[24px] ">
           © 2025 All rights reserved to Smokenza
         </p>
       </div>

@@ -1,7 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import { Trash2 } from "lucide-react";
-
+import img from "@/public/product.svg"
+import Image from "next/image";
 interface CartItem {
   id: number;
   image: string;
@@ -15,7 +16,7 @@ interface CartItem {
 const cartData: CartItem[] = [
   {
     id: 1,
-    image: "🏷️",
+    image: img,
     name: "Iced Khunar",
     description: "Cold Ice Moricha Frozen - 16 Bag",
     price: 618.0,
@@ -24,7 +25,7 @@ const cartData: CartItem[] = [
   },
   {
     id: 2,
-    image: "🏷️",
+    image:img ,
     name: "Iced Khunar",
     description: "Cold Ice Moricha Frozen - 16 Bag",
     price: 618.0,
@@ -148,8 +149,8 @@ export default function ShoppingCart() {
           <div className="p-[16px] md:p-[32px] space-y-4">
             {/* Desktop Table Header */}
             <div className="hidden md:grid grid-cols-12 gap-4 pb-4 border-b-2 border-gray-200 font-bold text-gray-700 text-sm">
-              <div className="col-span-1">Select</div>
-              <div className="col-span-1">Image</div>
+              <div className="col-span-1 ">Select</div>
+              <div className="col-span-1 pl-[16px]">Image</div>
               <div className="col-span-3">Product</div>
               <div className="col-span-2 text-center">Unit Price</div>
               <div className="col-span-2 text-center">Quantity</div>
@@ -171,7 +172,15 @@ export default function ShoppingCart() {
         onChange={() => toggleCheck(item.id)}
         className="w-5 h-5 cursor-pointer"
       />
-      <span className="text-3xl">{item.image}</span>
+      <div className="flex items-center justify-center w-12 h-12 md:w-[70px] md:h-[70px] bg-[#F5F5F5] border border-[#B0B0B0] rounded-xl flex-shrink-0">
+                                <Image
+                                  src={item.image}
+                                  alt={item.name}
+                                  width={30}
+                                  height={30}
+                                  className="object-contain"
+                                />
+                              </div>
     </div>
     <button
       onClick={() => removeItem(item.id)}
@@ -200,7 +209,7 @@ export default function ShoppingCart() {
       <div className="flex justify-between items-center  border-b pb-1">
         <p className="text-gray-600">Price</p>
         <p className="font-semibold text-gray-900">
-          ₹{item.price.toFixed(2)}
+          ${item.price.toFixed(2)}
         </p>
       </div>
       
@@ -229,7 +238,7 @@ export default function ShoppingCart() {
       <div className="flex justify-between items-center  ">
         <p className="text-gray-600">Total</p>
         <p className="font-semibold text-gray-900">
-          ₹{(item.price * item.quantity).toFixed(2)}
+          ${(item.price * item.quantity).toFixed(2)}
         </p>
       </div>
     </div>
@@ -246,7 +255,15 @@ export default function ShoppingCart() {
                       className="w-5 h-5 cursor-pointer"
                     />
                   </div>
-                  <div className="col-span-1 text-2xl">{item.image}</div>
+                  <div className="col-span-1 flex justify-start "><div className="flex items-center justify-center w-12 h-12 md:w-[70px] md:h-[70px] bg-[#F5F5F5] border border-[#B0B0B0] rounded-xl flex-shrink-0">
+                                <Image
+                                  src={item.image}
+                                  alt={item.name}
+                                  width={30}
+                                  height={30}
+                                  className="object-contain"
+                                />
+                              </div></div>
                   <div className="col-span-3">
                     <p className="font-semibold text-gray-900 text-sm">
                       {item.name}
@@ -257,7 +274,7 @@ export default function ShoppingCart() {
                     </p>
                   </div>
                   <div className="col-span-2 text-center text-sm font-semibold text-gray-900">
-                    ₹{item.price.toFixed(2)}
+                    ${item.price.toFixed(2)}
                   </div>
                   <div className="col-span-2 flex justify-center items-center">
                     <div className="flex items-center gap-0 border border-gray-300 rounded-full font-semibold text-base text-center">
@@ -280,7 +297,7 @@ export default function ShoppingCart() {
                     </div>
                   </div>
                   <div className="col-span-2 text-center text-sm font-semibold text-gray-900">
-                    ₹{(item.price * item.quantity).toFixed(2)}
+                    ${(item.price * item.quantity).toFixed(2)}
                   </div>
                   <div className="col-span-1 text-center">
                     <button

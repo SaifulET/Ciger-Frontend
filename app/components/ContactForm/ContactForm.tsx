@@ -12,8 +12,8 @@ const ContactForm = () => {
       
       {/* Left Column: Logo and Description */}
       <div className="flex flex-col items-center   max-w-[500px] w-full ">
-        <div className="w-full  flex justify-center items-center text-center "><Image className='rounded-full' src={logo} alt="Logo"width={220} height={220}/></div>
-        <p className="text-center font-open-sans text-[16px] font-semibold leading-[24px]">
+        <div className="w-full  flex justify-center items-center text-center "><Image className='rounded-full pt-[32px] lg:pt-0' src={logo} alt="Logo"width={220} height={220}/></div>
+        <p className="pt-[12px] text-center font-open-sans text-[16px] font-semibold leading-[24px] ">
           The Finest in Tobacco, Vapes, and Lifestyle Accessories.
         </p>
       </div>

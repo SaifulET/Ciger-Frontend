@@ -21,6 +21,7 @@ import {
   File01Icon,
   Search01Icon,
   Menu01Icon,
+  MultiplicationSignIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useRouter, usePathname } from "next/navigation";
@@ -47,7 +48,6 @@ const Navbar: React.FC = () => {
   const [isClient, setIsClient] = useState<boolean>(false);
   const [isProduct, setIsProduct] = useState<boolean>(false);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
-  
 
   const router = useRouter();
   const pathname = usePathname();
@@ -73,18 +73,12 @@ const Navbar: React.FC = () => {
 
   // Function to check if a menu item is selected based on current path
   const isMenuItemSelected = (item: SubItem): boolean => {
-
     if (!pathname) return false;
-   
-    
-    
-
 
     // Special handling for Home menu - only selected for exact /pages or /pages/
     if (item.label === "Home") {
       return pathname === "/pages" || pathname === "/pages/";
     }
-  
 
     // Check if current path matches the item's link
     if (pathname === item.link) {
@@ -105,10 +99,6 @@ const Navbar: React.FC = () => {
     if (item.subItems) {
       return item.subItems.some((subItem) => isMenuItemSelected(subItem));
     }
-
-
-
-     
 
     return false;
   };
@@ -212,82 +202,80 @@ const Navbar: React.FC = () => {
           </div>
         </div>
         {/* Simple loading state for desktop menu */}
-       <nav className="hidden md:block bg-white w-full relative">
-  <div className="flex flex-row justify-center items-center gap-[72px] md:px-16">
-    {menuData.map((item: SubItem) => {
-      const isSelected = isMenuItemSelected(item);
+        <nav className="hidden md:block bg-white w-full relative">
+          <div className="flex flex-row justify-center items-center gap-[72px] md:px-16">
+            {menuData.map((item: SubItem) => {
+              const isSelected = isMenuItemSelected(item);
 
-      return (
-        <div 
-          key={item.label} 
-          className="relative md:min-w-[80px] group"
-          onMouseEnter={() => item.subItems && setOpenMenu(item.label)}
-        >
-          <Link href={item.link}>
-            <div className="flex items-center gap-2 py-2 cursor-pointer select-none justify-center md:justify-start relative">
-              <span className="font-['Open Sans'] font-semibold text-[16px] leading-[24px] text-[#0C0C0C] group-hover:text-[#C9A040] transition-colors duration-300">
-                {item.label}
-              </span>
-              {item.subItems && (
-                <ChevronDown
-                  size={20}
-                  className="text-[#0C0C0C] md:ml-1 group-hover:text-[#C9A040] transition-colors duration-300"
-                />
-              )}
-              {isSelected && (
-                <span className="absolute bottom-0 w-3/5 h-1 bg-[#C9A040]" />
-              )}
-            </div>
-          </Link>
-
-          {item.subItems && openMenu === item.label && (
-            <div 
-              className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white shadow-lg rounded-lg border border-gray-200 z-50 p-4 w-max min-w-[300px]"
-              onMouseEnter={() => setOpenMenu(item.label)}
-              onMouseLeave={() => setOpenMenu(null)}
-            >
-              <div
-                className={`grid gap-4 ${
-                  item.subItems.length >= 3
-                    ? "md:grid-cols-3"
-                    : "md:grid-cols-1"
-                }`}
-              >
-                {item.subItems.map((sub) => (
-                  <div key={sub.label}>
-                    <div className="font-semibold px-2 py-1 text-[#0C0C0C] cursor-pointer">
-                      <Link
-                        href={sub.link}
-                        className="block hover:text-[#C9A040] transition-colors duration-300 py-2"
-                        onClick={() => setOpenMenu(null)}
-                      >
-                        {sub.label}
-                      </Link>
+              return (
+                <div
+                  key={item.label}
+                  className="relative md:min-w-[80px] group"
+                  onMouseEnter={() => item.subItems && setOpenMenu(item.label)}
+                >
+                  <Link href={item.link}>
+                    <div className="flex items-center gap-2 py-2 cursor-pointer select-none justify-center md:justify-start relative">
+                      <span className="font-['Open Sans'] font-semibold text-[16px] leading-[24px] text-[#0C0C0C] group-hover:text-[#C9A040] transition-colors duration-300">
+                        {item.label}
+                      </span>
+                      {item.subItems && (
+                        <ChevronDown
+                          size={20}
+                          className="text-[#0C0C0C] md:ml-1 group-hover:text-[#C9A040] transition-colors duration-300"
+                        />
+                      )}
+                      {isSelected && (
+                        <span className="absolute bottom-0 w-3/5 h-1 bg-[#C9A040]" />
+                      )}
                     </div>
-                    {sub.subItems && sub.subItems.map((inner) => (
+                  </Link>
+
+                  {item.subItems && openMenu === item.label && (
+                    <div
+                      className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white shadow-lg rounded-lg border border-gray-200 z-50 p-4 w-max min-w-[300px]"
+                      onMouseEnter={() => setOpenMenu(item.label)}
+                      onMouseLeave={() => setOpenMenu(null)}
+                    >
                       <div
-                        key={inner.label}
-                        className="pl-4 py-1"
+                        className={`grid gap-4 ${
+                          item.subItems.length >= 3
+                            ? "md:grid-cols-3"
+                            : "md:grid-cols-1"
+                        }`}
                       >
-                        <Link
-                          href={inner.link}
-                          className="block text-[#0C0C0C] hover:text-[#C9A040] transition-colors duration-300 py-2"
-                          onClick={() => setOpenMenu(null)}
-                        >
-                          {inner.label}
-                        </Link>
+                        {item.subItems.map((sub) => (
+                          <div key={sub.label}>
+                            <div className="font-semibold px-2 py-1 text-[#0C0C0C] cursor-pointer">
+                              <Link
+                                href={sub.link}
+                                className="block hover:text-[#C9A040] transition-colors duration-300 py-2"
+                                onClick={() => setOpenMenu(null)}
+                              >
+                                {sub.label}
+                              </Link>
+                            </div>
+                            {sub.subItems &&
+                              sub.subItems.map((inner) => (
+                                <div key={inner.label} className="pl-4 py-1">
+                                  <Link
+                                    href={inner.link}
+                                    className="block text-[#0C0C0C] hover:text-[#C9A040] transition-colors duration-300 py-2"
+                                    onClick={() => setOpenMenu(null)}
+                                  >
+                                    {inner.label}
+                                  </Link>
+                                </div>
+                              ))}
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      );
-    })}
-  </div>
-</nav>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </nav>
       </header>
     );
   }
@@ -315,7 +303,7 @@ const Navbar: React.FC = () => {
               value={value}
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={handleSearchKeyPress}
-              className="w-full h-12 focus:h-11 px-4 rounded-xl border border-gray-300 bg-[#F5F5F5] text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+              className="w-full h-[48px] focus:h-11 px-4 rounded-xl border border-gray-300 bg-[#F5F5F5] text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
             />
             {!value && (
               <div className="absolute inset-0 flex items-center justify-start text-gray-600 pointer-events-none">
@@ -429,27 +417,28 @@ const Navbar: React.FC = () => {
         {/* ---------- Mobile simplified header (visible only on small screens) ---------- */}
         <div className="w-full lg:hidden ">
           {/* Mobile Icon Row or Full-Width Search */}
-          <div className="flex items-center justify-center gap-4   transition-all duration-300 ">
+          <div className="px-[16px]   transition-all duration-300 w-full">
             {mobileSearchOpen ? (
               // Full-width search bar with X - with smooth transition
               <div className="w-full ">
-                <div className="grid grid-cols-12 w-full items-center pr-16">
+                <div className=" flex  justify-between items-center">
                 {/* Hamburger - 5 columns (left) */}
-                <div className="col-span-6 flex justify-start">
+                <div className="flex justify-start gap-[8px]">
                   <button
                     aria-label="Menu"
-                    className="p-3 transition-all duration-300 transform hover:scale-110"
+                    className=" transition-all duration-300 transform hover:scale-110"
                     onClick={toggleMobileMenu}
                   >
                     <div className="relative w-6 h-6">
-                      <Menu
-                        size={30}
+                      <HugeiconsIcon
+                        icon={Menu01Icon}
                         className={`absolute top-0 left-0 transition-all duration-300 ${
                           mobileModalOpen
                             ? "opacity-0 rotate-90"
                             : "opacity-100 rotate-0"
                         }`}
                       />
+
                       <X
                         size={30}
                         className={`absolute top-0 left-0 transition-all duration-300 ${
@@ -471,164 +460,168 @@ const Navbar: React.FC = () => {
                   </Link>
                 </div>
 
-                {/* Empty middle space - 3 columns */}
-                <div className="col-span-3"></div>
-
                 {/* Icons container - 4 columns (right) */}
-                <div className="col-span-3 flex justify-evenly items-center">
-                  {/* Search icon */}
-                  <button
-                    aria-label="Search"
-                    className="p-1 transition-transform hover:scale-110"
-                    onClick={toggleMobileSearch}
-                  >
-                    <Search size={30} />
-                  </button>
-
-                  {/* Cart icon */}
-                  <div
-                    aria-label="Cart"
-                    className="relative p-1"
-                    onClick={() => {
-                      setMobileCartOpen(!mobileCartOpen);
-                      setMobileProfileOpen(false);
-                      setMobileModalOpen(false);
-                      setMobileSearchOpen(false);
-                    }}
-                  >
-                    <CartPage />
-                  </div>
-
-                  {/* Profile icon */}
-                  <div className="relative">
+                <div>
+                  {/* Search  icon */}
+                  <div className=" flex justify-between items-center">
+                    {/* Search icon */}
                     <button
-                      aria-label="Profile"
+                      aria-label="Search"
                       className="p-1 transition-transform hover:scale-110"
+                      onClick={toggleMobileSearch}
+                    >
+                      <HugeiconsIcon icon={Search01Icon} />
+                    </button>
+
+                    {/* Cart icon */}
+                    <div
+                      aria-label="Cart"
+                      className="relative p-1"
                       onClick={() => {
-                        setMobileProfileOpen(!mobileProfileOpen);
+                        setMobileCartOpen(!mobileCartOpen);
+                        setMobileProfileOpen(false);
                         setMobileModalOpen(false);
-                        setMobileCartOpen(false);
                         setMobileSearchOpen(false);
                       }}
                     >
-                      <User size={30} />
-                    </button>
+                      <CartPage />
+                    </div>
 
-                    {/* Mobile profile dropdown */}
-                    {mobileProfileOpen && (
-                      <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 shadow-lg rounded-md z-50 p-3 animate-fadeIn">
-                        {!isLoggedIn ? (
-                          <div className="flex flex-col gap-2">
-                            <Link href="#">
+                    {/* Profile icon */}
+                    <div className="relative">
+                      <button
+                        aria-label="Profile"
+                        className="p-1 transition-transform hover:scale-110"
+                        onClick={() => {
+                          setMobileProfileOpen(!mobileProfileOpen);
+                          setMobileModalOpen(false);
+                          setMobileCartOpen(false);
+                          setMobileSearchOpen(false);
+                        }}
+                      >
+                        <HugeiconsIcon icon={UserIcon} />
+                      </button>
+
+                      {/* Mobile profile dropdown */}
+                      {mobileProfileOpen && (
+                        <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 shadow-lg rounded-md z-50 p-3 animate-fadeIn">
+                          {!isLoggedIn ? (
+                            <div className="flex flex-col gap-2">
+                              <Link href="#">
+                                <button
+                                  className="flex gap-2 w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
+                                  onClick={() => {
+                                    setIsLoggedIn(true);
+                                    setMobileProfileOpen(false);
+                                  }}
+                                >
+                                  <HugeiconsIcon icon={UserIcon} /> Login
+                                </button>
+                              </Link>
+                              <Link href="/pages/signup">
+                                <button
+                                  className="flex gap-2 w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
+                                  onClick={() => setMobileProfileOpen(false)}
+                                >
+                                  <HugeiconsIcon icon={SquareLock02Icon} />{" "}
+                                  Signup
+                                </button>
+                              </Link>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col gap-1">
+                              <Link
+                                href="/pages/profile"
+                                onClick={() => setMobileProfileOpen(false)}
+                              >
+                                <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
+                                  <HugeiconsIcon icon={UserIcon} /> Profile
+                                </div>
+                              </Link>
+                              <Link
+                                href="/pages/tracking"
+                                onClick={() => setMobileProfileOpen(false)}
+                              >
+                                <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
+                                  <HugeiconsIcon icon={PackageIcon} /> Tracking
+                                  Number
+                                </div>
+                              </Link>
+                              <Link
+                                href="/pages/notification"
+                                onClick={() => setMobileProfileOpen(false)}
+                              >
+                                <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
+                                  <HugeiconsIcon icon={Notification01Icon} />{" "}
+                                  Notification
+                                </div>
+                              </Link>
+                              <Link
+                                href="/pages/orderhistory"
+                                onClick={() => setMobileProfileOpen(false)}
+                              >
+                                <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
+                                  <HugeiconsIcon icon={Clock05Icon} /> Order
+                                  History
+                                </div>
+                              </Link>
                               <button
-                                className="flex gap-2 w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
+                                className="flex gap-2 text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
                                 onClick={() => {
-                                  setIsLoggedIn(true);
+                                  setIsLoggedIn(false);
                                   setMobileProfileOpen(false);
                                 }}
                               >
-                                <HugeiconsIcon icon={UserIcon} /> Login
+                                <HugeiconsIcon icon={Logout01Icon} /> Logout
                               </button>
-                            </Link>
-                            <Link href="/pages/signup">
-                              <button
-                                className="flex gap-2 w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
-                                onClick={() => setMobileProfileOpen(false)}
-                              >
-                                <HugeiconsIcon icon={SquareLock02Icon} /> Signup
-                              </button>
-                            </Link>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col gap-1">
-                            <Link
-                              href="/pages/profile"
-                              onClick={() => setMobileProfileOpen(false)}
-                            >
-                              <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
-                                <HugeiconsIcon icon={UserIcon} /> Profile
-                              </div>
-                            </Link>
-                            <Link
-                              href="/pages/tracking"
-                              onClick={() => setMobileProfileOpen(false)}
-                            >
-                              <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
-                                <HugeiconsIcon icon={PackageIcon} /> Tracking
-                                Number
-                              </div>
-                            </Link>
-                            <Link
-                              href="/pages/notification"
-                              onClick={() => setMobileProfileOpen(false)}
-                            >
-                              <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
-                                <HugeiconsIcon icon={Notification01Icon} />{" "}
-                                Notification
-                              </div>
-                            </Link>
-                            <Link
-                              href="/pages/orderhistory"
-                              onClick={() => setMobileProfileOpen(false)}
-                            >
-                              <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
-                                <HugeiconsIcon icon={Clock05Icon} /> Order
-                                History
-                              </div>
-                            </Link>
-                            <button
-                              className="flex gap-2 text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
-                              onClick={() => {
-                                setIsLoggedIn(false);
-                                setMobileProfileOpen(false);
-                              }}
-                            >
-                              <HugeiconsIcon icon={Logout01Icon} /> Logout
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
                 {/* Search input with slide-in animation */}
-                <div className=" px-4 flex w-full gap-2 transition-all duration-300 mb-4 animate-slideDown">
+                <div className="  flex w-full gap-2 transition-all duration-300 mb-4 animate-slideDown">
                   <input
                     type="text"
                     value={value}
                     onChange={(e) => setValue(e.target.value)}
                     onKeyDown={handleSearchKeyPress}
                     placeholder="Search Product or Brand"
-                    className="w-full h-12 px-4 rounded-lg border border-gray-300 bg-[#EDEDED] text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all"
+                    className="w-full h-[48px] px-4 rounded-lg border border-gray-300 bg-[#EDEDED] text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all"
                     autoFocus
                   />
                   <button
-                    className="h-12 w-12 flex items-center justify-center transition-transform hover:scale-110 bg-gray-200 rounded-lg hover:bg-gray-300"
+                    className="h-[48px] w-12 flex items-center justify-center transition-transform hover:scale-110 bg-[#EDEDED] rounded-lg hover:bg-gray-300 border border-gray-300"
                     onClick={toggleMobileSearch}
                     aria-label="Close search"
                   >
-                    <X size={24} />
+                    <HugeiconsIcon icon={MultiplicationSignIcon} />
                   </button>
                 </div>
               </div>
             ) : (
               // Grid container with 12 columns
-              <div className="grid grid-cols-12 w-full items-center pr-16">
+              <div className=" flex  justify-between items-center">
                 {/* Hamburger - 5 columns (left) */}
-                <div className="col-span-6 flex justify-start">
+                <div className="flex justify-start gap-[8px]">
                   <button
                     aria-label="Menu"
-                    className="p-3 transition-all duration-300 transform hover:scale-110"
+                    className=" transition-all duration-300 transform hover:scale-110"
                     onClick={toggleMobileMenu}
                   >
                     <div className="relative w-6 h-6">
-                      <HugeiconsIcon icon={Menu01Icon} className={`absolute top-0 left-0 transition-all duration-300 ${
+                      <HugeiconsIcon
+                        icon={Menu01Icon}
+                        className={`absolute top-0 left-0 transition-all duration-300 ${
                           mobileModalOpen
                             ? "opacity-0 rotate-90"
                             : "opacity-100 rotate-0"
-                        }`}/>
-                      
+                        }`}
+                      />
+
                       <X
                         size={30}
                         className={`absolute top-0 left-0 transition-all duration-300 ${
@@ -650,124 +643,125 @@ const Navbar: React.FC = () => {
                   </Link>
                 </div>
 
-                {/* Empty middle space - 3 columns */}
-                <div className="col-span-3"></div>
-
                 {/* Icons container - 4 columns (right) */}
-                <div className="col-span-3 flex justify-evenly items-center">
-                  {/* Search icon */}
-                  <button
-                    aria-label="Search"
-                    className="p-1 transition-transform hover:scale-110"
-                    onClick={toggleMobileSearch}
-                  >
-                   <HugeiconsIcon icon={Search01Icon} />
-                  </button>
-
-                  {/* Cart icon */}
-                  <div
-                    aria-label="Cart"
-                    className="relative p-1"
-                    onClick={() => {
-                      setMobileCartOpen(!mobileCartOpen);
-                      setMobileProfileOpen(false);
-                      setMobileModalOpen(false);
-                      setMobileSearchOpen(false);
-                    }}
-                  >
-                    <CartPage />
-                  </div>
-
-                  {/* Profile icon */}
-                  <div className="relative">
+                <div>
+                  {/* Search  icon */}
+                  <div className=" flex justify-between items-center">
+                    {/* Search icon */}
                     <button
-                      aria-label="Profile"
+                      aria-label="Search"
                       className="p-1 transition-transform hover:scale-110"
+                      onClick={toggleMobileSearch}
+                    >
+                      <HugeiconsIcon icon={Search01Icon} />
+                    </button>
+
+                    {/* Cart icon */}
+                    <div
+                      aria-label="Cart"
+                      className="relative p-1"
                       onClick={() => {
-                        setMobileProfileOpen(!mobileProfileOpen);
+                        setMobileCartOpen(!mobileCartOpen);
+                        setMobileProfileOpen(false);
                         setMobileModalOpen(false);
-                        setMobileCartOpen(false);
                         setMobileSearchOpen(false);
                       }}
                     >
-                      <HugeiconsIcon icon={UserIcon} />
-                    </button>
+                      <CartPage />
+                    </div>
 
-                    {/* Mobile profile dropdown */}
-                    {mobileProfileOpen && (
-                      <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 shadow-lg rounded-md z-50 p-3 animate-fadeIn">
-                        {!isLoggedIn ? (
-                          <div className="flex flex-col gap-2">
-                            <Link href="#">
+                    {/* Profile icon */}
+                    <div className="relative">
+                      <button
+                        aria-label="Profile"
+                        className="p-1 transition-transform hover:scale-110"
+                        onClick={() => {
+                          setMobileProfileOpen(!mobileProfileOpen);
+                          setMobileModalOpen(false);
+                          setMobileCartOpen(false);
+                          setMobileSearchOpen(false);
+                        }}
+                      >
+                        <HugeiconsIcon icon={UserIcon} />
+                      </button>
+
+                      {/* Mobile profile dropdown */}
+                      {mobileProfileOpen && (
+                        <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 shadow-lg rounded-md z-50 p-3 animate-fadeIn">
+                          {!isLoggedIn ? (
+                            <div className="flex flex-col gap-2">
+                              <Link href="#">
+                                <button
+                                  className="flex gap-2 w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
+                                  onClick={() => {
+                                    setIsLoggedIn(true);
+                                    setMobileProfileOpen(false);
+                                  }}
+                                >
+                                  <HugeiconsIcon icon={UserIcon} /> Login
+                                </button>
+                              </Link>
+                              <Link href="/pages/signup">
+                                <button
+                                  className="flex gap-2 w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
+                                  onClick={() => setMobileProfileOpen(false)}
+                                >
+                                  <HugeiconsIcon icon={SquareLock02Icon} />{" "}
+                                  Signup
+                                </button>
+                              </Link>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col gap-1">
+                              <Link
+                                href="/pages/profile"
+                                onClick={() => setMobileProfileOpen(false)}
+                              >
+                                <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
+                                  <HugeiconsIcon icon={UserIcon} /> Profile
+                                </div>
+                              </Link>
+                              <Link
+                                href="/pages/tracking"
+                                onClick={() => setMobileProfileOpen(false)}
+                              >
+                                <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
+                                  <HugeiconsIcon icon={PackageIcon} /> Tracking
+                                  Number
+                                </div>
+                              </Link>
+                              <Link
+                                href="/pages/notification"
+                                onClick={() => setMobileProfileOpen(false)}
+                              >
+                                <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
+                                  <HugeiconsIcon icon={Notification01Icon} />{" "}
+                                  Notification
+                                </div>
+                              </Link>
+                              <Link
+                                href="/pages/orderhistory"
+                                onClick={() => setMobileProfileOpen(false)}
+                              >
+                                <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
+                                  <HugeiconsIcon icon={Clock05Icon} /> Order
+                                  History
+                                </div>
+                              </Link>
                               <button
-                                className="flex gap-2 w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
+                                className="flex gap-2 text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
                                 onClick={() => {
-                                  setIsLoggedIn(true);
+                                  setIsLoggedIn(false);
                                   setMobileProfileOpen(false);
                                 }}
                               >
-                                <HugeiconsIcon icon={UserIcon} /> Login
+                                <HugeiconsIcon icon={Logout01Icon} /> Logout
                               </button>
-                            </Link>
-                            <Link href="/pages/signup">
-                              <button
-                                className="flex gap-2 w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
-                                onClick={() => setMobileProfileOpen(false)}
-                              >
-                                <HugeiconsIcon icon={SquareLock02Icon} /> Signup
-                              </button>
-                            </Link>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col gap-1">
-                            <Link
-                              href="/pages/profile"
-                              onClick={() => setMobileProfileOpen(false)}
-                            >
-                              <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
-                                <HugeiconsIcon icon={UserIcon} /> Profile
-                              </div>
-                            </Link>
-                            <Link
-                              href="/pages/tracking"
-                              onClick={() => setMobileProfileOpen(false)}
-                            >
-                              <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
-                                <HugeiconsIcon icon={PackageIcon} /> Tracking
-                                Number
-                              </div>
-                            </Link>
-                            <Link
-                              href="/pages/notification"
-                              onClick={() => setMobileProfileOpen(false)}
-                            >
-                              <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
-                                <HugeiconsIcon icon={Notification01Icon} />{" "}
-                                Notification
-                              </div>
-                            </Link>
-                            <Link
-                              href="/pages/orderhistory"
-                              onClick={() => setMobileProfileOpen(false)}
-                            >
-                              <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
-                                <HugeiconsIcon icon={Clock05Icon} /> Order
-                                History
-                              </div>
-                            </Link>
-                            <button
-                              className="flex gap-2 text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
-                              onClick={() => {
-                                setIsLoggedIn(false);
-                                setMobileProfileOpen(false);
-                              }}
-                            >
-                              <HugeiconsIcon icon={Logout01Icon} /> Logout
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -777,114 +771,108 @@ const Navbar: React.FC = () => {
       </div>
 
       {/* ---------- Desktop Menu (unchanged) ---------- */}
-<nav className="hidden lg:block bg-white w-full relative">
-  <div className="flex flex-row justify-center items-center gap-10 lg:gap-24 ">
-    {menuData.map((item: SubItem, index: number) => {
-      const isSelected = isMenuItemSelected(item);
-      const isOpen = openMenu === item.label;
+      <nav className="hidden lg:block bg-white w-full relative pb-[24px]">
+        <div className="flex flex-row justify-center items-center gap-10 lg:gap-24 ">
+          {menuData.map((item: SubItem, index: number) => {
+            const isSelected = isMenuItemSelected(item);
+            const isOpen = openMenu === item.label;
 
-      return (
-        <div 
-          key={item.label} 
-          className="relative"
-          onMouseEnter={() => item.subItems && setOpenMenu(item.label)}
-          onMouseLeave={(e) => {
-            // Check if mouse is moving to dropdown
-            const relatedTarget = e.relatedTarget as HTMLElement;
-            if (!relatedTarget?.closest?.('.dropdown-container')) {
-              setOpenMenu(null);
-            }
-          }}
-        >
-          <Link href={item.link}>
-            <div className="flex items-center gap-2 pt-4 pb-2 cursor-pointer select-none justify-center relative group">
-              <div className="relative">
-                <span className={`font-['Open Sans'] font-semibold text-[16px] leading-[24px] transition-colors duration-300 ${
-                  isOpen ? 'text-[#C9A040]' : 'text-[#0C0C0C] group-hover:text-[#C9A040]'
-                }  `}>
-                  {item.label}
-                  
-                </span>
-                {isSelected  && (
-                  <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#C9A040] transition-all duration-300" />
-                )}
-                {
-                  item.label ==="Products"&& pathname==="/pages/products" && 
-                  <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#C9A040] transition-all duration-300" />
-                }
-               
-
-
-               
-                
-              </div>
-              {item.subItems && (
-                <ChevronDown
-                  size={20}
-                  className={`transition-all duration-300 ${
-                    isOpen 
-                      ? 'text-[#C9A040] rotate-180' 
-                      : 'text-[#0C0C0C] rotate-0 group-hover:text-[#C9A040]'
-                  }`}
-                />
-
-              )}
-              
-            </div>
-          </Link>
-
-          {item.subItems && (
-            <div 
-              className={`dropdown-container absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white shadow-lg rounded-lg border border-gray-200 z-50 p-4 w-max min-w-[300px] transition-all duration-300 ${
-                isOpen
-                  ? 'opacity-100 visible translate-y-0'
-                  : 'opacity-0 invisible -translate-y-1'
-              }`}
-              onMouseEnter={() => setOpenMenu(item.label)}
-              onMouseLeave={() => setOpenMenu(null)}
-            >
+            return (
               <div
-                className={`grid gap-4 ${
-                  item.subItems.length >= 3
-                    ? "md:grid-cols-3"
-                    : "md:grid-cols-1"
-                }`}
+                key={item.label}
+                className="relative"
+                onMouseEnter={() => item.subItems && setOpenMenu(item.label)}
+                onMouseLeave={(e) => {
+                  // Check if mouse is moving to dropdown
+                  const relatedTarget = e.relatedTarget as HTMLElement;
+                  if (!relatedTarget?.closest?.(".dropdown-container")) {
+                    setOpenMenu(null);
+                  }
+                }}
               >
-                {item.subItems.map((sub) => (
-                  <div key={sub.label}>
-                    <div className="font-semibold px-2 py-1 text-[#0C0C0C] cursor-pointer">
-                      <Link
-                        href={sub.link}
-                        className="block hover:text-[#C9A040] transition-colors duration-300 py-2"
-                        onClick={() => setOpenMenu(null)}
+                <Link href={item.link}>
+                  <div className="flex items-center gap-2 pt-4 pb-2 cursor-pointer select-none justify-center relative group">
+                    <div className="relative">
+                      <span
+                        className={`font-['Open Sans'] font-semibold text-[16px] leading-[24px] transition-colors duration-300 ${
+                          isOpen
+                            ? "text-[#C9A040]"
+                            : "text-[#0C0C0C] group-hover:text-[#C9A040]"
+                        }  `}
                       >
-                        {sub.label}
-                      </Link>
+                        {item.label}
+                      </span>
+                      {isSelected && (
+                        <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#C9A040] transition-all duration-300" />
+                      )}
+                      {item.label === "Products" &&
+                        pathname === "/pages/products" && (
+                          <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#C9A040] transition-all duration-300" />
+                        )}
                     </div>
-                    {sub.subItems && sub.subItems.map((inner) => (
-                      <div
-                        key={inner.label}
-                        className="pl-4 py-1"
-                      >
-                        <Link
-                          href={inner.link}
-                          className="block text-[#0C0C0C] hover:text-[#C9A040] transition-colors duration-300 py-2"
-                          onClick={() => setOpenMenu(null)}
-                        >
-                          {inner.label}
-                        </Link>
-                      </div>
-                    ))}
+                    {item.subItems && (
+                      <ChevronDown
+                        size={20}
+                        className={`transition-all duration-300 ${
+                          isOpen
+                            ? "text-[#C9A040] rotate-180"
+                            : "text-[#0C0C0C] rotate-0 group-hover:text-[#C9A040]"
+                        }`}
+                      />
+                    )}
                   </div>
-                ))}
+                </Link>
+
+                {item.subItems && (
+                  <div
+                    className={`dropdown-container absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white shadow-lg rounded-lg border border-gray-200 z-50 p-4 w-max min-w-[300px] transition-all duration-300 ${
+                      isOpen
+                        ? "opacity-100 visible translate-y-0"
+                        : "opacity-0 invisible -translate-y-1"
+                    }`}
+                    onMouseEnter={() => setOpenMenu(item.label)}
+                    onMouseLeave={() => setOpenMenu(null)}
+                  >
+                    <div
+                      className={`grid gap-4 ${
+                        item.subItems.length >= 3
+                          ? "md:grid-cols-3"
+                          : "md:grid-cols-1"
+                      }`}
+                    >
+                      {item.subItems.map((sub) => (
+                        <div key={sub.label}>
+                          <div className="font-semibold px-2 py-1 text-[#0C0C0C] cursor-pointer">
+                            <Link
+                              href={sub.link}
+                              className="block hover:text-[#C9A040] transition-colors duration-300 py-2"
+                              onClick={() => setOpenMenu(null)}
+                            >
+                              {sub.label}
+                            </Link>
+                          </div>
+                          {sub.subItems &&
+                            sub.subItems.map((inner) => (
+                              <div key={inner.label} className="pl-2 py-1">
+                                <Link
+                                  href={inner.link}
+                                  className="block text-[#0C0C0C] hover:text-[#C9A040] transition-colors duration-300 py-2"
+                                  onClick={() => setOpenMenu(null)}
+                                >
+                                  {inner.label}
+                                </Link>
+                              </div>
+                            ))}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            );
+          })}
         </div>
-      );
-    })}
-  </div>
-</nav>
+      </nav>
 
       {/* ---------- Mobile Modal Menu ---------- */}
       {mobileModalOpen && (

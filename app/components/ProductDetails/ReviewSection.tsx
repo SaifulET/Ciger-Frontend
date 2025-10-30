@@ -43,12 +43,12 @@ export default function ReviewsSection({
   return (
    <div className="bg-white rounded-lg shadow-sm mt-[16px] md:mt-[32px]  p-[16px] md:p-[32px]">
   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-    <div className="w-full md:w-auto text-center md:text-left pb-[16px] md:pb-[32px]">
-      <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900">Reviews</h2>
-      <p className="text-xs md:text-sm text-gray-600 mt-1">{product.totalReviews} reviews</p>
+    <div className="w-full md:w-auto text-center md:text-left md:pb-[32px]">
+      <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 text-left  ">Reviews</h2>
+      <p className="text-left text-xs md:text-sm text-gray-600 mt-1">{product.totalReviews} reviews</p>
     </div>
 
-    <div className="w-full flex justify-center lg:justify-end">
+    <div className="w-full flex justify-start lg:justify-end ">
       <button
       onClick={() => setShowReviewModal(true)}
       className="bg-[#C9A040] hover:bg-yellow-700 text-gray-900 text-xs md:text-sm font-semibold leading-[22px] px-3 py-2 md:px-5 md:py-3 rounded-lg flex items-center gap-2 "
