@@ -218,7 +218,7 @@ export default function Discount() {
     <section className="bg-white p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg">
       {/* Header */}
       <div className="flex  pb-[32px] ">
-        <h2 className="text-2xl flex-1 flex justify-center md:text-3xl font-bold text-gray-900">
+        <h2 className="text-2xl flex-1 flex justify-center md:text-3xl font-bold text-gray-900 pl-[48px] md:pl-[32px] ">
           Discount
         </h2>
         <Link
