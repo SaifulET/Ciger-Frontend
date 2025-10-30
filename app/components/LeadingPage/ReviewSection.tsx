@@ -215,7 +215,7 @@ export default function ReviewSection() {
       <div className="relative">
         {/* Header */}
         <div className="flex justify-center items-center pb-[32px]">
-          <h2 className="text-3xl font-bold text-gray-900 text-center">
+          <h2 className="text-[28px] font-bold text-gray-900 text-center">
             Words of praise from others about our products
           </h2>
         </div>

@@ -221,7 +221,7 @@ export default function NewArrival() {
     <section className="bg-white p-[16px] md:p-[32px] mt-[16px] md:mt-[32px] mx-[16px] md:mx-[32px] rounded-lg">
       {/* Header */}
       <div className="flex pb-[32px]">
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 flex-1 flex justify-center items-center pl-[50px]">
+        <h2 className="text-[28px] md:text-3xl font-bold text-gray-900 flex-1 flex justify-center items-center pl-[50px]">
           <span>New Arrivals</span>
         </h2>
         <Link
