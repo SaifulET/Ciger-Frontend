@@ -105,7 +105,7 @@ export default function RefundPolicy() {
       {/* Header */}
       <div className="bg-white shadow-sm  rounded-lg p-[16px] md:p-[32px] mb-[16px] md:mb-[32px]">
         <div className="  ">
-          <h1 className="text-4xl font-bold text-gray-900 text-center">
+          <h1 className="text-[28px] font-semibold text-gray-900 text-center">
             Refund Policy
           </h1>
         </div>
