@@ -203,7 +203,7 @@ export default function ProductCarousel() {
 
   return (
     <section className="bg-white mt-[16px] md:mt-[32px] mx-[16px] md:mx-[32px] rounded-lg">
-      <div className="p-[32px] relative">
+      <div className=" p-[16px] md:p-[32px] relative">
         {/* Header */}
         <div className="flex pb-[32px]">
           <h2 className="text-[28px] font-bold text-gray-900 flex-1 flex justify-center text-center pl-[48px] md:pl-[32px]">
