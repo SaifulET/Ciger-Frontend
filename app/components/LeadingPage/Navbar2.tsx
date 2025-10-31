@@ -105,7 +105,7 @@ const Navbar: React.FC = () => {
 
   const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && value.trim() !== "") {
-      router.push(`/pages/product?brandProduct=${encodeURIComponent(value)}`);
+      router.push(`/pages/products?brandProduct=${encodeURIComponent(value)}`);
       setValue("");
     }
   };
