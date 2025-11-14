@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import axios from "axios";
+import {AxiosError} from "axios";
+import api from "@/lib/axios";
 import Cookies from "js-cookie"
 import { getEmail, setEmail, unauthorized } from "../utility/utility";
 
@@ -38,9 +40,22 @@ interface UserStoreState {
   OtpOnChange: (name: string, value: string) => void;
 
   isFormSubmit: boolean;
+   UserLoginRequest: (
+    email: string,
+    password: string
+  ) => Promise<{ status: "success" | "error"; message?: string; token?: string }>;
+  UserSignupRequest: (
+  email: string,
+  password: string,
+  firstName: string,
+  lastName: string
+) => Promise<{ status: "success" | "error"; message?: string }>;
 
-  UserLoginRequest: (email: string,password:string) => Promise<boolean>;
-  VerifyLoginRequest: (otp: string) => Promise<boolean>;
+UserForgetPasswordRequest: (
+    email: string,
+  ) => Promise<{ status: "success" | "error"; message?: string; token?: string }>;
+
+  VerifyOtpRequest: (otp: string) => Promise<{ status: "success" | "error"; message?: string }>;
   UserLogoutRequest: () => Promise<string>;
 
   // Profile
@@ -91,35 +106,78 @@ const useUserStore = create<UserStoreState>()(
       isFormSubmit: false,
 
       // ---- API Calls ----
-      UserLoginRequest: async (email,password) => {
+UserLoginRequest: async (email, password) => {
+    try {
+      const res = await api.post("/auth/signin", {
+        email,
+        password,
+      });
+console.log("hellow")
+      Cookies.set("token", res.data.token);
+
+      return {
+        status: "success",
+        message: res.data.message,
+        token: res.data.token,
+      };
+    } catch (error: unknown) {
+      const err = error as AxiosError<{ message?: string }>;
+      console.log(err);
+      return {
+        status: "error",
+        message: err.response?.data?.message || err.message,
+      };
+    }
+  },
+
+
+       UserSignupRequest:async(email,password,firstName,lastName)=>{
         try {
-    const res = await axios.post("http://localhost:5001/auth/signin", { email, password });
-    console.log(res.data)
-     Cookies.set("token", res.data["token"]);
-          set({ isFormSubmit: false });
-          
-    
-    return res.data; // this is the server response
-  } catch (err: any) {
-    // return error message or throw
-    return { status: 'error', message: err.response?.data?.message || err.message };
+          const res= await api.post("/auth/signup",{ email, password,firstName,lastName })
+          console.log(res)
+          return res.data
+        } catch (error: unknown) {
+          const err = error as AxiosError<{ message: string }>;
+
+          return {
+            status: "error",
+            message: err.response?.data?.message || err.message,
+          };
+          }
+      },
+
+       UserForgetPasswordRequest:async(email)=>{
+        try {
+          const res= await api.post("/auth/forget-password",{ email })
+          console.log("eeee")
+          setEmail(email);
+          return res.data
+        } catch (error: unknown) {
+          const err = error as AxiosError<{ message: string }>;
+
+          return {
+            status: "error",
+            message: err.response?.data?.message || err.message,
+          };
+          }
+      },
+      
+
+     VerifyOtpRequest: async (otp) => {
+  set({ isFormSubmit: true });
+  const email = getEmail();
+  const res = await api.post("/api/VerifyOtp", { email, otp });
+
+  set({ isFormSubmit: false });
+
+  if (res.data.status === "success") {
+    return { status: "success", message: res.data.message };
+  } else {
+    return { status: "error", message: res.data.message };
   }
-      },
-
-      VerifyLoginRequest: async (otp) => {
-        set({ isFormSubmit: true });
-        const email = getEmail();
-        const res = await axios.post("/api/VerifyLogin", { email, otp });
-
-        if (res.data["status"] === "success") {
-          Cookies.set("token", res.data["token"]);
-          set({ isFormSubmit: false });
-          return true;
-        } else {
-          set({ isFormSubmit: false });
-          return false;
-        }
-      },
+}
+,
+     
 
       UserLogoutRequest: async () => {
         set({ isFormSubmit: true });
@@ -185,6 +243,7 @@ const useUserStore = create<UserStoreState>()(
             withCredentials: true,
           });
           return res.data["status"] === "success";
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {
           if (e.response?.status) {
             unauthorized(e.response.status);

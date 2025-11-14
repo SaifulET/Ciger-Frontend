@@ -5,11 +5,15 @@ import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import logo from "@/public/logo1.svg"
 import Image from 'next/image';
+import useUserStore from "@/app/store/userStore";
 
 const OTPVerification: React.FC = () => {
   const [otpValues, setOtpValues] = useState(['', '', '', '']);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string>("");
+    const {loginFormData,loginOnChange,VerifyOtpRequest}=useUserStore()
+
   const router = useRouter();
 
   useEffect(() => {
@@ -55,11 +59,24 @@ const OTPVerification: React.FC = () => {
     setFocusedIndex(null);
   };
 
-  const handleNext = () => {
+  const handleNext = async() => {
+
+    const res = await VerifyOtpRequest(otpValues.join(""));
+
+  if (res.status === "success") {
+    setErrorMessage("");
     router.push('/auth/new-password');
+  } else {
+    setErrorMessage(res.message || "Something went wrong");
+  }
+
+    
+    
   };
 
   const handleBackToLogin = () => {
+
+
     router.push('/auth/signin');
   };
 

@@ -20,17 +20,17 @@ const SignInPage: NextPage = () => {
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  e.preventDefault();
   const res = await UserLoginRequest(email, password);
-  if (res.success) {
-    setErrorMessage('');
-    router.push("/");
 
+  if (res.status === "success") {
+    setErrorMessage("");
+    router.push("/");
   } else {
     setErrorMessage(res.message || "Something went wrong");
   }
 };
+
 
   const handleCreateAccount = () => router.push("/auth/signup");
   const handleForgotPassword = () => router.push("/auth/forget-password");

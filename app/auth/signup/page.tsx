@@ -8,6 +8,9 @@ import { NextPage } from 'next';
 import { useRouter } from 'next/navigation'
 import Image from 'next/image';
 import logo from "@/public/logo1.svg"
+import useUserStore from "@/app/store/userStore";
+
+
 
 const SignUpPage: NextPage = () => {
   const [firstName, setFirstName] = useState<string>('');
@@ -17,6 +20,7 @@ const SignUpPage: NextPage = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
+  const {loginFormData,loginOnChange,UserSignupRequest}=useUserStore()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +28,9 @@ const SignUpPage: NextPage = () => {
     
     try {
       // Replace with your account creation logic
-      console.log('Sign up attempt:', { firstName, lastName, email, password });
+ const res = await UserSignupRequest(email, password,firstName,lastName);
+
+      console.log(res.message)
       router.push("/auth/signin")
     } catch (error) {
       console.error('Sign up error:', error);
