@@ -24,7 +24,7 @@ const ForgotPasswordPage: NextPage = () => {
     console.log(email)
     const res = await UserForgetPasswordRequest(email);
   console.log(res);
-    if (res.status === "success") {
+    if (res.message==="OTP sent to email" ) {
       router.push("/auth/otp");
     } else {
       setIsLoading(true)

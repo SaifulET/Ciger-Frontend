@@ -3,234 +3,146 @@ import { useState, useEffect } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
 import FiltersSidebar from "./FiltersSidebar";
 import ProductGrid from "./ProductGrid";
-import { ProductType } from "./ProductType";
 import { useRouter } from "next/navigation";
 import {
   DashboardSquare01Icon,
   LeftToRightListBulletIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { useProductStore } from "@/app/store/productStore";
+import { ProductType } from "./ProductType";
 
-const dummyProducts: ProductType[] = [
-  {
-    id: 1,
-    brand: "Marlboro",
-    name: "Good Stuff Natural",
-    image: "/product1.png",
-    originalPrice: "24.99",
-    currentPrice: "19.99",
-    newBestSeller: true,
-    inStock: true,
-    feature: ["Best Seller"],
-    category: "Tobacco Product",
-    subcategory: "Premium Cigars",
-  },
-  {
-    id: 2,
-    brand: "Winston",
-    name: "Premium Blend",
-    image: "/product2.png",
-    currentPrice: "17.49",
-    newSeller: true,
-    inStock: false,
-    feature: ["New Arrival"],
-    category: "Tobacco Product",
-    subcategory: "Machine-Made Cigars",
-  },
-  {
-    id: 3,
-    brand: "Winston",
-    name: "Organic Tobacco Mix",
-    image: "/product3.png",
-    currentPrice: "20.0",
-    inStock: true,
-    feature: [],
-    category: "Hokkah",
-    subcategory: "Hokkah Pipes",
-  },
-  {
-    id: 4,
-    brand: "Camel",
-    name: "Classic Tobacco",
-    image: "/product3.png",
-    currentPrice: "20.0",
-    inStock: true,
-    feature: [],
-    category: "Hokkah ",
-    subcategory: "Shisha Tobacco",
-  },
-  {
-    id: 5,
-    brand: "Camel",
-    name: "Turkish Royal",
-    image: "/product3.png",
-    currentPrice: "20.0",
-    inStock: true,
-    feature: [],
-    category: "Nicotine Vapes",
-    subcategory: "Disponals",
-  },
-  {
-    id: 6,
-    brand: "Wistern",
-    name: "Menthol Fresh",
-    image: "/product3.png",
-    currentPrice: "20.0",
-    inStock: true,
-    feature: [],
-    category: "Smokeless",
-    subcategory: "Chewing Tobacco",
-  },
-  {
-    id: 7,
-    brand: "Wistern",
-    name: "Pipe Tobacco",
-    image: "/product3.png",
-    currentPrice: "20.0",
-    inStock: true,
-    feature: [],
-    category: "General Accessories",
-    subcategory: "Lighters and Torch Lighters",
-  },
-  {
-    id: 8,
-    brand: "Wistern",
-    name: "Rolling Papers",
-    image: "/product3.png",
-    currentPrice: "20.0",
-    inStock: true,
-    feature: [],
-    category: "General Accessories",
-    subcategory: "Ashtrays",
-  },
-  {
-    id: 9,
-    brand: "Wistern",
-    name: "Lighters",
-    image: "/product3.png",
-    currentPrice: "20.0",
-    inStock: true,
-    feature: [],
-    category: "THC",
-    subcategory: "Flowers",
-  },
-  {
-    id: 10,
-    brand: "Wistern",
-    name: "Cigarette Tubes",
-    image: "/product3.png",
-    currentPrice: "20.0",
-    inStock: true,
-    feature: [],
-    category: "THC",
-    subcategory: "Pre-Rolls",
-  },
-  {
-    id: 11,
-    brand: "Camel",
-    name: "Filter Tips",
-    image: "/product3.png",
-    currentPrice: "20.0",
-    inStock: true,
-    feature: [],
-    category: "THC",
-    subcategory: "Edibles",
-  },
-  {
-    id: 12,
-    brand: "Camel",
-    name: "Premium Cigar",
-    image: "/product3.png",
-    currentPrice: "20.0",
-    inStock: true,
-    feature: [],
-    category: "THC",
-    subcategory: "Concentrates",
-  },
-];
+interface LocalFilters {
+  brand: string[];
+  availability: string[];
+  feature: string[];
+  priceRange: [number, number];
+  product: string[];
+}
 
 export default function ProductsPage() {
-  const [filters, setFilters] = useState({
-    brand: [] as string[],
-    availability: [] as string[],
-    feature: [] as string[],
-    priceRange: [0, 100] as [number, number],
-    product: [] as string[], // New product filter
+  const [localFilters, setLocalFilters] = useState<LocalFilters>({
+    brand: [],
+    availability: [],
+    feature: [],
+    priceRange: [0, 100],
+    product: [],
   });
+  
   const [currentPage, setCurrentPage] = useState(1);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isList, setIsList] = useState(false);
   const router = useRouter();
+  
+
+  const { 
+    products, 
+    loading, 
+    error, 
+    fetchProducts 
+  } = useProductStore();
 
   const pageSize = 6;
-  const [isList, setIsList] = useState(false);
 
-  // Reset to page 1 when filters change
+  // Client-side filtering function
+  const filterProducts = (products: ProductType[], filters: LocalFilters): ProductType[] => {
+    return products.filter(product => {
+      // Brand filter
+      if (filters.brand.length > 0 && !filters.brand.includes(product.brand)) {
+        return false;
+      }
+
+      // Feature filter
+      if (filters.feature.length > 0) {
+        if (filters.feature.includes("Best Seller") && !product.newBestSeller) {
+          return false;
+        }
+        if (filters.feature.includes("New Arrival") && !product.newSeller) {
+          return false;
+        }
+      }
+
+      // Category/Subcategory filter
+      if (filters.product.length > 0) {
+        const categoryMatch = filters.product.some(filter => {
+          const [category, subcategory] = filter.split("|");
+          const matchesCategory = category ? product.category === category : true;
+          const matchesSubcategory = subcategory ? product.subcategory === subcategory : true;
+          return matchesCategory && matchesSubcategory;
+        });
+        
+        if (!categoryMatch) {
+          return false;
+        }
+      }
+
+      // Availability filter
+      if (filters.availability.length > 0) {
+        if (filters.availability.includes("In Stock") && !product.inStock) {
+          return false;
+        }
+        if (filters.availability.includes("Out of Stock") && product.inStock) {
+          return false;
+        }
+      }
+
+      // Price range filter
+      const productPrice = parseFloat(product.currentPrice) || 0;
+      if (productPrice < filters.priceRange[0] || productPrice > filters.priceRange[1]) {
+        return false;
+      }
+
+      return true;
+    });
+  };
+
   useEffect(() => {
-    setCurrentPage(1);
-  }, [filters]);
+    fetchProducts();
+  }, [fetchProducts]);
 
-  // Apply filters
-  const filteredProducts = dummyProducts.filter((p) => {
-    const brandOk = filters.brand.length
-      ? filters.brand.includes(p.brand)
-      : true;
-    const availOk = filters.availability.length
-      ? filters.availability.includes(p.inStock ? "In Stock" : "Out of Stock")
-      : true;
-    const featureOk = filters.feature.length
-      ? filters.feature.every((f) =>
-          f === "Best Seller"
-            ? p.newBestSeller
-            : f === "New Arrival"
-            ? p.newSeller
-            : true
-        )
-      : true;
-    const price = parseFloat(p.currentPrice);
-    const priceOk =
-      price >= filters.priceRange[0] && price <= filters.priceRange[1];
-
-    // New product filter logic
-    const productOk = filters.product.length
-      ? filters.product.some((selectedProduct) => {
-          // Check if the selected product filter matches category or subcategory
-          const [category, subcategory] = selectedProduct.split("|");
-          if (subcategory) {
-            // If subcategory is specified, match both category and subcategory
-            return p.category === category && p.subcategory === subcategory;
-          } else {
-            // If only category is specified, match any product in that category
-            return p.category === category;
-          }
-        })
-      : true;
-
-    return brandOk && availOk && featureOk && priceOk && productOk;
-  });
-
+  const filteredProducts = filterProducts(products, localFilters);
   const totalPages = Math.ceil(filteredProducts.length / pageSize);
+  console.log(filteredProducts,"abc")
   const paginated = filteredProducts.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
 
   const handleAddCart = (id: number) => alert(`Add product ${id} to cart`);
-  const handleView = (id: number) => router.push(`/pages/product/`);
+  const handleView = (id: number) => router.push(`/pages/product/${id}`);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-64">
+        <div className="text-lg">Loading products...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-64">
+        <div className="text-red-500 text-lg">Error: {error}</div>
+        <button 
+          onClick={() => fetchProducts()}
+          className="ml-4 px-4 py-2 bg-blue-500 text-white rounded"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex  relative  py-[16px] md:py-0 mx-[16px] md:mx-[32px]">
-      {/* Desktop sidebar */}
+    <div className="flex relative py-[16px] md:py-0 mx-[16px] md:mx-[32px]">
       <aside className="hidden lg:block w-[320px] p-4 border-r border-gray-200 flex-shrink-0">
         <FiltersSidebar
-          filters={filters}
-          setFilters={setFilters}
-          products={dummyProducts}
+          filters={localFilters}
+          setFilters={setLocalFilters}
+          products={products}
         />
       </aside>
 
-      {/* Mobile sort button */}
-
-      {/* Mobile drawer */}
       {isSidebarOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
           <div className="w-4/5 md:w-1/2 bg-white shadow-lg p-4 overflow-y-auto">
@@ -241,9 +153,9 @@ export default function ProductsPage() {
               </button>
             </div>
             <FiltersSidebar
-              filters={filters}
-              setFilters={setFilters}
-              products={dummyProducts}
+              filters={localFilters}
+              setFilters={setLocalFilters}
+              products={products}
             />
           </div>
           <div
@@ -253,9 +165,8 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Product grid */}
-      <main className="w-full ">
-        <div className="flex justify-between  items-center lg:hidden w-full ">
+      <main className="w-full">
+        <div className="flex justify-between items-center lg:hidden w-full">
           <button
             onClick={() => setIsSidebarOpen(true)}
             className="flex items-center gap-2 bg-white px-4 py-2 rounded-md shadow-sm"
@@ -265,27 +176,20 @@ export default function ProductsPage() {
           </button>
           <div className="flex gap-3">
             <button
-              className={`${
-                isList === true ? "text-gray-500" : "text-gray-900"
-              } `}
-              onClick={() => {
-                setIsList(true);
-              }}
+              className={isList ? "text-gray-500" : "text-gray-900"}
+              onClick={() => setIsList(true)}
             >
               <HugeiconsIcon icon={LeftToRightListBulletIcon} />
             </button>
             <button
-              className={`${
-                isList === false ? "text-gray-500" : "text-gray-900"
-              } `}
-              onClick={() => {
-                setIsList(false);
-              }}
+              className={!isList ? "text-gray-500" : "text-gray-900"}
+              onClick={() => setIsList(false)}
             >
               <HugeiconsIcon icon={DashboardSquare01Icon} />
             </button>
           </div>
         </div>
+
         <ProductGrid
           products={paginated}
           totalCount={filteredProducts.length}

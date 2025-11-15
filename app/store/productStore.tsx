@@ -1,0 +1,128 @@
+import api from '@/lib/axios';
+import { create } from 'zustand';
+
+interface ProductType {
+  id: number;
+  brand: string;
+  name: string;
+  image: string;
+  originalPrice: string;
+  currentPrice: string;
+  newBestSeller: boolean;
+  newSeller: boolean;
+  inStock: boolean;
+  feature: string[];
+  category: string;
+  subcategory: string;
+  description: string;
+  discount: number;
+  price: number;
+  title: string;
+  averageRating: number;
+  available: number;
+  colors: string[];
+}
+
+interface ProductFilters {
+  brandId?: string;
+  feature?: string;
+  category?: string;
+  subCategory?: string;
+  discount?: string;
+  inStock?: string;
+}
+
+interface ProductState {
+  products: ProductType[];
+  loading: boolean;
+  error: string | null;
+  filters: ProductFilters;
+  fetchProducts: (filters?: ProductFilters) => Promise<void>;
+  setFilters: (filters: ProductFilters) => void;
+  clearFilters: () => void;
+}
+
+export const useProductStore = create<ProductState>((set, get) => ({
+  products: [],
+  loading: false,
+  error: null,
+  filters: {},
+
+  fetchProducts: async (filters = {}) => {
+    set({ loading: true, error: null });
+    
+    try {
+      const currentFilters = Object.keys(filters).length > 0 ? filters : get().filters;
+            console.log("aaaaaaad")
+
+      const response = await api.get('/product/getAllProduct', {
+        params: currentFilters
+      });
+      console.log(response)
+      if (response.status < 200 || response.status >= 300) {
+        throw new Error(`Failed to fetch products: ${response.status}`);
+      }
+      
+      const data = response.data;
+      
+      if (!data) {
+        throw new Error('No data received from server');
+      }
+
+      if (!data.success) {
+        throw new Error(data?.message || 'API returned unsuccessful response');
+      }
+
+      const productsArray = data.data || [];
+      
+      if (!Array.isArray(productsArray)) {
+        throw new Error('Invalid data format: expected an array of products');
+      }
+      
+      const transformedProducts: ProductType[] = productsArray.map((product) => ({
+        id: product._id,
+        brand: product.brand || '',
+        name: product.name || '',
+        image: product.images?.[0] || '/placeholder-product.png',
+        originalPrice: product.price?.toString() || '0',
+        currentPrice: product.currentPrice || product.price?.toString() || '0',
+        newBestSeller: product.isBest || false,
+        newSeller: product.isNew || false,
+        inStock: product.isInStock !== undefined ? product.isInStock : true,
+        feature: product.feature || [],
+        category: product.category || '',
+        subcategory: product.subCategory || '',
+        description: product.description || '',
+        discount: product.discount || 0,
+        price: product.price || 0,
+        title: product.title || '',
+        averageRating: product.averageRating || 0,
+        available: product.available || 0,
+        colors: product.colors || [],
+      }));
+
+      set({ 
+        products: transformedProducts, 
+        loading: false, 
+        error: null,
+        filters: currentFilters
+      });
+      
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch products';
+      
+      set({ 
+        error: errorMessage,
+        loading: false
+      });
+    }
+  },
+
+  setFilters: (filters: ProductFilters) => {
+    set({ filters });
+  },
+
+  clearFilters: () => {
+    set({ filters: {} });
+  },
+}));

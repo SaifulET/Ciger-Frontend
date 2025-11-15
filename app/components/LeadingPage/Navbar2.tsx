@@ -25,6 +25,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useRouter, usePathname } from "next/navigation";
+import useUserStore from "@/app/store/userStore";
 
 interface SubItem {
   label: string;
@@ -34,7 +35,6 @@ interface SubItem {
 }
 
 const Navbar: React.FC = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [value, setValue] = useState<string>("");
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [mobileModalOpen, setMobileModalOpen] = useState<boolean>(false);
@@ -49,6 +49,7 @@ const Navbar: React.FC = () => {
   const [isProduct, setIsProduct] = useState<boolean>(false);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
 
+  const { isLoggedIn, isLogin, UserLogoutRequest } = useUserStore();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -167,6 +168,13 @@ const Navbar: React.FC = () => {
     setTimeout(() => setIsAnimating(false), 300);
   };
 
+  // Handle logout
+  const handleLogout = async () => {
+    await UserLogoutRequest();
+    setDesktopProfileOpen(false);
+    setMobileProfileOpen(false);
+  };
+
   // Map menu items to icons
   const getMenuIcon = (label: string) => {
     const iconMap = {
@@ -183,99 +191,8 @@ const Navbar: React.FC = () => {
   // Don't render anything until client-side to avoid hydration mismatch
   if (!isClient) {
     return (
-      <header>
-        <div className="w-full h-auto text-black flex flex-col md:flex-row items-center px-4 md:px-10 gap-4 md:gap-6 bg-white pt-4 md:pt-8">
-          <div className=" flex-shrink-0 ">
-            <Image
-              className="rounded-full object-cover"
-              src={logo}
-              alt="Logo"
-              width={150}
-              height={150}
-            />
-          </div>
-          {/* Simple loading state for desktop search */}
-          <div className="hidden md:flex items-center justify-between gap-3 md:gap-4 w-full flex-nowrap">
-            <div className="relative flex-grow ml-0 md:ml-0">
-              <div className="w-full h-14 px-4 rounded-xl border border-gray-300 bg-[#EDEDED]" />
-            </div>
-          </div>
-        </div>
-        {/* Simple loading state for desktop menu */}
-        <nav className="hidden md:block bg-white w-full relative">
-          <div className="flex flex-row justify-center items-center gap-[72px] md:px-16">
-            {menuData.map((item: SubItem) => {
-              const isSelected = isMenuItemSelected(item);
-
-              return (
-                <div
-                  key={item.label}
-                  className="relative md:min-w-[80px] group"
-                  onMouseEnter={() => item.subItems && setOpenMenu(item.label)}
-                >
-                  <Link href={item.link}>
-                    <div className="flex items-center gap-2 py-2 cursor-pointer select-none justify-center md:justify-start relative">
-                      <span className="font-['Open Sans'] font-semibold text-[16px] leading-[24px] text-[#0C0C0C] group-hover:text-[#C9A040] transition-colors duration-300">
-                        {item.label}
-                      </span>
-                      {item.subItems && (
-                        <ChevronDown
-                          size={20}
-                          className="text-[#0C0C0C] md:ml-1 group-hover:text-[#C9A040] transition-colors duration-300"
-                        />
-                      )}
-                      {isSelected && (
-                        <span className="absolute bottom-0 w-3/5 h-1 bg-[#C9A040]" />
-                      )}
-                    </div>
-                  </Link>
-
-                  {item.subItems && openMenu === item.label && (
-                    <div
-                      className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white shadow-lg rounded-lg border border-gray-200 z-50 p-4 w-max min-w-[300px]"
-                      onMouseEnter={() => setOpenMenu(item.label)}
-                      onMouseLeave={() => setOpenMenu(null)}
-                    >
-                      <div
-                        className={`grid gap-4 ${
-                          item.subItems.length >= 3
-                            ? "md:grid-cols-3"
-                            : "md:grid-cols-1"
-                        }`}
-                      >
-                        {item.subItems.map((sub) => (
-                          <div key={sub.label}>
-                            <div className="font-semibold px-2 py-1 text-[#0C0C0C] cursor-pointer">
-                              <Link
-                                href={sub.link}
-                                className="block hover:text-[#C9A040] transition-colors duration-300 py-2"
-                                onClick={() => setOpenMenu(null)}
-                              >
-                                {sub.label}
-                              </Link>
-                            </div>
-                            {sub.subItems &&
-                              sub.subItems.map((inner) => (
-                                <div key={inner.label} className="pl-4 py-1">
-                                  <Link
-                                    href={inner.link}
-                                    className="block text-[#0C0C0C] hover:text-[#C9A040] transition-colors duration-300 py-2"
-                                    onClick={() => setOpenMenu(null)}
-                                  >
-                                    {inner.label}
-                                  </Link>
-                                </div>
-                              ))}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </nav>
+      <header className="relative">
+        <div className="w-full lg:pt-5 text-black flex flex-col md:flex-row items-center md:px-10 gap-4 md:gap-6 bg-white relative z-50 min-h-[80px]"></div>
       </header>
     );
   }
@@ -283,12 +200,12 @@ const Navbar: React.FC = () => {
   return (
     <header className="relative ">
       {/* ---------- Top bar (desktop & mobile) ---------- */}
-      <div className="w-full  lg:pt-5 text-black flex flex-col md:flex-row items-center  md:px-10 gap-4 md:gap-6 bg-white relative z-50">
+      <div className="w-full lg:pt-5 text-black flex flex-col md:flex-row items-center md:px-10 gap-4 md:gap-6 bg-white relative z-50">
         {/* Logo (top in mobile, left in desktop) */}
         <Link href="/pages/">
-          <div className="flex-shrink-0   ">
+          <div className="flex-shrink-0">
             <Image
-              className="object-cover w-0 lg:w-[220px] lg:h-[30px] "
+              className="object-cover w-0 lg:w-[220px] lg:h-[30px]"
               src={logo}
               alt="Logo"
             />
@@ -296,7 +213,7 @@ const Navbar: React.FC = () => {
         </Link>
 
         {/* Desktop: search + buttons + cart */}
-        <div className="hidden lg:flex items-center justify-between gap-3 md:gap-4 w-full flex-nowrap  ">
+        <div className="hidden lg:flex items-center justify-between gap-3 md:gap-4 w-full flex-nowrap">
           <div className="relative flex-grow ml-0 md:ml-0 max-h-[48px]">
             <input
               type="text"
@@ -319,25 +236,20 @@ const Navbar: React.FC = () => {
 
           {/* Buttons */}
           <div className="flex flex-row justify-end items-center gap-2 md:gap-4 flex-shrink-0">
+            {/* FIXED: Use isLoggedIn from Zustand store */}
             {!isLoggedIn ? (
               <>
                 <Link href="/auth/signup">
                   <button
                     onClick={() => setMobileProfileOpen(false)}
-                    className=" bg-[#F5F5F5] text-base not-italic font-semibold leading-6 px-6 md:px-8 py-2 md:py-4 rounded-lg hover:bg-gray-400 transition text-[#0C0C0C] whitespace-nowrap"
+                    className="bg-[#F5F5F5] text-base not-italic font-semibold leading-6 px-6 md:px-8 py-2 md:py-4 rounded-lg hover:bg-gray-400 transition text-[#0C0C0C] whitespace-nowrap"
                   >
                     Sign Up
                   </button>
                 </Link>
 
-                <Link href="#">
-                  <button
-                    onClick={() => {
-                      setIsLoggedIn(true);
-                      setMobileProfileOpen(false);
-                    }}
-                    className="text-base not-italic font-semibold leading-6 px-6 md:px-8 py-2 md:py-4 rounded-lg bg-[#C9A040] hover:bg-gray-400 transition text-[#0C0C0C] whitespace-nowrap"
-                  >
+                <Link href="/auth/signin">
+                  <button className="text-base not-italic font-semibold leading-6 px-6 md:px-8 py-2 md:py-4 rounded-lg bg-[#C9A040] hover:bg-gray-400 transition text-[#0C0C0C] whitespace-nowrap">
                     Login
                   </button>
                 </Link>
@@ -346,7 +258,7 @@ const Navbar: React.FC = () => {
               <div className="relative">
                 <div
                   onClick={() => setDesktopProfileOpen(!desktopProfileOpen)}
-                  className="flex items-center gap-2 text-base font-semibold px-6 md:px-8 py-3 md:py-5 rounded-lg  text-[#0C0C0C] transition"
+                  className="flex items-center gap-2 text-base font-semibold px-6 md:px-8 py-3 md:py-5 rounded-lg text-[#0C0C0C] transition cursor-pointer"
                 >
                   <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center">
                     <User size={20} />
@@ -397,10 +309,7 @@ const Navbar: React.FC = () => {
                     </Link>
                     <button
                       className="flex gap-2 w-full text-left px-3 py-2 rounded hover:bg-gray-100 cursor-pointer"
-                      onClick={() => {
-                        setIsLoggedIn(false);
-                        setDesktopProfileOpen(false);
-                      }}
+                      onClick={handleLogout}
                     >
                       <HugeiconsIcon icon={Logout01Icon} /> Logout
                     </button>
@@ -415,175 +324,167 @@ const Navbar: React.FC = () => {
         </div>
 
         {/* ---------- Mobile simplified header (visible only on small screens) ---------- */}
-        <div className="w-full lg:hidden ">
+        <div className="w-full lg:hidden">
           {/* Mobile Icon Row or Full-Width Search */}
-          <div className="px-[16px]   transition-all duration-300 w-full">
+          <div className="px-[16px] transition-all duration-300 w-full">
             {mobileSearchOpen ? (
               // Full-width search bar with X - with smooth transition
-              <div className="w-full ">
-                <div className=" flex  justify-between items-center">
-                {/* Hamburger - 5 columns (left) */}
-                <div className="flex justify-start gap-[8px]">
-                  <button
-                    aria-label="Menu"
-                    className=" transition-all duration-300 transform hover:scale-110"
-                    onClick={toggleMobileMenu}
-                  >
-                    <div className="relative w-6 h-6">
-                      <HugeiconsIcon
-                        icon={Menu01Icon}
-                        className={`absolute top-0 left-0 transition-all duration-300 ${
-                          mobileModalOpen
-                            ? "opacity-0 rotate-90"
-                            : "opacity-100 rotate-0"
-                        }`}
-                      />
-
-                      <X
-                        size={30}
-                        className={`absolute top-0 left-0 transition-all duration-300 ${
-                          mobileModalOpen
-                            ? "opacity-100 rotate-0"
-                            : "opacity-0 -rotate-90"
-                        }`}
-                      />
-                    </div>
-                  </button>
-                  <Link href="/pages/">
-                    <div className="flex justify-center items-center">
-                      <Image
-                        className="object-cover w-[220px] h-auto  "
-                        src={logo}
-                        alt="Logo"
-                      />
-                    </div>
-                  </Link>
-                </div>
-
-                {/* Icons container - 4 columns (right) */}
-                <div>
-                  {/* Search  icon */}
-                  <div className=" flex justify-between items-center">
-                    {/* Search icon */}
+              <div className="w-full">
+                <div className="flex justify-between items-center">
+                  {/* Hamburger - 5 columns (left) */}
+                  <div className="flex justify-start gap-[8px]">
                     <button
-                      aria-label="Search"
-                      className="p-1 transition-transform hover:scale-110"
-                      onClick={toggleMobileSearch}
+                      aria-label="Menu"
+                      className="transition-all duration-300 transform hover:scale-110"
+                      onClick={toggleMobileMenu}
                     >
-                      <HugeiconsIcon icon={Search01Icon} />
+                      <div className="relative w-6 h-6">
+                        <HugeiconsIcon
+                          icon={Menu01Icon}
+                          className={`absolute top-0 left-0 transition-all duration-300 ${
+                            mobileModalOpen
+                              ? "opacity-0 rotate-90"
+                              : "opacity-100 rotate-0"
+                          }`}
+                        />
+
+                        <X
+                          size={30}
+                          className={`absolute top-0 left-0 transition-all duration-300 ${
+                            mobileModalOpen
+                              ? "opacity-100 rotate-0"
+                              : "opacity-0 -rotate-90"
+                          }`}
+                        />
+                      </div>
                     </button>
+                    <Link href="/pages/">
+                      <div className="flex justify-center items-center">
+                        <Image
+                          className="object-cover w-[220px] h-auto"
+                          src={logo}
+                          alt="Logo"
+                        />
+                      </div>
+                    </Link>
+                  </div>
 
-                    {/* Cart icon */}
-                    <div
-                      aria-label="Cart"
-                      className="relative p-1"
-                      onClick={() => {
-                        setMobileCartOpen(!mobileCartOpen);
-                        setMobileProfileOpen(false);
-                        setMobileModalOpen(false);
-                        setMobileSearchOpen(false);
-                      }}
-                    >
-                      <CartPage />
-                    </div>
-
-                    {/* Profile icon */}
-                    <div className="relative">
+                  {/* Icons container - 4 columns (right) */}
+                  <div>
+                    {/* Search icon */}
+                    <div className="flex justify-between items-center">
+                      {/* Search icon */}
                       <button
-                        aria-label="Profile"
+                        aria-label="Search"
                         className="p-1 transition-transform hover:scale-110"
+                        onClick={toggleMobileSearch}
+                      >
+                        <HugeiconsIcon icon={Search01Icon} />
+                      </button>
+
+                      {/* Cart icon */}
+                      <div
+                        aria-label="Cart"
+                        className="relative p-1"
                         onClick={() => {
-                          setMobileProfileOpen(!mobileProfileOpen);
+                          setMobileCartOpen(!mobileCartOpen);
+                          setMobileProfileOpen(false);
                           setMobileModalOpen(false);
-                          setMobileCartOpen(false);
                           setMobileSearchOpen(false);
                         }}
                       >
-                        <HugeiconsIcon icon={UserIcon} />
-                      </button>
+                        <CartPage />
+                      </div>
 
-                      {/* Mobile profile dropdown */}
-                      {mobileProfileOpen && (
-                        <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 shadow-lg rounded-md z-50 p-3 animate-fadeIn">
-                          {!isLoggedIn ? (
-                            <div className="flex flex-col gap-2">
-                              <Link href="#">
-                                <button
-                                  className="flex gap-2 w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
-                                  onClick={() => {
-                                    setIsLoggedIn(true);
-                                    setMobileProfileOpen(false);
-                                  }}
-                                >
-                                  <HugeiconsIcon icon={UserIcon} /> Login
-                                </button>
-                              </Link>
-                              <Link href="/pages/signup">
-                                <button
-                                  className="flex gap-2 w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
+                      {/* Profile icon */}
+                      <div className="relative">
+                        <button
+                          aria-label="Profile"
+                          className="p-1 transition-transform hover:scale-110"
+                          onClick={() => {
+                            setMobileProfileOpen(!mobileProfileOpen);
+                            setMobileModalOpen(false);
+                            setMobileCartOpen(false);
+                            setMobileSearchOpen(false);
+                          }}
+                        >
+                          <HugeiconsIcon icon={UserIcon} />
+                        </button>
+
+                        {/* Mobile profile dropdown */}
+                        {mobileProfileOpen && (
+                          <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 shadow-lg rounded-md z-50 p-3 animate-fadeIn">
+                            {/* FIXED: Use isLoggedIn from Zustand store */}
+                            {!isLoggedIn ? (
+                              <div className="flex flex-col gap-2">
+                                <Link href="/auth/signin">
+                                  <button
+                                    className="flex gap-2 w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
+                                    onClick={() => setMobileProfileOpen(false)}
+                                  >
+                                    <HugeiconsIcon icon={UserIcon} /> Login
+                                  </button>
+                                </Link>
+                                <Link href="/auth/signup">
+                                  <button
+                                    className="flex gap-2 w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
+                                    onClick={() => setMobileProfileOpen(false)}
+                                  >
+                                    <HugeiconsIcon icon={SquareLock02Icon} /> Signup
+                                  </button>
+                                </Link>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col gap-1">
+                                <Link
+                                  href="/pages/profile"
                                   onClick={() => setMobileProfileOpen(false)}
                                 >
-                                  <HugeiconsIcon icon={SquareLock02Icon} />{" "}
-                                  Signup
+                                  <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
+                                    <HugeiconsIcon icon={UserIcon} /> Profile
+                                  </div>
+                                </Link>
+                                <Link
+                                  href="/pages/tracking"
+                                  onClick={() => setMobileProfileOpen(false)}
+                                >
+                                  <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
+                                    <HugeiconsIcon icon={PackageIcon} /> Tracking Number
+                                  </div>
+                                </Link>
+                                <Link
+                                  href="/pages/notification"
+                                  onClick={() => setMobileProfileOpen(false)}
+                                >
+                                  <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
+                                    <HugeiconsIcon icon={Notification01Icon} /> Notification
+                                  </div>
+                                </Link>
+                                <Link
+                                  href="/pages/orderhistory"
+                                  onClick={() => setMobileProfileOpen(false)}
+                                >
+                                  <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
+                                    <HugeiconsIcon icon={Clock05Icon} /> Order History
+                                  </div>
+                                </Link>
+                                <button
+                                  className="flex gap-2 text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
+                                  onClick={handleLogout}
+                                >
+                                  <HugeiconsIcon icon={Logout01Icon} /> Logout
                                 </button>
-                              </Link>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col gap-1">
-                              <Link
-                                href="/pages/profile"
-                                onClick={() => setMobileProfileOpen(false)}
-                              >
-                                <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
-                                  <HugeiconsIcon icon={UserIcon} /> Profile
-                                </div>
-                              </Link>
-                              <Link
-                                href="/pages/tracking"
-                                onClick={() => setMobileProfileOpen(false)}
-                              >
-                                <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
-                                  <HugeiconsIcon icon={PackageIcon} /> Tracking
-                                  Number
-                                </div>
-                              </Link>
-                              <Link
-                                href="/pages/notification"
-                                onClick={() => setMobileProfileOpen(false)}
-                              >
-                                <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
-                                  <HugeiconsIcon icon={Notification01Icon} />{" "}
-                                  Notification
-                                </div>
-                              </Link>
-                              <Link
-                                href="/pages/orderhistory"
-                                onClick={() => setMobileProfileOpen(false)}
-                              >
-                                <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
-                                  <HugeiconsIcon icon={Clock05Icon} /> Order
-                                  History
-                                </div>
-                              </Link>
-                              <button
-                                className="flex gap-2 text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
-                                onClick={() => {
-                                  setIsLoggedIn(false);
-                                  setMobileProfileOpen(false);
-                                }}
-                              >
-                                <HugeiconsIcon icon={Logout01Icon} /> Logout
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+
                 {/* Search input with slide-in animation */}
-                <div className="  flex w-full gap-2 transition-all duration-300 mb-4 animate-slideDown">
+                <div className="flex w-full gap-2 transition-all duration-300 mb-4 animate-slideDown">
                   <input
                     type="text"
                     value={value}
@@ -604,12 +505,12 @@ const Navbar: React.FC = () => {
               </div>
             ) : (
               // Grid container with 12 columns
-              <div className=" flex  justify-between items-center">
+              <div className="flex justify-between items-center">
                 {/* Hamburger - 5 columns (left) */}
                 <div className="flex justify-start gap-[8px]">
                   <button
                     aria-label="Menu"
-                    className=" transition-all duration-300 transform hover:scale-110"
+                    className="transition-all duration-300 transform hover:scale-110"
                     onClick={toggleMobileMenu}
                   >
                     <div className="relative w-6 h-6">
@@ -635,7 +536,7 @@ const Navbar: React.FC = () => {
                   <Link href="/pages/">
                     <div className="flex justify-center items-center">
                       <Image
-                        className="object-cover w-[220px] h-auto  "
+                        className="object-cover w-[220px] h-auto"
                         src={logo}
                         alt="Logo"
                       />
@@ -645,8 +546,8 @@ const Navbar: React.FC = () => {
 
                 {/* Icons container - 4 columns (right) */}
                 <div>
-                  {/* Search  icon */}
-                  <div className=" flex justify-between items-center">
+                  {/* Search icon */}
+                  <div className="flex justify-between items-center">
                     {/* Search icon */}
                     <button
                       aria-label="Search"
@@ -688,26 +589,23 @@ const Navbar: React.FC = () => {
                       {/* Mobile profile dropdown */}
                       {mobileProfileOpen && (
                         <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 shadow-lg rounded-md z-50 p-3 animate-fadeIn">
+                          {/* FIXED: Use isLoggedIn from Zustand store */}
                           {!isLoggedIn ? (
                             <div className="flex flex-col gap-2">
-                              <Link href="#">
-                                <button
-                                  className="flex gap-2 w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
-                                  onClick={() => {
-                                    setIsLoggedIn(true);
-                                    setMobileProfileOpen(false);
-                                  }}
-                                >
-                                  <HugeiconsIcon icon={UserIcon} /> Login
-                                </button>
-                              </Link>
-                              <Link href="/pages/signup">
+                              <Link href="/auth/signin">
                                 <button
                                   className="flex gap-2 w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
                                   onClick={() => setMobileProfileOpen(false)}
                                 >
-                                  <HugeiconsIcon icon={SquareLock02Icon} />{" "}
-                                  Signup
+                                  <HugeiconsIcon icon={UserIcon} /> Login
+                                </button>
+                              </Link>
+                              <Link href="/auth/signup">
+                                <button
+                                  className="flex gap-2 w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
+                                  onClick={() => setMobileProfileOpen(false)}
+                                >
+                                  <HugeiconsIcon icon={SquareLock02Icon} /> Signup
                                 </button>
                               </Link>
                             </div>
@@ -726,8 +624,7 @@ const Navbar: React.FC = () => {
                                 onClick={() => setMobileProfileOpen(false)}
                               >
                                 <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
-                                  <HugeiconsIcon icon={PackageIcon} /> Tracking
-                                  Number
+                                  <HugeiconsIcon icon={PackageIcon} /> Tracking Number
                                 </div>
                               </Link>
                               <Link
@@ -735,8 +632,7 @@ const Navbar: React.FC = () => {
                                 onClick={() => setMobileProfileOpen(false)}
                               >
                                 <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
-                                  <HugeiconsIcon icon={Notification01Icon} />{" "}
-                                  Notification
+                                  <HugeiconsIcon icon={Notification01Icon} /> Notification
                                 </div>
                               </Link>
                               <Link
@@ -744,16 +640,12 @@ const Navbar: React.FC = () => {
                                 onClick={() => setMobileProfileOpen(false)}
                               >
                                 <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
-                                  <HugeiconsIcon icon={Clock05Icon} /> Order
-                                  History
+                                  <HugeiconsIcon icon={Clock05Icon} /> Order History
                                 </div>
                               </Link>
                               <button
                                 className="flex gap-2 text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
-                                onClick={() => {
-                                  setIsLoggedIn(false);
-                                  setMobileProfileOpen(false);
-                                }}
+                                onClick={handleLogout}
                               >
                                 <HugeiconsIcon icon={Logout01Icon} /> Logout
                               </button>
@@ -770,6 +662,7 @@ const Navbar: React.FC = () => {
         </div>
       </div>
 
+      {/* Rest of your component remains the same... */}
       {/* ---------- Desktop Menu (unchanged) ---------- */}
       <nav className="hidden lg:block bg-white w-full relative pb-[24px]">
         <div className="flex flex-row justify-center items-center gap-10 lg:gap-24 ">
@@ -879,12 +772,12 @@ const Navbar: React.FC = () => {
         <div className="fixed inset-0 z-100 flex items-start justify-start pt-25 ">
           {/* Black Background */}
           <div
-            className="absolute inset-0  transition-opacity duration-300 animate-fadeIn"
+            className="absolute inset-0 transition-opacity duration-300 animate-fadeIn"
             onClick={toggleMobileMenu}
           />
 
           {/* Modal Menu Content - Starts from hamburger bottom with left padding */}
-          <div className="relative w-full lg:w-0  h-full bg-white shadow-xl z-60 transition-all duration-300 transform animate-slideInLeft overflow-hidden   ">
+          <div className="relative w-full lg:w-0 h-full bg-white shadow-xl z-60 transition-all duration-300 transform animate-slideInLeft overflow-hidden">
             {/* Scrollable menu content */}
             <div className="h-full overflow-y-auto pb-20">
               <div className="p-6 pl-8">
@@ -954,7 +847,7 @@ const Navbar: React.FC = () => {
                                   </Link>
 
                                   {sub.subItems && (
-                                    <div className=" mt-1">
+                                    <div className="mt-1">
                                       {sub.subItems.map((inner) => {
                                         const isInnerSelected =
                                           isMenuItemSelected(inner);

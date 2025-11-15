@@ -6,13 +6,14 @@ import { useRouter } from 'next/navigation';
 import logo from "@/public/logo1.svg"
 import Image from 'next/image';
 import useUserStore from "@/app/store/userStore";
+import { getEmail } from '@/app/utility/utility';
 
 const OTPVerification: React.FC = () => {
   const [otpValues, setOtpValues] = useState(['', '', '', '']);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>("");
-    const {loginFormData,loginOnChange,VerifyOtpRequest}=useUserStore()
+    const {loginFormData,loginOnChange,VerifyOtpRequest,UserForgetPasswordRequest}=useUserStore()
 
   const router = useRouter();
 
@@ -62,11 +63,14 @@ const OTPVerification: React.FC = () => {
   const handleNext = async() => {
 
     const res = await VerifyOtpRequest(otpValues.join(""));
+    console.log(res)
 
-  if (res.status === "success") {
-    setErrorMessage("");
+  if (res.message ==="OTP verified successfully") {
+    setErrorMessage("t");
+    console.log(res.message)
     router.push('/auth/new-password');
   } else {
+    console.log("y")
     setErrorMessage(res.message || "Something went wrong");
   }
 
@@ -79,6 +83,10 @@ const OTPVerification: React.FC = () => {
 
     router.push('/auth/signin');
   };
+  const handleBackToForgetPassword=async ()=>{
+     const email = getEmail();
+    await UserForgetPasswordRequest(email??"");
+  }
 
   return (
     <div className="min-h-screen bg-white relative overflow-hidden">
@@ -137,8 +145,15 @@ const OTPVerification: React.FC = () => {
               <span className="text-base font-medium text-gray-900">Next</span>
             </button>
 
+
+            {errorMessage && (
+              <p className="text-red-600 text-sm text-center">
+                {errorMessage}
+              </p>
+            )}
+
             {/* Resend text */}
-            <div className="text-center">
+            <div className="text-center"  onClick={handleBackToForgetPassword}>
               <p className="text-base text-gray-500">
                 Don&#39;t receive OTP? <span className="text-[#b59300] cursor-pointer hover:underline">Resend again</span>
               </p>

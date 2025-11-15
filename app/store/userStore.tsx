@@ -1,9 +1,9 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import axios from "axios";
-import {AxiosError} from "axios";
+import { AxiosError } from "axios";
 import api from "@/lib/axios";
-import Cookies from "js-cookie"
+import Cookies from "js-cookie";
 import { getEmail, setEmail, unauthorized } from "../utility/utility";
 
 // --------------------
@@ -29,6 +29,7 @@ interface Profile {
 }
 
 interface UserStoreState {
+  isLoggedIn: boolean; // Add this as state
   isLogin: () => boolean;
 
   // Login
@@ -40,22 +41,38 @@ interface UserStoreState {
   OtpOnChange: (name: string, value: string) => void;
 
   isFormSubmit: boolean;
-   UserLoginRequest: (
+  UserLoginRequest: (
     email: string,
     password: string
-  ) => Promise<{ status: "success" | "error"; message?: string; token?: string }>;
+  ) => Promise<{
+    status: "success" | "error";
+    message?: string;
+    token?: string;
+  }>;
   UserSignupRequest: (
-  email: string,
-  password: string,
-  firstName: string,
-  lastName: string
-) => Promise<{ status: "success" | "error"; message?: string }>;
-
-UserForgetPasswordRequest: (
     email: string,
-  ) => Promise<{ status: "success" | "error"; message?: string; token?: string }>;
+    password: string,
+    firstName: string,
+    lastName: string
+  ) => Promise<{ status: "success" | "error" | "false"; message?: string }>;
 
-  VerifyOtpRequest: (otp: string) => Promise<{ status: "success" | "error"; message?: string }>;
+  UserForgetPasswordRequest: (
+    email: string
+  ) => Promise<{
+    status: "success" | "error";
+    message?: string;
+    token?: string;
+  }>;
+
+  VerifyOtpRequest: (
+    otp: string
+  ) => Promise<{ status: "success" | "error"; message?: string }>;
+
+  UserNewPassword: (
+    password: string,
+    confirmPassword: string
+  ) => Promise<{ status: "success" | "error" | "false"; message?: string }>;
+
   UserLogoutRequest: () => Promise<string>;
 
   // Profile
@@ -67,17 +84,15 @@ UserForgetPasswordRequest: (
   ProfileSaveRequest: (PostBody: Profile) => Promise<boolean>;
 }
 
-
-
-
 // --------------------
 // Persisted Zustand store
 // --------------------
 
 const useUserStore = create<UserStoreState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       // ---- Auth ----
+      isLoggedIn: !!Cookies.get("token"), // Initialize based on current token
       isLogin: () => !!Cookies.get("token"),
 
       // ---- Login ----
@@ -106,52 +121,59 @@ const useUserStore = create<UserStoreState>()(
       isFormSubmit: false,
 
       // ---- API Calls ----
-UserLoginRequest: async (email, password) => {
-    try {
-      const res = await api.post("/auth/signin", {
-        email,
-        password,
-      });
-console.log("hellow")
-      Cookies.set("token", res.data.token);
-
-      return {
-        status: "success",
-        message: res.data.message,
-        token: res.data.token,
-      };
-    } catch (error: unknown) {
-      const err = error as AxiosError<{ message?: string }>;
-      console.log(err);
-      return {
-        status: "error",
-        message: err.response?.data?.message || err.message,
-      };
-    }
-  },
-
-
-       UserSignupRequest:async(email,password,firstName,lastName)=>{
+      UserLoginRequest: async (email, password) => {
         try {
-          const res= await api.post("/auth/signup",{ email, password,firstName,lastName })
-          console.log(res)
-          return res.data
+          const res = await api.post("/auth/signin", {
+            email,
+            password,
+          });
+          
+          Cookies.set("token", res.data.token);
+          set({ isLoggedIn: true }); // Update login state
+
+          return {
+            status: "success",
+            message: res.data.message,
+            token: res.data.token,
+          };
         } catch (error: unknown) {
+          const err = error as AxiosError<{ message?: string }>;
+          console.log(err);
+          return {
+            status: "error",
+            message: err.response?.data?.message || err.message,
+          };
+        }
+      },
+
+      UserSignupRequest: async (email, password, firstName, lastName) => {
+        try {
+          const res = await api.post("/auth/signup", {
+            email,
+            password,
+            firstName,
+            lastName,
+          });
+
+          return res.data;
+        } catch (error: unknown) {
+          console.log(error);
+
           const err = error as AxiosError<{ message: string }>;
 
           return {
             status: "error",
             message: err.response?.data?.message || err.message,
           };
-          }
+        }
       },
 
-       UserForgetPasswordRequest:async(email)=>{
+      UserForgetPasswordRequest: async (email) => {
         try {
-          const res= await api.post("/auth/forget-password",{ email })
-          console.log("eeee")
+          const res = await api.post("/auth/forget-password", { email });
+          console.log("eeee");
           setEmail(email);
-          return res.data
+          return res.data;
         } catch (error: unknown) {
           const err = error as AxiosError<{ message: string }>;
 
@@ -159,31 +181,46 @@ console.log("hellow")
             status: "error",
             message: err.response?.data?.message || err.message,
           };
-          }
+        }
       },
-      
 
-     VerifyOtpRequest: async (otp) => {
-  set({ isFormSubmit: true });
-  const email = getEmail();
-  const res = await api.post("/api/VerifyOtp", { email, otp });
+      VerifyOtpRequest: async (otp) => {
+        const email = getEmail();
+        console.log(email);
+        const res = await api.post("/auth/verifyOtp", { email, otp });
+        console.log("line173");
 
-  set({ isFormSubmit: false });
-
-  if (res.data.status === "success") {
-    return { status: "success", message: res.data.message };
-  } else {
-    return { status: "error", message: res.data.message };
-  }
-}
-,
-     
+        if (res.data.status === "success") {
+          console.log("dkd");
+          return { status: "success", message: res.data.message };
+        } else {
+          console.log(res);
+          return { status: "error", message: res.data.message };
+        }
+      },
+      UserNewPassword: async (password, confirmPassword) => {
+        const email = getEmail();
+        const res = await api.post("/auth/reset-password", {
+          email,
+          password,
+          confirmPassword,
+        });
+        console.log(res);
+        if (res.data.success === true) {
+          console.log("dkd");
+          return { status: "success", message: res.data.message };
+        } else {
+          console.log(res);
+          return { status: "error", message: res.data.message };
+        }
+      },
 
       UserLogoutRequest: async () => {
-        set({ isFormSubmit: true });
-        const res = await axios.get("/api/Logout");
+        console.log("logiout")
+        const res = await api.post("/auth/signout");
         Cookies.remove("token");
-        set({ isFormSubmit: false });
+        set({ isLoggedIn: false }); // Update login state
+       
         return res.data["status"];
       },
 
@@ -243,7 +280,7 @@ console.log("hellow")
             withCredentials: true,
           });
           return res.data["status"] === "success";
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {
           if (e.response?.status) {
             unauthorized(e.response.status);
@@ -256,6 +293,7 @@ console.log("hellow")
       name: "user-store", // key in localStorage
       partialize: (state) => ({
         // persist only what you need
+        isLoggedIn: state.isLoggedIn, // Add this to persist login state
         loginFormData: state.loginFormData,
         ProfileDetails: state.ProfileDetails,
         ProfileForm: state.ProfileForm,

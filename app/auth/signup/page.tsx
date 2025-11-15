@@ -19,6 +19,7 @@ const SignUpPage: NextPage = () => {
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const router = useRouter();
   const {loginFormData,loginOnChange,UserSignupRequest}=useUserStore()
 
@@ -29,10 +30,16 @@ const SignUpPage: NextPage = () => {
     try {
       // Replace with your account creation logic
  const res = await UserSignupRequest(email, password,firstName,lastName);
-
-      console.log(res.message)
+console.log(res)
+     if(res.status!=="error"){
       router.push("/auth/signin")
+     }
+     else{
+setErrorMessage(res.message ??"")
+     }
+      
     } catch (error) {
+      
       console.error('Sign up error:', error);
     } finally {
       setIsLoading(false);
@@ -167,6 +174,12 @@ const SignUpPage: NextPage = () => {
             "Create"
           )}
         </button>
+         {errorMessage && (
+              <p className="text-red-600 text-sm text-center">
+                {errorMessage}
+              </p>
+            )}
+
 
         {/* Login Link */}
         <p className="text-center text-gray-500 text-base leading-6 mb-[32px]">
@@ -179,6 +192,7 @@ const SignUpPage: NextPage = () => {
           >
             Login
           </button>
+
         </p>
 
       </form>
