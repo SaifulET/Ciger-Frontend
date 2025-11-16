@@ -1,2 +1,8 @@
-// types.ts
-export type Brand = { id: number; name: string; image: string };
+export type Brand = { 
+  _id: string; 
+  name: string; 
+  image: string;
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
+};

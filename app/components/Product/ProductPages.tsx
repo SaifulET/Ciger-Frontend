@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
 import FiltersSidebar from "./FiltersSidebar";
 import ProductGrid from "./ProductGrid";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   DashboardSquare01Icon,
   LeftToRightListBulletIcon,
@@ -21,6 +21,9 @@ interface LocalFilters {
 }
 
 export default function ProductsPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
   const [localFilters, setLocalFilters] = useState<LocalFilters>({
     brand: [],
     availability: [],
@@ -32,8 +35,7 @@ export default function ProductsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isList, setIsList] = useState(false);
-  const router = useRouter();
-  
+  const [pageSize, setPageSize] = useState(6);
 
   const { 
     products, 
@@ -42,7 +44,62 @@ export default function ProductsPage() {
     fetchProducts 
   } = useProductStore();
 
-  const pageSize = 6;
+  // Get exclusive filter from URL
+  const getExclusiveFilter = () => {
+    const category = searchParams.get('sub');
+    const brand = searchParams.get('brand');
+    const subcategory = searchParams.get('subPro');
+    const isNew = searchParams.get('new') === 'true';
+    const hasDiscount = searchParams.get('discount') === 'true';
+    const isBest = searchParams.get('best') === 'true';
+
+    if (category) return { type: 'category', value: category };
+    if (brand) return { type: 'brand', value: brand };
+    if (subcategory) return { type: 'subcategory', value: subcategory };
+    if (isNew) return { type: 'new', value: 'true' };
+    if (hasDiscount) return { type: 'discount', value: 'true' };
+    if (isBest) return { type: 'best', value: 'true' };
+    
+    return null;
+  };
+
+  // Build query parameters for fetchProducts
+  const buildQueryParams = () => {
+    const exclusiveFilter = getExclusiveFilter();
+    const params: Record<string, string> = {};
+
+    // Add exclusive filter if exists
+    if (exclusiveFilter) {
+      params[exclusiveFilter.type] = exclusiveFilter.value;
+    }
+
+    // Add pagination and sorting
+    const page = searchParams.get('page');
+    const sort = searchParams.get('sort');
+    const search = searchParams.get('search');
+    
+    if (page) params.page = page;
+    if (sort) params.sort = sort;
+    if (search) params.search = search;
+
+    return params;
+  };
+
+  useEffect(() => {
+    const queryParams = buildQueryParams();
+    fetchProducts(queryParams);
+  }, [searchParams, fetchProducts]);
+
+  useEffect(() => {
+    const updatePageSize = () => {
+      const width = window.innerWidth;
+      setPageSize(width >= 1440 ? 12 : width >= 768 ? 9 : 6);
+    };
+
+    updatePageSize();
+    window.addEventListener('resize', updatePageSize);
+    return () => window.removeEventListener('resize', updatePageSize);
+  }, []);
 
   // Client-side filtering function
   const filterProducts = (products: ProductType[], filters: LocalFilters): ProductType[] => {
@@ -96,13 +153,8 @@ export default function ProductsPage() {
     });
   };
 
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
-
   const filteredProducts = filterProducts(products, localFilters);
   const totalPages = Math.ceil(filteredProducts.length / pageSize);
-  console.log(filteredProducts,"abc")
   const paginated = filteredProducts.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
@@ -124,7 +176,7 @@ export default function ProductsPage() {
       <div className="flex justify-center items-center min-h-64">
         <div className="text-red-500 text-lg">Error: {error}</div>
         <button 
-          onClick={() => fetchProducts()}
+          onClick={() => fetchProducts(buildQueryParams())}
           className="ml-4 px-4 py-2 bg-blue-500 text-white rounded"
         >
           Retry

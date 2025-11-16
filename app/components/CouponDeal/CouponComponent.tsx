@@ -1,27 +1,60 @@
 // pages/index.tsx or any other component where you want to display CouponDeals
-import React from 'react';
+'use client'
+import React, { useEffect, useState } from 'react';
 import CouponDeals from './CouponCard';
+import api from '@/lib/axios';
+
+// Define the Discount type based on your schema
+interface Discount {
+  code: string;
+  percentage: number;
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 const CouponComponent = () => {
-  // Sample coupon data to pass as props
-  const coupons = [
-    {
-      couponCode: 'FZ92XYF6S7R',
-      description: 'Get 5% OFF your entire order when you spend $1000 or more. *Does not include ZYN*',
-    },
-    {
-      couponCode: 'FZ92XYF6S7R',
-      description: 'Get 5% OFF your entire order when you spend $1000 or more. *Does not include ZYN*',
-    },
-    {
-      couponCode: 'FZ92XYF6S7R',
-      description: 'Get 5% OFF your entire order when you spend $1000 or more. *Does not include ZYN*',
-    },
-  ];
+  const [coupons, setCoupons] = useState<Discount[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchDiscounts = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get("discount/getAllDiscount");
+        setCoupons(response.data);
+      } catch (err) {
+        setError('Failed to fetch discounts');
+        console.error('Error fetching discounts:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDiscounts();
+  }, []);
+
+  // Transform the API data to match the CouponDeals component props
+   let transformedCoupons;
+  if(coupons.length>0){
+    transformedCoupons = coupons.map(discount => ({
+    couponCode: discount.code,
+    description: discount.description || `Get ${discount.percentage}% OFF your purchase`
+  }));
+  }
+
+  if (loading) {
+    return <div>Loading coupons...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <div>
-      <CouponDeals coupons={coupons} />
+      <CouponDeals coupons={transformedCoupons} />
     </div>
   );
 };

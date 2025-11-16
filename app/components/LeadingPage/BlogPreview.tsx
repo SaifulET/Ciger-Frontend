@@ -2,17 +2,18 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import rightArrow from "@/public/rightArrow.svg";
-import Image, { StaticImageData } from "next/image";
+import Image from "next/image";
 import Leftarrow from "@/public/leftArrow.svg";
 import BlogCard from "../universalComponents/BlogCard";
-import blogImg from "@/public/blog.jpg";
 import Link from "next/link";
+import api from "@/lib/axios";
 
-type Product = {
-  id: number;
+// Use a different name to avoid conflict
+type Blog = {
+  _id: string;
   description: string;
-  title: string;
-  image: StaticImageData;
+  name: string;
+  image: string;
   link: string;
 };
 
@@ -31,15 +32,51 @@ export default function BlogCarousal() {
   const [isDraggingThumb, setIsDraggingThumb] = useState(false);
   const [isDraggingCarousel, setIsDraggingCarousel] = useState(false);
   const [isUsingButtons, setIsUsingButtons] = useState(false);
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const products: Product[] = Array.from({ length: 10 }).map((_, i) => ({
-    id: i + 1,
-    title: `Brand ${i + 1}`,
-    description: "Good Stuff Natural Pipe Tobacco - 16 oz. Bag",
-    image: blogImg,
-    link: "/pages/blog/123",
+  // Fetch blogs from backend API
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get('/blog/getAllBlogs');
+        console.log(response,"ad")
+        const result = await response.data;
+        
+       if (result.success) {
+  const transformedBlogs: Blog[] = (result.data as Array<{
+    _id: string;
+    name: string;
+    description: string;
+    image: string;
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+  }>).map((blog) => ({
+    _id: blog._id,
+    name: blog.name,
+    description: blog.description,
+    image: blog.image,
+    link: `/pages/blog/${blog._id}`
   }));
+  setBlogs(transformedBlogs);
+}else {
+          setError('Failed to fetch blogs');
+        }
+      } catch (err) {
+        setError('Error fetching blogs');
+        console.error('Error fetching blogs:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchBlogs();
+  }, []);
+
+  // ... rest of your existing functions (handlePrev, handleNext, onScroll, etc.) remain the same
   const handlePrev = useCallback(() => {
     if (emblaApi) {
       setIsUsingButtons(true);
@@ -82,7 +119,6 @@ export default function BlogCarousal() {
     [emblaApi]
   );
 
-  // ✅ Type-safe unified handler for mouse + touch (SAME AS BESTSELLER)
   const getClientX = (
     event:
       | MouseEvent
@@ -97,7 +133,6 @@ export default function BlogCarousal() {
     return event.clientX;
   };
 
-  // ✅ Updated onThumbDrag with touch support (SAME AS BESTSELLER)
   const onThumbDrag = useCallback(
     (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
       if (!scrollbarRef.current || !emblaApi) return;
@@ -148,7 +183,6 @@ export default function BlogCarousal() {
     [emblaApi, scrollToProgress]
   );
 
-  // ✅ Updated onTrackClick with touch support (SAME AS BESTSELLER)
   const onTrackClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
       if (!scrollbarRef.current || !emblaApi) return;
@@ -166,7 +200,6 @@ export default function BlogCarousal() {
     [emblaApi, scrollToProgress]
   );
 
-  // ✅ Fixed useEffect hooks (SAME AS BESTSELLER)
   useEffect(() => {
     if (!emblaApi) return;
 
@@ -208,6 +241,26 @@ export default function BlogCarousal() {
     };
   }, [emblaApi, onScroll]);
 
+  if (loading) {
+    return (
+      <section className="bg-white p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg">
+        <div className="flex justify-center items-center h-40">
+          <p>Loading blogs...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="bg-white p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg">
+        <div className="flex justify-center items-center h-40">
+          <p className="text-red-500">{error}</p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="bg-white p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg">
       <div className="relative">
@@ -239,12 +292,18 @@ export default function BlogCarousal() {
                 touchAction: "pan-y pinch-zoom",
               }}
             >
-              {products.map((product) => (
+              {blogs.map((blog) => (
                 <div
-                  key={product.id}
+                  key={blog._id}
                   className="flex-shrink-0 w-full sm:w-full md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] xl:w-[calc(33.333%-16px)]"
                 >
-                  <BlogCard product={product} />
+                  <BlogCard 
+                    product={{
+                      ...blog,
+                      title: blog.name, // Map name to title for BlogCard
+                      image: blog.image, // This will be string URL
+                    }}
+                  />
                 </div>
               ))}
             </div>
@@ -265,7 +324,7 @@ export default function BlogCarousal() {
           <Image src={rightArrow} width={12} height={12} alt="rightArrow" />
         </button>
 
-        {/* ✅ Updated Custom Scrollbar with touch support (SAME AS BESTSELLER) */}
+        {/* Custom Scrollbar */}
         <div className="flex justify-center mt-6">
           <div
             ref={scrollbarRef}

@@ -1,42 +1,79 @@
 "use client";
-import React from "react";
-import { brandsData } from "./brandsData"; // Import from external file
+import React, { useEffect, useState } from "react";
+import { getBrandsData } from "./brandsData";
+import { Brand } from "./types";
 import Link from "next/link";
 
-// Define Brand type
-interface Brand {
-  id: number;
-  name: string;
-}
+export default function BrandsPage() {
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-const brands: Brand[] = brandsData.brands;
+  useEffect(() => {
+    async function fetchBrands() {
+      try {
+        setLoading(true);
+        const result = await getBrandsData();
+        if (result.success) {
+          setBrands(result.data);
+        } else {
+          setError('Failed to load brands');
+        }
+      } catch (err) {
+        setError('Error fetching brands');
+      } finally {
+        setLoading(false);
+      }
+    }
 
-// Group brands by first letter
-const groupedBrands = new Map<string, Brand[]>();
-brands.forEach((brand: Brand) => {
-  const firstChar = brand.name.charAt(0);
-  let key = firstChar;
+    fetchBrands();
+  }, []);
 
-  // Check if the first character is a number
-  if (/^\d/.test(firstChar)) {
-    key = "#";
-  } else if (/^[A-Za-z]$/.test(firstChar)) {
-    key = firstChar.toUpperCase();
-  } else {
-    return; // Skip if it's neither letter nor number
+  // Group brands by first letter
+  const groupedBrands = new Map<string, Brand[]>();
+  brands.forEach((brand: Brand) => {
+    const firstChar = brand.name.charAt(0);
+    let key = firstChar;
+
+    // Check if the first character is a number
+    if (/^\d/.test(firstChar)) {
+      key = "#";
+    } else if (/^[A-Za-z]$/.test(firstChar)) {
+      key = firstChar.toUpperCase();
+    } else {
+      return; // Skip if it's neither letter nor number
+    }
+
+    if (!groupedBrands.has(key)) groupedBrands.set(key, []);
+    groupedBrands.get(key)?.push(brand);
+  });
+
+  const sortedKeys = Array.from(groupedBrands.keys()).sort((a, b) => {
+    if (a === "#") return -1; // "#" comes first
+    if (b === "#") return 1;
+    return a.localeCompare(b);
+  });
+
+  if (loading) {
+    return (
+      <section className="bg-white p-[16px] md:p-[32px] rounded-lg">
+        <div className="flex justify-center items-center h-32">
+          <p className="text-gray-600">Loading brands...</p>
+        </div>
+      </section>
+    );
   }
 
-  if (!groupedBrands.has(key)) groupedBrands.set(key, []);
-  groupedBrands.get(key)?.push(brand);
-});
+  if (error) {
+    return (
+      <section className="bg-white p-[16px] md:p-[32px] rounded-lg">
+        <div className="flex justify-center items-center h-32">
+          <p className="text-red-600">Error: {error}</p>
+        </div>
+      </section>
+    );
+  }
 
-const sortedKeys = Array.from(groupedBrands.keys()).sort((a, b) => {
-  if (a === "#") return -1; // "#" comes first
-  if (b === "#") return 1;
-  return a.localeCompare(b);
-});
-
-export default function BrandsPage() {
   return (
     <section className="bg-white p-[16px] md:p-[32px] rounded-lg">
       <div className="">
@@ -60,7 +97,7 @@ export default function BrandsPage() {
                   ?.sort((a, b) => a.name.localeCompare(b.name))
                   .map((brand: Brand) => (
                     <div 
-                      key={brand.id} 
+                      key={brand._id} 
                       className="text-gray-700 text-[14px] hover:text-[#C9A040] cursor-pointer transition-colors py-1"
                     >
                       <Link href={`/pages/products?brand=${brand.name}`}>{brand.name}</Link>

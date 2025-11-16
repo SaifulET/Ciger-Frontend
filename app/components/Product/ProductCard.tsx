@@ -7,7 +7,7 @@ import Link from "next/link";
 
 interface ProductCardProps {
   product: ProductType;
-  onAddCart: (id: number) => void;
+  onAddCart?: (id: number) => void;
   
 }
 
@@ -19,7 +19,7 @@ export default function ProductCard({ product, onAddCart}: ProductCardProps) {
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col h-full shadow-sm hover:shadow-md transition">
-      <Link href="/pages/products/12">
+      <Link href={`/pages/products/${product?.id}`}>
       
        <div className="flex-1 flex flex-col">
         {newbestSeller && (
@@ -51,8 +51,8 @@ export default function ProductCard({ product, onAddCart}: ProductCardProps) {
           </div>
           <h3 className="font-semibold text-gray-900 text-base line-clamp-2">{product?.name}</h3>
           <div className="flex items-baseline gap-2">
-            <span className="text-lg font-bold text-gray-900">${product?.currentPrice}</span>
-            {product?.originalPrice && <span className="text-lg text-gray-400 line-through">${product?.originalPrice}</span>}
+            <span className="text-lg font-bold text-gray-900">${parseFloat(product?.currentPrice.replace('$', '').trim())   }</span>
+            {product?.originalPrice && <span className="text-lg text-gray-400 line-through">${parseFloat(product?.originalPrice.replace('$', '').trim())   }</span>}
           </div>
         </div>
       </div>
@@ -71,3 +71,4 @@ export default function ProductCard({ product, onAddCart}: ProductCardProps) {
     </div>
   );
 }
+

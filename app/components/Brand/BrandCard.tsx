@@ -1,12 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-
-export type Brand = {
-  id: number;
-  name: string;
-  image: string;
-};
+import { Brand } from "./types";
 
 export default function BrandCard({ brand }: { brand: Brand }) {
   return (
@@ -15,7 +10,7 @@ export default function BrandCard({ brand }: { brand: Brand }) {
         <Link
           href={{
             pathname: "/pages/products",
-            query: { brand: "camel"},
+            query: { brand: brand.name },
           }}
         >
           <div className="w-20 h-20 relative flex-shrink-0">

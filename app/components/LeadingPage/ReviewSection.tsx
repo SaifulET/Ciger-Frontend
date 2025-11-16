@@ -6,15 +6,46 @@ import Image from "next/image";
 import Leftarrow from "@/public/leftArrow.svg";
 import profile from "@/public/profile.svg";
 import ReviewCard from "../universalComponents/ReviewCard";
+import api from "@/lib/axios";
 
-type Review = {
-  id: number;
+interface User {
+  _id: string;
+  email: string;
+  name?: string;
+  image?: string;
+  location?: string;
+}
+
+interface Product {
+  _id: string;
+  name: string;
+  title: string;
+}
+
+interface Review {
+  _id: string;
+  userId: User;
+  productId: Product;
+  review: string;
+  rating: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ApiResponse {
+  success: boolean;
+  count: number;
+  data: Review[];
+}
+
+interface ReviewCardData {
+  id: string;
   name: string;
   rating: number;
   location: string;
   review: string;
   image: string;
-};
+}
 
 export default function ReviewSection() {
   const [emblaRef, emblaApi] = useEmblaCarousel({
@@ -31,16 +62,41 @@ export default function ReviewSection() {
   const [isDraggingThumb, setIsDraggingThumb] = useState(false);
   const [isDraggingCarousel, setIsDraggingCarousel] = useState(false);
   const [isUsingButtons, setIsUsingButtons] = useState(false);
+  const [reviews, setReviews] = useState<ReviewCardData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const reviews: Review[] = Array.from({ length: 10 }).map((_, i) => ({
-    id: i + 1,
-    name: `name ${i + 1}`,
-    review: `"The team was professional, quick, and very careful with my furniture. They even reassembled my wardrobe perfectly. Highly recommend!"`,
-    location: `location ${i + 1}`,
-    rating: 4.5,
-    image: profile,
-    link: "#",
-  }));
+  // Fetch reviews from API
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await api.get<ApiResponse>('/review/getAllReview');
+        
+        if (response.data.success) {
+          const formattedReviews: ReviewCardData[] = response.data.data.map((review) => ({
+            id: review._id,
+            name: review.userId.name || review.userId.email.split('@')[0] || 'User',
+            rating: review.rating,
+            location: review.userId.location || '',
+            review: review.review,
+            image: review.userId.image || profile,
+          }));
+          setReviews(formattedReviews);
+        } else {
+          setError('Failed to fetch reviews');
+        }
+      } catch (err) {
+        setError('Error fetching reviews');
+        console.error('Error fetching reviews:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReviews();
+  }, []);
 
   const handlePrev = useCallback(() => {
     if (emblaApi) {
@@ -84,7 +140,6 @@ export default function ReviewSection() {
     [emblaApi]
   );
 
-  // ✅ Type-safe unified handler for mouse + touch (SAME AS BESTSELLER)
   const getClientX = (
     event:
       | MouseEvent
@@ -95,11 +150,9 @@ export default function ReviewSection() {
     if ("touches" in event && event.touches.length > 0) {
       return event.touches[0].clientX;
     }
-    // @ts-expect-error - clientX exists on MouseEvent
-    return event.clientX;
+    return (event as MouseEvent).clientX;
   };
 
-  // ✅ Updated onThumbDrag with touch support (SAME AS BESTSELLER)
   const onThumbDrag = useCallback(
     (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
       if (!scrollbarRef.current || !emblaApi) return;
@@ -150,7 +203,6 @@ export default function ReviewSection() {
     [emblaApi, scrollToProgress]
   );
 
-  // ✅ Updated onTrackClick with touch support (SAME AS BESTSELLER)
   const onTrackClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
       if (!scrollbarRef.current || !emblaApi) return;
@@ -168,7 +220,6 @@ export default function ReviewSection() {
     [emblaApi, scrollToProgress]
   );
 
-  // ✅ Fixed useEffect hooks (SAME AS BESTSELLER)
   useEffect(() => {
     if (!emblaApi) return;
 
@@ -209,6 +260,39 @@ export default function ReviewSection() {
       emblaApi.off("settle", onScroll);
     };
   }, [emblaApi, onScroll]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <section className="bg-white p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg">
+        <div className="flex justify-center items-center py-8">
+          <p className="text-gray-600">Loading reviews...</p>
+        </div>
+      </section>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <section className="bg-white p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg">
+        <div className="flex justify-center items-center py-8">
+          <p className="text-red-600">{error}</p>
+        </div>
+      </section>
+    );
+  }
+
+  // No reviews state
+  if (reviews.length === 0) {
+    return (
+      <section className="bg-white p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg">
+        <div className="flex justify-center items-center py-8">
+          <p className="text-gray-600">No reviews available</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="bg-white p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg">
@@ -258,7 +342,7 @@ export default function ReviewSection() {
           <Image src={rightArrow} width={12} height={12} alt="rightArrow" />
         </button>
 
-        {/* ✅ Updated Custom Scrollbar with touch support (SAME AS BESTSELLER) */}
+        {/* Custom Scrollbar */}
         <div className="flex justify-center mt-6">
           <div
             ref={scrollbarRef}

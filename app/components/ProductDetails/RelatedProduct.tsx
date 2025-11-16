@@ -5,34 +5,24 @@ import ProductCard from "../universalComponents/Card";
 import rightArrow from "@/public/rightArrow.svg";
 import Image from "next/image";
 import Leftarrow from "@/public/leftArrow.svg";
-import productImg from "@/public/product.svg";
-import Link from "next/link";
 import { RelatedProduct } from "./product";
-
-type Product = {
-  id: number;
-  brand: string;
-  name: string;
-  image: string;
-  originalPrice: string;
-  currentPrice: string;
-  newBestSeller?: boolean;
-  newSeller?: boolean;
-};
+import { useProductsStore } from "../../store/productDetailsStore";
 
 interface Props {
   relatedProducts: RelatedProduct[];
   currentIndex: number;
   setCurrentIndex: (index: number) => void;
-  onAddCart: (id: number) => void;
+ 
+
 }
 
 export default function RelatedProducts({
   relatedProducts,
   currentIndex,
   setCurrentIndex,
-  onAddCart,
+
 }: Props) {
+  const { loading } = useProductsStore();
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
     loop: false,
@@ -48,19 +38,15 @@ export default function RelatedProducts({
   const [isDraggingCarousel, setIsDraggingCarousel] = useState(false);
   const [isUsingButtons, setIsUsingButtons] = useState(false);
 
-  const products: Product[] = Array.from({ length: 10 }).map((_, i) => ({
-    id: i + 1,
-    brand: `Brand ${i + 1}`,
-    name: "Good Stuff Natural Pipe Tobacco - 16 oz. Bag",
-    image: productImg,
-    originalPrice: "19.97",
-    currentPrice: "19.97",
-    newBestSeller: false,
-    newSeller: true,
-  }));
+  const handleAddCart = (id: string) => {
+    console.log("Add to cart:", id);
+  
+  };
 
-  const handleAddCart = (id: number) => console.log("Add to cart:", id);
-  const handleView = (id: number) => console.log("View product:", id);
+  const handleView = (id: string) => {
+    console.log("View product:", id);
+    // You can implement navigation to product detail page
+  };
 
   const handlePrev = useCallback(() => {
     if (emblaApi) {
@@ -87,8 +73,7 @@ export default function RelatedProducts({
       if (!emblaApi) return;
 
       const engine = emblaApi.internalEngine();
-      const { limit, location, target, offsetLocation, scrollBody, translate } =
-        engine;
+      const { limit, location, target, offsetLocation, scrollBody, translate } = engine;
 
       const targetPosition = limit.max + (limit.min - limit.max) * progress;
 
@@ -104,7 +89,6 @@ export default function RelatedProducts({
     [emblaApi]
   );
 
-  // ✅ Type-safe unified handler for mouse + touch (SAME AS BESTSELLER)
   const getClientX = (
     event:
       | MouseEvent
@@ -115,11 +99,9 @@ export default function RelatedProducts({
     if ("touches" in event && event.touches.length > 0) {
       return event.touches[0].clientX;
     }
-    // @ts-expect-error - clientX exists on MouseEvent
-    return event.clientX;
+    return (event as MouseEvent).clientX;
   };
 
-  // ✅ Updated onThumbDrag with touch support (SAME AS BESTSELLER)
   const onThumbDrag = useCallback(
     (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
       if (!scrollbarRef.current || !emblaApi) return;
@@ -170,7 +152,6 @@ export default function RelatedProducts({
     [emblaApi, scrollToProgress]
   );
 
-  // ✅ Updated onTrackClick with touch support (SAME AS BESTSELLER)
   const onTrackClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
       if (!scrollbarRef.current || !emblaApi) return;
@@ -188,7 +169,6 @@ export default function RelatedProducts({
     [emblaApi, scrollToProgress]
   );
 
-  // ✅ Fixed useEffect hooks (SAME AS BESTSELLER)
   useEffect(() => {
     if (!emblaApi) return;
 
@@ -230,6 +210,25 @@ export default function RelatedProducts({
     };
   }, [emblaApi, onScroll]);
 
+  if (loading.related && relatedProducts.length === 0) {
+    return (
+      <div className="pb-[16px] md:pb-[32px]">
+        <div className="bg-white p-[16px] md:p-[32px] mt-[16px] md:mt-[32px] rounded-lg">
+          <h2 className="text-[28px] font-semibold text-gray-900 pb-[16px] md:pb-[32px]">
+            Products related to this item
+          </h2>
+          <div className="flex justify-center py-8">
+            <div className="text-gray-500">Loading related products...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (relatedProducts.length === 0) {
+    return null;
+  }
+
   return (
     <div className="pb-[16px] md:pb-[32px]">
       <div className="bg-white p-[16px] md:p-[32px] mt-[16px] md:mt-[32px] rounded-lg">
@@ -249,15 +248,14 @@ export default function RelatedProducts({
                 touchAction: "pan-y pinch-zoom",
               }}
             >
-              {products.map((product) => (
+              {relatedProducts.map((product) => (
                 <div
                   key={product.id}
                   className="flex-shrink-0 w-[calc(50%-8px)] sm:w-[calc(50%-8px)] md:w-[calc(33.333%-11px)] lg:w-[calc(25%-12px)]"
                 >
                   <ProductCard
                     product={product}
-                    onAddCart={handleAddCart}
-                    onView={handleView}
+                   
                   />
                 </div>
               ))}
@@ -278,7 +276,7 @@ export default function RelatedProducts({
             <Image src={rightArrow} width={12} height={12} alt="rightArrow" />
           </button>
 
-          {/* ✅ Updated Custom Scrollbar with touch support (SAME AS BESTSELLER) */}
+          {/* Custom Scrollbar */}
           <div className="flex justify-center mt-6">
             <div
               ref={scrollbarRef}

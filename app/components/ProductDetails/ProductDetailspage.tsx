@@ -6,91 +6,71 @@ import ProductDescription from "./ProductDescription";
 import ProductRatingSummary from "./ProductRatingSummary";
 import ReviewsSection from "./ReviewSection";
 import RelatedProducts from "./RelatedProduct";
-import { Product, RelatedProduct } from "./product";
-
-// Move mock data outside component to avoid regeneration
-const mockReviews = Array(26)
-  .fill(null)
-  .map((_, i) => ({
-    id: i + 1,
-    author: "Sarah Rodriguez",
-    location: "New York, USA",
-    rating: 5,
-    date: "15 days ago", // Fixed date instead of random
-    text: "This tastes like professional-grade, and tastes really smooth with my lungs. Highly recommended!"
-  }));
-
-const product: Product = {
-  id: 1,
-  brand: "Good Stuff",
-  name: "Red Pipe Tobacco",
-  title: "Good Stuff Red Pipe Tobacco",
-  price: 19.97,
-  originalPrice: 24.99,
-  inStock: true,
-  newArrival: false,
-  bestSeller: true,
-  images: ["https://www.smoke-king.co.uk/cdn/shop/files/3lhu0xaylcd.jpg?v=1715968268&width=360", "https://www.smoke-king.co.uk/cdn/shop/files/tp2wcc2x0bl.jpg?v=1716906307&width=360", "https://www.smoke-king.co.uk/cdn/shop/files/lqnt4yywaq2.jpg?v=1716906474&width=360"],
-  colors: ["Red", "Black", "Brown", "Blue"],
-  description: "A rich blend of premium pipe tobacco. Enjoy smooth and flavorful smoking experience.A rich blend of premium pipe tobacco. Enjoy smooth and flavorful smoking experience.A rich blend of premium pipe tobacco. Enjoy smooth and flavorful smoking experience.A rich blend of premium pipe tobacco. Enjoy smooth and flavorful smoking experience.A rich blend of premium pipe tobacco. Enjoy smooth and flavorful smoking experience.A rich blend of premium pipe tobacco. Enjoy smooth and flavorful smoking experience.",
-  reviews: mockReviews,
-  totalReviews: 26,
-  averageRating: 4.9,
-  ratingBreakdown: { 5: 20, 4: 5, 3: 0, 2: 0, 1: 1 }
-};
-
-const relatedProducts: RelatedProduct[] = [
-  { id: 1, brand: "Good Stuff", name: "Red Pipe Tobacco - 11 oz Bag", image: "https://www.smoke-king.co.uk/cdn/shop/files/3lhu0xaylcd.jpg?v=1715968268&width=360", currentPrice: "12.99", originalPrice: "15.99", newBestSeller: true },
-  { id: 2, brand: "Good Stuff", name: "Red Pipe Tobacco - 11 oz Bag", image: "https://www.smoke-king.co.uk/cdn/shop/files/3lhu0xaylcd.jpg?v=1715968268&width=360", currentPrice: "12.99" },
-  { id: 3, brand: "Good Stuff", name: "Red Pipe Tobacco - 11 oz Bag", image: "https://www.smoke-king.co.uk/cdn/shop/files/3lhu0xaylcd.jpg?v=1715968268&width=360", currentPrice: "12.99" },
-  { id: 4, brand: "Good Stuff", name: "Red Pipe Tobacco - 11 oz Bag", image: "https://www.smoke-king.co.uk/cdn/shop/files/3lhu0xaylcd.jpg?v=1715968268&width=360", currentPrice: "12.99" },
-  { id: 5, brand: "Good Stuff", name: "Red Pipe Tobacco - 11 oz Bag", image: "https://www.smoke-king.co.uk/cdn/shop/files/3lhu0xaylcd.jpg?v=1715968268&width=360", currentPrice: "12.99" },
-  { id: 6, brand: "Good Stuff", name: "Red Pipe Tobacco - 11 oz Bag", image: "https://www.smoke-king.co.uk/cdn/shop/files/3lhu0xaylcd.jpg?v=1715968268&width=360", currentPrice: "12.99" }
-];
+import { useProductsStore } from "../../store/productDetailsStore";
+import { useParams } from "next/navigation";
 
 export default function ProductDetailPage() {
+  const params = useParams();
+  const productId = params.id as string;
+  
   const [isClient, setIsClient] = useState(false);
-
-  // Cart State
-  const [cartItems, setCartItems] = useState(0);
-
-  // Product States
   const [quantity, setQuantity] = useState(1);
-  const [selectedColor, setSelectedColor] = useState("Red");
+  const [selectedColor, setSelectedColor] = useState("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  // Review States
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewText, setReviewText] = useState("");
   const [rating, setRating] = useState(5);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [currentReviewPage, setCurrentReviewPage] = useState(1);
+
   const reviewsPerPage = 5;
 
-  // Related products carousel
-  const [relatedIndex, setRelatedIndex] = useState(0);
+  // Zustand store
+  const {
+    currentProduct,
+    relatedProducts,
+    reviews,
+    cartItems,
+    loading,
+    fetchProductById,
+    addToCart,
+    setCartItems,
+    addReview,
+  } = useProductsStore();
 
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    if (productId) {
+      fetchProductById(productId);
+    }
+  }, [productId, fetchProductById]);
+
+  useEffect(() => {
+    if (currentProduct?.colors?.[0]) {
+      setSelectedColor(currentProduct.colors[0]);
+    }
+  }, [currentProduct]);
 
   const handleAddToCart = () => {
-    setCartItems(cartItems + quantity);
+    addToCart(quantity);
     setQuantity(1);
   };
 
   const handleAddReview = () => {
     if (reviewText.trim() && rating > 0) {
+      addReview(productId, {
+        text: reviewText,
+        rating: rating,
+      });
       setShowReviewModal(false);
       setReviewText("");
-      setRating(0);
+      setRating(5);
     }
   };
 
-  // Prevent hydration by not rendering until client-side
   if (!isClient) {
     return (
-      <div className="min-h-screen ">
+      <div className="min-h-screen">
         <div className="animate-pulse">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="bg-gray-300 h-[500px] rounded"></div>
@@ -101,18 +81,34 @@ export default function ProductDetailPage() {
     );
   }
 
+  if (loading.product && !currentProduct) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl">Loading product...</div>
+      </div>
+    );
+  }
+
+  if (!currentProduct) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl text-red-600">Product not found</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen mx-[16px] md:mx-[32px]">
       <main className="">
         {/* Product Section */}
-        <div className=" pt-[16px] md:pt-[32px] grid grid-cols-1 lg:grid-cols-2 gap-[16px] md:gap-[32px]">
+        <div className="pt-[16px] md:pt-[32px] grid grid-cols-1 lg:grid-cols-2 gap-[16px] md:gap-[32px]">
           <ProductImages 
-            images={product.images} 
+            images={currentProduct.images} 
             currentImageIndex={currentImageIndex} 
             setCurrentImageIndex={setCurrentImageIndex} 
           />
           <ProductInfo
-            product={product}
+            product={currentProduct}
             quantity={quantity}
             setQuantity={setQuantity}
             selectedColor={selectedColor}
@@ -122,13 +118,13 @@ export default function ProductDetailPage() {
         </div>
 
         {/* Product Description */}
-        <ProductDescription description={product.description} />
+        <ProductDescription description={currentProduct.description} />
 
         {/* Rating Summary */}
         <ProductRatingSummary 
-          averageRating={product.averageRating} 
-          totalReviews={product.totalReviews} 
-          ratingBreakdown={product.ratingBreakdown}
+          averageRating={currentProduct.averageRating} 
+          totalReviews={currentProduct.totalReviews} 
+          ratingBreakdown={currentProduct.ratingBreakdown}
           showReviewModal={showReviewModal}
           setShowReviewModal={setShowReviewModal}
           reviewText={reviewText}
@@ -143,7 +139,7 @@ export default function ProductDetailPage() {
 
         {/* Reviews */}
         <ReviewsSection
-          product={product}
+          product={currentProduct}
           showReviewModal={showReviewModal}
           setShowReviewModal={setShowReviewModal}
           reviewText={reviewText}
@@ -161,9 +157,9 @@ export default function ProductDetailPage() {
         {/* Related Products */}
         <RelatedProducts 
           relatedProducts={relatedProducts} 
-          currentIndex={relatedIndex} 
-          setCurrentIndex={setRelatedIndex}
-          onAddCart={()=>{}} 
+          currentIndex={0} 
+          setCurrentIndex={() => {}} 
+          
         />
       </main>
     </div>

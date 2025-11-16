@@ -24,41 +24,52 @@ interface ProductType {
 }
 
 interface ProductFilters {
-  brandId?: string;
-  feature?: string;
   category?: string;
+  brand?: string;
   subCategory?: string;
+  new?: string;
   discount?: string;
-  inStock?: string;
+  best?: string;
+  page?: string;
+  sort?: string;
+  search?: string;
 }
 
 interface ProductState {
   products: ProductType[];
   loading: boolean;
   error: string | null;
-  filters: ProductFilters;
   fetchProducts: (filters?: ProductFilters) => Promise<void>;
-  setFilters: (filters: ProductFilters) => void;
-  clearFilters: () => void;
 }
 
-export const useProductStore = create<ProductState>((set, get) => ({
+export const useProductStore = create<ProductState>((set) => ({
   products: [],
   loading: false,
   error: null,
-  filters: {},
 
   fetchProducts: async (filters = {}) => {
     set({ loading: true, error: null });
     
     try {
-      const currentFilters = Object.keys(filters).length > 0 ? filters : get().filters;
-            console.log("aaaaaaad")
-
-      const response = await api.get('/product/getAllProduct', {
-        params: currentFilters
-      });
+      // Build query parameters - only include defined filters
+      const params: Record<string, string> = {};
+      
+      // Add exclusive filters
+      if (filters.category) params.category = filters.category;
+      if (filters.brand) params.brand = filters.brand;
+      if (filters.subCategory) params.subCategory = filters.subCategory;
+      if (filters.new) params.new = filters.new;
+      if (filters.discount) params.discount = filters.discount;
+      if (filters.best) params.best = filters.best;
+      
+      // Add other parameters
+      if (filters.page) params.page = filters.page;
+      if (filters.sort) params.sort = filters.sort;
+      if (filters.search) params.search = filters.search;
+console.log(params)
+      const response = await api.get('/product/getAllProduct', { params });
       console.log(response)
+
       if (response.status < 200 || response.status >= 300) {
         throw new Error(`Failed to fetch products: ${response.status}`);
       }
@@ -105,7 +116,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
         products: transformedProducts, 
         loading: false, 
         error: null,
-        filters: currentFilters
       });
       
     } catch (error: unknown) {
@@ -116,13 +126,5 @@ export const useProductStore = create<ProductState>((set, get) => ({
         loading: false
       });
     }
-  },
-
-  setFilters: (filters: ProductFilters) => {
-    set({ filters });
-  },
-
-  clearFilters: () => {
-    set({ filters: {} });
   },
 }));

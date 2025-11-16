@@ -1,21 +1,85 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import ProductCard from "../universalComponents/Card";
 import Image from "next/image";
 import rightArrow from "@/public/rightArrow.svg";
 import Leftarrow from "@/public/leftArrow.svg";
-import productImg from "@/public/product.svg";
 import Link from "next/link";
+import api from "@/lib/axios";
+import ProductCard from "../Product/ProductCard";
+import { ProductType } from "../Product/ProductType";
+
+type ProductApiItem = {
+  _id: string;
+  name: string;
+  images: string[];
+  title: string;
+  price: number;
+  discount: number;
+  currentPrice: string;
+  averageRating: number;
+  isBest: boolean;
+  isNew: boolean;
+  newBestSeller: boolean;
+  newSeller: boolean;
+  brand: string;
+  available: number;
+  inStock: boolean;
+};
+
+type ApiResponseData = {
+  success: boolean;
+  status: number;
+  count: number;
+  data: ProductApiItem[];
+};
+
+type ApiResponseWrapper = {
+  data: ApiResponseData;
+  status: number;
+  statusText: string;
+  headers: Record<string, string>;
+  config: {
+    url?: string;
+    method?: string;
+    headers?: Record<string, string>;
+    baseURL?: string;
+    timeout?: number;
+  };
+};
 
 type Product = {
-  id: number;
+  id: string;
   brand: string;
   name: string;
   image: string;
-  originalPrice: string;
+  originalPrice?: string;
   currentPrice: string;
-  newBestSeller?: boolean;
+  newBestSeller: boolean;
+  newSeller: boolean;
+   inStock?: boolean;
+  feature?: string;
+  category?: string;
+  subcategory?: string;
+};
+
+type NestedApiResponse = {
+  data: ProductApiItem[];
+  success?: boolean;
+  status?: number;
+  count?: number;
+};
+
+const validateImageUrl = (url: string | null | undefined): string => {
+  if (!url || url === 'null' || url === 'undefined' || url === '' || url.startsWith('null')) {
+    return "/default-product.png";
+  }
+  
+  if (url.startsWith('http') || url.startsWith('/')) {
+    return url;
+  }
+  
+  return `/${url}`;
 };
 
 export default function BestSeller() {
@@ -33,47 +97,89 @@ export default function BestSeller() {
   const [isDraggingThumb, setIsDraggingThumb] = useState(false);
   const [isDraggingCarousel, setIsDraggingCarousel] = useState(false);
   const [isUsingButtons, setIsUsingButtons] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const products: Product[] = Array.from({ length: 10 }).map((_, i) => ({
-    id: i + 1,
-    brand: `Brand ${i + 1}`,
-    name: "Good Stuff Natural Pipe Tobacco - 16 oz. Bag",
-    image: productImg,
-    originalPrice: "19.97",
-    currentPrice: "19.97",
-    newBestSeller: true,
-  }));
+  const fetchProducts = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response: ApiResponseWrapper = await api.get("/product/getAllProduct?best=true");
+      console.log("Full API Response:", response);
+      
+      if (response.status !== 200) {
+        throw new Error(`Failed to fetch products: HTTP ${response.status}`);
+      }
 
-  const handleAddCart = (id: number) => console.log("Add to cart:", id);
-  const handleView = (id: number) => console.log("View product:", id);
+      const responseData = response.data;
+      
+      if (!responseData.success) {
+        throw new Error("API returned unsuccessful response");
+      }
 
-  const handlePrev = useCallback(() => {
-    if (emblaApi) {
-      setIsUsingButtons(true);
-      emblaApi.scrollPrev();
+      let productsArray: ProductApiItem[] = [];
+
+      if (Array.isArray(responseData.data)) {
+        productsArray = responseData.data;
+      } else if (responseData.data && Array.isArray((responseData.data as NestedApiResponse).data)) {
+        productsArray = (responseData.data as NestedApiResponse).data;
+      } else {
+        console.warn("Unexpected API response structure:", responseData);
+        throw new Error("Unexpected API response format");
+      }
+      
+      if (productsArray.length === 0) {
+        console.warn("No products found in response");
+        setProducts([]);
+        return;
+      }
+      
+      const formattedProducts: Product[] = productsArray.map((item: ProductApiItem) => {
+        const imageUrl = item.images && Array.isArray(item.images) && item.images.length > 0 
+          ? validateImageUrl(item.images[0])
+          : "/default-product.png";
+
+        const originalPrice = item.discount > 0 && item.price > 0 
+          ? `$${item.price.toFixed(2)}`
+          : undefined;
+
+        const currentPriceValue = item.currentPrice || item.price;
+        const currentPrice = currentPriceValue 
+          ? `$${typeof currentPriceValue === 'number' ? currentPriceValue.toFixed(2) : currentPriceValue}`
+          : "$0.00";
+
+        return {
+          id: item._id || `product-${Math.random().toString(36).substr(2, 9)}`,
+          brand: item.brand || "Unknown Brand",
+          name: item.name || item.title || "Product Name",
+          image: imageUrl,
+          originalPrice,
+          currentPrice,
+          newBestSeller: Boolean(item.newBestSeller || item.isBest),
+          newSeller: Boolean(item.newSeller || item.isNew)
+        };
+      });
+      
+      console.log("Formatted products:", formattedProducts);
+      setProducts(formattedProducts);
+
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to load products";
+      setError(errorMessage);
+      console.error("Error fetching products:", err);
+    } finally {
+      setLoading(false);
     }
-  }, [emblaApi]);
-
-  const handleNext = useCallback(() => {
-    if (emblaApi) {
-      setIsUsingButtons(true);
-      emblaApi.scrollNext();
-    }
-  }, [emblaApi]);
-
-  const onScroll = useCallback(() => {
-    if (!emblaApi || isDraggingThumb) return;
-    const progress = Math.max(0, Math.min(1, emblaApi.scrollProgress()));
-    setScrollProgress(progress);
-  }, [emblaApi, isDraggingThumb]);
+  }, []);
 
   const scrollToProgress = useCallback(
     (progress: number) => {
       if (!emblaApi) return;
 
       const engine = emblaApi.internalEngine();
-      const { limit, location, target, offsetLocation, scrollBody, translate } =
-        engine;
+      const { limit, location, target, offsetLocation, scrollBody, translate } = engine;
 
       const targetPosition = limit.max + (limit.min - limit.max) * progress;
 
@@ -85,23 +191,25 @@ export default function BestSeller() {
       target.set(targetPosition);
       translate.to(targetPosition);
       translate.toggleActive(true);
+      
+      setTimeout(() => {
+        scrollBody.useDuration(25);
+        scrollBody.useFriction(0.68);
+      }, 0);
     },
     [emblaApi]
   );
 
-  // ✅ Type-safe unified handler for mouse + touch
   const getClientX = (
-    event:
-      | MouseEvent
-      | TouchEvent
-      | React.MouseEvent<HTMLDivElement>
-      | React.TouchEvent<HTMLDivElement>
+    event: MouseEvent | TouchEvent | React.MouseEvent | React.TouchEvent
   ): number => {
     if ("touches" in event && event.touches.length > 0) {
       return event.touches[0].clientX;
     }
-    // @ts-expect-error - clientX exists on MouseEvent
-    return event.clientX;
+    if ("clientX" in event) {
+      return event.clientX;
+    }
+    return 0;
   };
 
   const onThumbDrag = useCallback(
@@ -171,7 +279,26 @@ export default function BestSeller() {
     [emblaApi, scrollToProgress]
   );
 
-  // ✅ Fixed useEffect hooks
+  const handlePrev = useCallback(() => {
+    if (emblaApi) {
+      setIsUsingButtons(true);
+      emblaApi.scrollPrev();
+    }
+  }, [emblaApi]);
+
+  const handleNext = useCallback(() => {
+    if (emblaApi) {
+      setIsUsingButtons(true);
+      emblaApi.scrollNext();
+    }
+  }, [emblaApi]);
+
+  const onScroll = useCallback(() => {
+    if (!emblaApi || isDraggingThumb) return;
+    const progress = Math.max(0, Math.min(1, emblaApi.scrollProgress()));
+    setScrollProgress(progress);
+  }, [emblaApi, isDraggingThumb]);
+
   useEffect(() => {
     if (!emblaApi) return;
 
@@ -213,6 +340,55 @@ export default function BestSeller() {
     };
   }, [emblaApi, onScroll]);
 
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  if (loading) {
+    return (
+      <section className="bg-white p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg">
+        <div className="flex pb-[32px] items-center">
+          <h2 className="text-[28px] flex-1 font-bold text-gray-900 flex justify-center pl-[50px]">
+            <span>Best Seller</span>
+          </h2>
+        </div>
+        <div className="flex justify-center items-center h-40">
+          <div className="text-gray-500">Loading products...</div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="bg-white p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg">
+        <div className="flex pb-[32px] items-center">
+          <h2 className="text-[28px] flex-1 font-bold text-gray-900 flex justify-center pl-[50px]">
+            <span>Best Seller</span>
+          </h2>
+        </div>
+        <div className="flex justify-center items-center h-40">
+          <div className="text-red-500">Error: {error}</div>
+        </div>
+      </section>
+    );
+  }
+
+  if (products.length === 0) {
+    return (
+      <section className="bg-white p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg">
+        <div className="flex pb-[32px] items-center">
+          <h2 className="text-[28px] flex-1 font-bold text-gray-900 flex justify-center pl-[50px]">
+            <span>Best Seller</span>
+          </h2>
+        </div>
+        <div className="flex justify-center items-center h-40">
+          <div className="text-gray-500">No products found</div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="bg-white p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg">
       <div className="flex pb-[32px] items-center">
@@ -232,7 +408,6 @@ export default function BestSeller() {
       </div>
 
       <div className="relative md:px-[64px]">
-        {/* Carousel */}
         <div
           className="overflow-hidden cursor-grab active:cursor-grabbing"
           ref={emblaRef}
@@ -246,31 +421,27 @@ export default function BestSeller() {
                 key={product.id}
                 className="flex-shrink-0 w-[calc(50%-8px)] sm:w-[calc(50%-8px)] md:w-[calc(33.333%-11px)] lg:w-[calc(25%-12px)]"
               >
-                <ProductCard
-                  product={product}
-                  onAddCart={handleAddCart}
-                  onView={handleView}
-                />
+               <ProductCard product={product as ProductType} />
               </div>
             ))}
           </div>
         </div>
 
-        {/* Navigation Arrows */}
         <button
           onClick={handlePrev}
           className="hidden absolute left-0 top-1/2 -translate-y-1/2 bg-white w-10 h-10 md:w-12 md:h-12 rounded-full md:flex items-center justify-center hover:bg-gray-100 transition shadow-lg z-10"
+          aria-label="Previous products"
         >
           <Image src={Leftarrow} width={12} height={12} alt="leftArrow" />
         </button>
         <button
           onClick={handleNext}
           className="hidden absolute right-0 top-1/2 -translate-y-1/2 bg-white w-10 h-10 md:w-12 md:h-12 rounded-full md:flex items-center justify-center hover:bg-gray-100 transition shadow-lg z-10"
+          aria-label="Next products"
         >
           <Image src={rightArrow} width={12} height={12} alt="rightArrow" />
         </button>
 
-        {/* ✅ Custom Scrollbar */}
         <div className="flex justify-center mt-6">
           <div
             ref={scrollbarRef}

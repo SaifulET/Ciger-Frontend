@@ -2,10 +2,25 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import rightArrow from "@/public/rightArrow.svg";
-import Image from "next/image";
 import Leftarrow from "@/public/leftArrow.svg";
-import brandImage from "@/public/brand.png";
 import Link from "next/link";
+import api from "@/lib/axios";
+import Image from "next/image";
+
+interface Brand {
+  _id: string;
+  name: string;
+  image: string;
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
+}
+
+interface ApiResponse {
+  success: boolean;
+  count?: number;
+  data: Brand[];
+}
 
 export default function ProductCarousel() {
   const [emblaRef, emblaApi] = useEmblaCarousel({
@@ -22,16 +37,39 @@ export default function ProductCarousel() {
   const [isDraggingThumb, setIsDraggingThumb] = useState(false);
   const [isDraggingCarousel, setIsDraggingCarousel] = useState(false);
   const [isUsingButtons, setIsUsingButtons] = useState(false);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const products = [
-    { id: 1, image: brandImage, name: "brand1" },
-    { id: 2, image: brandImage, name: "brand2" },
-    { id: 3, image: brandImage, name: "brand3" },
-    { id: 4, image: brandImage, name: "brand4" },
-    { id: 5, image: brandImage, name: "brand5" },
-    { id: 6, image: brandImage, name: "brand6" },
-    { id: 7, image: brandImage, name: "brand7" },
-  ];
+  // Fetch brands from API
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get("/brand/getAllBrands");
+        
+        if (!response.data) {
+          throw new Error(`Failed to fetch brands: ${response.status}`);
+        }
+        console.log(response.data ,"abc")
+        
+        const data: ApiResponse = await response.data;
+        
+        if (data.success) {
+          setBrands(data.data);
+        } else {
+          throw new Error("API returned unsuccessful response");
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load brands");
+        console.error("Error fetching brands:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBrands();
+  }, []);
 
   const handlePrev = useCallback(() => {
     if (emblaApi) {
@@ -75,7 +113,7 @@ export default function ProductCarousel() {
     [emblaApi]
   );
 
-  // ✅ Type-safe unified handler for mouse + touch (SAME AS BESTSELLER)
+  // ✅ Type-safe unified handler for mouse + touch
   const getClientX = (
     event:
       | MouseEvent
@@ -90,7 +128,7 @@ export default function ProductCarousel() {
     return event.clientX;
   };
 
-  // ✅ Updated onThumbDrag with touch support (SAME AS BESTSELLER)
+  // ✅ Updated onThumbDrag with touch support
   const onThumbDrag = useCallback(
     (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
       if (!scrollbarRef.current || !emblaApi) return;
@@ -141,7 +179,7 @@ export default function ProductCarousel() {
     [emblaApi, scrollToProgress]
   );
 
-  // ✅ Updated onTrackClick with touch support (SAME AS BESTSELLER)
+  // ✅ Updated onTrackClick with touch support
   const onTrackClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
       if (!scrollbarRef.current || !emblaApi) return;
@@ -159,7 +197,7 @@ export default function ProductCarousel() {
     [emblaApi, scrollToProgress]
   );
 
-  // ✅ Fixed useEffect hooks (SAME AS BESTSELLER)
+  // ✅ Fixed useEffect hooks
   useEffect(() => {
     if (!emblaApi) return;
 
@@ -201,6 +239,60 @@ export default function ProductCarousel() {
     };
   }, [emblaApi, onScroll]);
 
+  // Loading state
+  if (loading) {
+    return (
+      <section className="bg-white mt-[16px] md:mt-[32px] mx-[16px] md:mx-[32px] rounded-lg">
+        <div className="p-[16px] md:p-[32px] relative">
+          <div className="flex pb-[32px]">
+            <h2 className="text-[28px] font-bold text-gray-900 flex-1 flex justify-center text-center pl-[48px] md:pl-[32px]">
+              Brands
+            </h2>
+          </div>
+          <div className="flex justify-center items-center h-40">
+            <div className="text-gray-500">Loading brands...</div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <section className="bg-white mt-[16px] md:mt-[32px] mx-[16px] md:mx-[32px] rounded-lg">
+        <div className="p-[16px] md:p-[32px] relative">
+          <div className="flex pb-[32px]">
+            <h2 className="text-[28px] font-bold text-gray-900 flex-1 flex justify-center text-center pl-[48px] md:pl-[32px]">
+              Brands
+            </h2>
+          </div>
+          <div className="flex justify-center items-center h-40">
+            <div className="text-red-500">Error: {error}</div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Empty state
+  if (brands.length === 0) {
+    return (
+      <section className="bg-white mt-[16px] md:mt-[32px] mx-[16px] md:mx-[32px] rounded-lg">
+        <div className="p-[16px] md:p-[32px] relative">
+          <div className="flex pb-[32px]">
+            <h2 className="text-[28px] font-bold text-gray-900 flex-1 flex justify-center text-center pl-[48px] md:pl-[32px]">
+              Brands
+            </h2>
+          </div>
+          <div className="flex justify-center items-center h-40">
+            <div className="text-gray-500">No brands available</div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="bg-white mt-[16px] md:mt-[32px] mx-[16px] md:mx-[32px] rounded-lg">
       <div className=" p-[16px] md:p-[32px] relative">
@@ -233,28 +325,31 @@ export default function ProductCarousel() {
                 touchAction: "pan-y pinch-zoom",
               }}
             >
-              {products.map((product) => (
+              {brands.map((brand) => (
                 <div
-                  key={product.id}
+                  key={brand._id}
                   className="flex-shrink-0 w-[calc(50%-16px)] sm:w-[calc(50%-16px)] md:w-[calc(33.333%-16px)] lg:w-[calc(25%-16px)] px-2 flex justify-center"
                 >
                   <Link
                     href={{
                       pathname: "/pages/products",
-                      query: { brand: "Camel" },
+                      query: { brand: brand.name },
                     }}
                     className="block bg-white duration-300"
                   >
                     <div className="mb-16">
-                      <Image
-                        src={product.image}
-                        alt={product.name}
+                     {/* {
+                      brand.image && ( <Image
+                        src={brand.image}
+                        alt={brand.name}
                         width={256}
                         height={180}
-                      />
+                        className="object-contain"
+                      />)
+                     } */}
                     </div>
                     <div className="flex justify-center text-center font-montserrat text-[18px] font-semibold leading-[28px] md:leading-[36px]">
-                      {product.name}
+                      {brand.name}
                     </div>
                   </Link>
                 </div>
@@ -277,7 +372,7 @@ export default function ProductCarousel() {
           <Image src={rightArrow} width={12} height={12} alt="rightArrow" />
         </button>
 
-        {/* ✅ Updated Custom Scrollbar with touch support (SAME AS BESTSELLER) */}
+        {/* ✅ Updated Custom Scrollbar with touch support */}
         <div className="flex justify-center mt-6">
           <div
             ref={scrollbarRef}

@@ -1,84 +1,29 @@
-// brandsData.ts
-export interface Brand {
-  id: number;
-  name: string;
-}
+import api from '@/lib/axios';
+import { Brand } from './types';
 
 export interface BrandsData {
-  brands: Brand[];
+  success: boolean;
+  count: number;
+  data: Brand[];
 }
 
-export const brandsData: BrandsData = {
-  brands: [
-    { id: 1, name: "BUCKHORN" },
-    { id: 2, name: "Bud Master" },
-    { id: 3, name: "Bugatti" },
-    { id: 4, name: "BUGLER" },
-    { id: 5, name: "Buoy" },
-    { id: 6, name: "Camacho" },
-    { id: 7, name: "CAO" },
-    { id: 8, name: "CAO Cafe Creme" },
-    { id: 9, name: "CAO Flathead" },
-    { id: 10, name: "CAPTAIN BLACK" },
-    { id: 11, name: "Caribbean Royales" },
-    { id: 12, name: "Carter Hall" },
-    { id: 13, name: "Casa De Garcia" },
-    { id: 14, name: "Casino Gold" },
-    { id: 15, name: "CHEROKEE" },
-    { id: 16, name: "CHEYENNE" },
-    { id: 17, name: "Cignature" },
-    { id: 18, name: "City Life" },
-    { id: 19, name: "Classic" },
-    { id: 20, name: "Clipper" },
-    { id: 21, name: "Kentucky Select" },
-    { id: 22, name: "King Palm" },
-    { id: 23, name: "Kismet" },
-    { id: 24, name: "La Aurora" },
-    { id: 25, name: "La Estrella Cubana" },
-    { id: 26, name: "La Finca" },
-    { id: 27, name: "La Fontana" },
-    { id: 28, name: "La Gloria Cubana" },
-    { id: 29, name: "LARGO" },
-    { id: 30, name: "La Sirena" },
-    { id: 31, name: "La Vieja Habana" },
-    { id: 32, name: "Liga Privada Undercrown" },
-    { id: 33, name: "Lil Leaf" },
-    { id: 34, name: "Loose Leaf" },
-    { id: 35, name: "Macanudo" },
-    { id: 36, name: "Macanudo Cru" },
-    { id: 37, name: "Payback" },
-    { id: 38, name: "Roxwell" },
-    { id: 39, name: "Royal Blunts" },
-    { id: 40, name: "Royal Majestic" },
-    { id: 41, name: "Royal Nicaraguan" },
-    { id: 42, name: "Runtz" },
-    { id: 43, name: "Rustlers" },
-    { id: 44, name: "Saint Luis Rey" },
-    { id: 45, name: "Sancho Panza" },
-    { id: 46, name: "Santa Fe" },
-    { id: 47, name: "Serbetli" },
-    { id: 48, name: "Shargio" },
-    { id: 49, name: "Signal" },
-    { id: 50, name: "Sir Walter Releigh" },
-    { id: 51, name: "Slapwoods" },
-    { id: 52, name: "Smoker's Best" },
-    { id: 53, name: "Smoker's Choice" },
-    { id: 54, name: "SMOKER'S PRIDE" },
-    { id: 55, name: "Shkdss" },
-    { id: 65, name: "Ssdsd" },
-    { id: 66, name: "Smoksdsd" },
-    { id: 67, name: "Smosdsd" },
-    { id: 68, name: "Soijs" },
-    { id: 69, name: "Smg" },
-    // Brands starting with numeric numbers - will be grouped under "#"
-    { id: 56, name: "1st Class" },
-    { id: 57, name: "2nd Nature" },
-    { id: 58, name: "3 Kings" },
-    { id: 59, name: "4 Aces" },
-    { id: 60, name: "5 Star" },
-    { id: 61, name: "7-Eleven Premium" },
-    { id: 62, name: "24/7 Blend" },
-    { id: 63, name: "100 Miles" },
-    { id: 64, name: "420 Friendly" },
-  ]
-};
+// API service to fetch brands
+export async function getBrandsData(): Promise<BrandsData> {
+  try {
+    const response = await api.get('/brand/getAllBrands');
+    const responseData = response.data;
+    
+    if (!responseData.success) {
+      throw new Error('Failed to fetch brands');
+    }
+    
+    return responseData;
+  } catch (error) {
+    console.error('Error fetching brands:', error);
+    return {
+      success: false,
+      count: 0,
+      data: []
+    };
+  }
+}

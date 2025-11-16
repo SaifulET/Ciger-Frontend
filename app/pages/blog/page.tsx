@@ -1,27 +1,81 @@
-import BlogPage from '@/app/components/Blogpage/BlogComponent'
-import React from 'react'
-import  blogImg from "@/public/blog.jpg"
+'use client'
 
-function page() {
-       const blog=[
-    { id: 1, title: "Cigar is the best product", description: "Discover the art..d.", image: blogImg },
-    { id: 2, title: "Cigar is the best product", description: "Discover the art..d.", image: blogImg },
-    { id: 3, title: "Cigar is the best product", description: "Discover the art..d.", image: blogImg },
-    { id: 4, title: "Cigar is the best product", description: "Discover the art..d.", image: blogImg },
-    { id: 6, title: "Cigar is the best product", description: "Discover the art..d.", image: blogImg },
-    { id: 7, title: "Cigar is the best product", description: "Discover the art..d.", image: blogImg },
-    { id: 8, title: "Cigar is the best product", description: "Discover the art..d.", image: blogImg },
-    { id: 9, title: "Cigar is the best product", description: "Discover the art..d.", image: blogImg },
-    // ... more
-  ]
+import BlogPage from '@/app/components/Blogpage/BlogComponent'
+import api from '@/lib/axios'
+import React, { useState, useEffect } from 'react'
+import blogImg from "@/public/blog.jpg" // Your local placeholder image
+
+// Your API response interfaces
+interface Blog {
+  _id: string
+  name: string
+  description?: string
+  image: string
+  createdAt: string
+  updatedAt: string
+  __v: number
+}
+
+interface ApiResponse {
+  success: boolean
+  count: number
+  data: Blog[]
+}
+
+function Page() {
+  const [blogs, setBlogs] = useState<React.ComponentProps<typeof BlogPage>['blogs']>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [error, setError, ] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        setLoading(true)
+        const response = await api.get<ApiResponse>('/blog/getAllBlogs')
+        
+        if (!response.data) {
+          throw new Error('Failed to fetch blogs')
+        }
+        
+        const result = response.data
+        
+        if (!result.success) {
+          throw new Error('API request failed')
+        }
+
+        // Transform the API data to match BlogPage expectations
+        // Use local placeholder image since we can't convert URLs to StaticImageData
+        const transformedBlogs = result.data.map((blog, index) => ({
+          id: index + 1, // Generate numeric ID
+          title: blog.name,
+          description: blog.description || 'No description available',
+          image: blogImg // Use local placeholder instead of remote URL
+        }))
+        
+        setBlogs(transformedBlogs)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchBlogs()
+  }, [])
+
+  if (loading) {
+    return <div>Loading blogs...</div>
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>
+  }
+
   return (
- 
     <div className=''>
-        <BlogPage
-  blogs={blog}
-/>
+      <BlogPage blogs={blogs} />
     </div>
   )
 }
 
-export default page
+export default Page

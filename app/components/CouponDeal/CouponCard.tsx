@@ -2,12 +2,12 @@
 import React from 'react';
 
 interface Coupon {
-  couponCode: string;
-  description: string;
+  couponCode?: string;
+  description?: string;
 }
 
 interface CouponDealsProps {
-  coupons: Coupon[]; // Accept an array of coupons as props
+  coupons?: Coupon[]; // Accept an array of coupons as props
 }
 
 const CouponDeals: React.FC<CouponDealsProps> = ({ coupons }) => {
@@ -27,7 +27,7 @@ const CouponDeals: React.FC<CouponDealsProps> = ({ coupons }) => {
       </tr>
     </thead>
     <tbody className=''>
-      {coupons.map((coupon, index) => (
+      {coupons?.map((coupon, index) => (
         <tr key={index} className="border-b text-[16px]">
           <td className="w-1/2 px-4 py-8 border-r">{coupon.couponCode}</td>
           <td className="w-1/2 px-4 py-8">{coupon.description}</td>
