@@ -6,4 +6,5 @@ export interface Notification {
   status: 'placed' | 'shipped' | 'delivered' | 'refunded' | 'cancelled';
   message: string;
   timestamp: string;
+  isRead?:boolean;
 }

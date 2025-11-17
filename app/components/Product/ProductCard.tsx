@@ -4,6 +4,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ProductType } from "./ProductType";
 import Link from "next/link";
+import { useCartStore } from "@/app/store/cartStore";
+import useUserStore from "@/app/store/userStore";
 
 interface ProductCardProps {
   product: ProductType;
@@ -12,9 +14,28 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, onAddCart}: ProductCardProps) {
+ const { addItem, getItemQuantity } = useCartStore();
+  const { user } = useUserStore();
+  const userId = user || null;
+  
+  const currentQuantity = getItemQuantity(product.id.toString());
+const handleAddToCart = () => {
+    addItem({
+      _id:product.id.toString(),
+      brand: product.brand,
+      name: product.name,
+      price: product.currentPrice,
+      available: product.available,
+      image: product.image,
+    }, userId);
+  };
+
+
+
+
+
   const router = useRouter();
   const newbestSeller= product?.newBestSeller;
-  console.log("aa",newbestSeller);
 
 
   return (
@@ -51,8 +72,8 @@ export default function ProductCard({ product, onAddCart}: ProductCardProps) {
           </div>
           <h3 className="font-semibold text-gray-900 text-base line-clamp-2">{product?.name}</h3>
           <div className="flex items-baseline gap-2">
-            <span className="text-lg font-bold text-gray-900">${parseFloat(product?.currentPrice.replace('$', '').trim())   }</span>
-            {product?.originalPrice && <span className="text-lg text-gray-400 line-through">${parseFloat(product?.originalPrice.replace('$', '').trim())   }</span>}
+            <span className="text-lg font-bold text-gray-900">{(product?.currentPrice)   }</span>
+            {product?.originalPrice && <span className="text-lg text-gray-400 line-through">{(product?.originalPrice)   }</span>}
           </div>
         </div>
       </div>
@@ -61,7 +82,7 @@ export default function ProductCard({ product, onAddCart}: ProductCardProps) {
 
       <div className="flex gap-3 mt-4">
         <button
-          // onClick={() => onAddCart(product.id)}
+          onClick={handleAddToCart}
           className="flex-1 bg-[#C9A040] hover:bg-yellow-600 text-white font-medium py-2 rounded-lg flex items-center justify-center gap-1 transition"
         >
           <Plus className="w-5 h-5" /> Cart

@@ -1,21 +1,31 @@
 "use client"
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ChevronDown, Search } from 'lucide-react';
 import OrderCard, { Order } from './OrderCard';
-import ORDERS_DATA from './ORDERS_DATA'; // import your orders data from separate file if you want
+import { useOrderStore, OrderStatus } from '@/app/store/orderStore';
+import useUserStore from "@/app/store/userStore";
+
 
 export default function OrderHistoryPage() {
   const [searchId, setSearchId] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  
+  const { orders, loading, error, fetchOrders } = useOrderStore();
+  const {user }  = useUserStore()
+
+  useEffect(() => {
+   
+    fetchOrders(user);
+  }, [fetchOrders]);
 
   const filteredOrders = useMemo(() => {
-    return ORDERS_DATA.filter((order) => {
-      const matchesSearch = order.id.includes(searchId);
+    return orders.filter((order) => {
+      const matchesSearch = order.id.toLowerCase().includes(searchId.toLowerCase());
       const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
-  }, [searchId, statusFilter]);
+  }, [orders, searchId, statusFilter]);
 
   const itemsPerPage = 6;
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
@@ -24,13 +34,31 @@ export default function OrderHistoryPage() {
     currentPage * itemsPerPage
   );
 
+  if (loading) {
+    return (
+      <div className="min-h-screen p-[16px] md:p-[32px] flex items-center justify-center">
+        <div className="text-center">Loading orders...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen p-[16px] md:p-[32px] flex items-center justify-center">
+        <div className="text-center text-red-500">Error: {error}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen p-[16px] md:p-[32px]">
       <div className="">
-        <h1 className=" bg-white rounded-lg font-montserrat font-semibold text-[28px] leading-[48px] tracking-normal text-center mb-[16px] md:mb-[32px] p-[16px] md:p-[32px]">Order History</h1>
+        <h1 className="bg-white rounded-lg font-montserrat font-semibold text-[28px] leading-[48px] tracking-normal text-center mb-[16px] md:mb-[32px] p-[16px] md:p-[32px]">
+          Order History
+        </h1>
 
         {/* Search & Filter */}
-        <div className="flex flex-col md:flex-row  md:gap-4 gap-[16px] p-[16px] md:p-[32px] bg-white rounded-lg">
+        <div className="flex flex-col md:flex-row md:gap-4 gap-[16px] p-[16px] md:p-[32px] bg-white rounded-lg">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-3 text-gray-400" size={18} />
             <input
@@ -41,7 +69,7 @@ export default function OrderHistoryPage() {
                 setSearchId(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full pl-10 pr-4 py-2 bg-gray-100 border border-gray-300 rounded text-sm "
+              className="w-full pl-10 pr-4 py-2 bg-gray-100 border border-gray-300 rounded text-sm"
             />
           </div>
 
@@ -52,7 +80,7 @@ export default function OrderHistoryPage() {
                 setStatusFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="appearance-none w-full px-4 py-2 pr-10 bg-gray-100 border border-gray-300 rounded text-sm  cursor-pointer"
+              className="appearance-none w-full px-4 py-2 pr-10 bg-gray-100 border border-gray-300 rounded text-sm cursor-pointer"
             >
               <option value="all">All Orders</option>
               <option value="processing">Processing</option>
@@ -65,16 +93,16 @@ export default function OrderHistoryPage() {
         </div>
 
         {/* Orders List */}
-        <div className="space-y-6 mt-[16px] md:mt-[32px] ">
+        <div className="space-y-6 mt-[16px] md:mt-[32px]">
           {paginatedOrders.map((order) => (
-            <div key={order.id} className="border border-gray-200 rounded-lg overflow-hidden shadow-sm ">
+            <div key={order.id} className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
               <OrderCard order={order} />
             </div>
           ))}
         </div>
 
-        {filteredOrders.length === 0 && (
-          <div className="text-center  text-gray-600">
+        {filteredOrders.length === 0 && !loading && (
+          <div className="text-center text-gray-600 mt-8">
             <p>No orders found</p>
           </div>
         )}

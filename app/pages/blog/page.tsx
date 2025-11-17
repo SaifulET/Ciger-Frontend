@@ -7,7 +7,7 @@ import blogImg from "@/public/blog.jpg" // Your local placeholder image
 
 // Your API response interfaces
 interface Blog {
-  _id: string
+  _id: number
   name: string
   description?: string
   image: string
@@ -46,10 +46,10 @@ function Page() {
         // Transform the API data to match BlogPage expectations
         // Use local placeholder image since we can't convert URLs to StaticImageData
         const transformedBlogs = result.data.map((blog, index) => ({
-          id: index + 1, // Generate numeric ID
+          id: blog._id, // Generate numeric ID
           title: blog.name,
           description: blog.description || 'No description available',
-          image: blogImg // Use local placeholder instead of remote URL
+          image: blog.image // Use local placeholder instead of remote URL
         }))
         
         setBlogs(transformedBlogs)

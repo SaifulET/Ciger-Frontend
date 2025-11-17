@@ -7,9 +7,17 @@ interface BlogItem {
   id: number;
   title: string;
   description: string;
-  image: StaticImageData;
+  image: string|StaticImageData;
 }
-
+const getFirstNWords = (html: string, wordCount: number = 8): string => {
+  // Remove HTML tags and get plain text
+  const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  
+  // Split into words and take first N words
+  const words = text.split(' ').slice(0, wordCount);
+  
+  return words.join(' ') + (words.length >= wordCount ? '...' : '');
+};
 interface BlogPageProps {
   blogs: BlogItem[]; // Passed from another page or fetched
 }
@@ -54,9 +62,8 @@ export default function BlogPage({ blogs }: BlogPageProps) {
             
               <div>
                 <h3 className="text-lg font-semibold mb-2">{blog.title}</h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  {blog.description}
-                </p>
+                {getFirstNWords(blog.description, 8)}
+                
               </div>
 
               <Link href={`/pages/blog/${blog.id}`}>

@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Edit2, Save, X } from "lucide-react";
 import { PencilEdit02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import api from "@/lib/axios";
+import useUserStore from "@/app/store/userStore";
 
 interface ProfileData {
   firstName: string;
@@ -14,32 +16,143 @@ interface ProfileData {
   city: string;
   address: string;
   postal: string;
-  houseNumber: string;
+  houseNo: string;
   suffix: string;
+  image?: string;
 }
 
 const initialProfileData: ProfileData = {
-  firstName: "John",
-  lastName: "Doe",
-  email: "Mokhail@email.com",
-  phone: "Mokhail",
-  country: "Dhaka",
-  city: "Dhaka",
-  address: "Mokhail",
-  postal: "1212",
-  houseNumber: "45",
-  suffix: "A",
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  country: "",
+  city: "",
+  address: "",
+  postal: "",
+  houseNo: "",
+  suffix: "",
+  image: "",
 };
+
+// Move InputField component outside to prevent re-creation
+const InputField = ({
+  label,
+  field,
+  value,
+  isEditing,
+  onChange,
+  placeholder = "",
+  disabled = false,
+}: {
+  label: string;
+  field: keyof ProfileData;
+  value: string;
+  isEditing: boolean;
+  onChange: (field: keyof ProfileData, value: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+}) => (
+  <div className="w-full">
+    <label className="block text-sm font-medium text-gray-700 ">
+      {label} <span className="text-red-500">*</span>
+    </label>
+    {isEditing ? (
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(field, e.target.value)}
+        placeholder={placeholder}
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 bg-white text-gray-900"
+        disabled={disabled}
+      />
+    ) : (
+      <div className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700">
+        {value || placeholder || "Not provided"}
+      </div>
+    )}
+  </div>
+);
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
-  const [profileData, setProfileData] =
-    useState<ProfileData>(initialProfileData);
+  const [profileData, setProfileData] = useState<ProfileData>(initialProfileData);
   const [formData, setFormData] = useState<ProfileData>(initialProfileData);
-  const [profileImage, setProfileImage] = useState(
-    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop"
-  );
+  const [profileImage, setProfileImage] = useState("/default-avatar.png");
   const [tempImage, setTempImage] = useState(profileImage);
+  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useUserStore();
+
+  // Fetch profile data from backend
+  const fetchProfileData = async () => {
+    try {
+      setIsLoading(true);
+      const response = await api.get("profile/profile");
+      if (response.data.success && response.data.data) {
+        const userData = response.data.data;
+        const formattedData: ProfileData = {
+          firstName: userData.firstName || "",
+          lastName: userData.lastName || "",
+          email: userData.email || "",
+          phone: userData.phone || "",
+          country: userData.country || "",
+          city: userData.city || "",
+          address: userData.address || "",
+          postal: userData.postal || "",
+          houseNo: userData.houseNo || "",
+          suffix: userData.suffix || "",
+          image: userData.image || "/default-avatar.png",
+        };
+        setProfileData(formattedData);
+        setFormData(formattedData);
+        setProfileImage(userData.image || "/default-avatar.png");
+        setTempImage(userData.image || "/default-avatar.png");
+      }
+    } catch (error) {
+      console.error("Error fetching profile data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Update profile data to backend
+  const updateProfileData = async (data: ProfileData) => {
+    try {
+      setIsLoading(true);
+      const updateData = {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone,
+        country: data.country,
+        city: data.city,
+        address: data.address,
+        postal: data.postal,
+        houseNo: data.houseNo,
+        suffix: data.suffix,
+        image: tempImage !== profileImage ? tempImage : data.image,
+      };
+
+      const response = await api.put("profile/profile", updateData);
+      
+      if (response.data.success) {
+        setProfileData(data);
+        setProfileImage(tempImage);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error updating profile data:", error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchProfileData();
+    }
+  }, [user]);
 
   const handleInputChange = (field: keyof ProfileData, value: string) => {
     setFormData((prev) => ({
@@ -54,10 +167,11 @@ export default function ProfilePage() {
     setIsEditing(true);
   };
 
-  const handleSave = () => {
-    setProfileData(formData);
-    setProfileImage(tempImage);
-    setIsEditing(false);
+  const handleSave = async () => {
+    const success = await updateProfileData(formData);
+    if (success) {
+      setIsEditing(false);
+    }
   };
 
   const handleCancel = () => {
@@ -77,36 +191,13 @@ export default function ProfilePage() {
     }
   };
 
-  const InputField = ({
-    label,
-    field,
-    value,
-    placeholder = "",
-  }: {
-    label: string;
-    field: keyof ProfileData;
-    value: string;
-    placeholder?: string;
-  }) => (
-    <div className="w-full">
-      <label className="block text-sm font-medium text-gray-700 ">
-        {label} <span className="text-red-500">*</span>
-      </label>
-      {isEditing ? (
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => handleInputChange(field, e.target.value)}
-          placeholder={placeholder}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 bg-white text-gray-900"
-        />
-      ) : (
-        <div className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700">
-          {value || placeholder}
-        </div>
-      )}
-    </div>
-  );
+  if (isLoading && !profileData.email) {
+    return (
+      <div className="min-h-screen p-[16px] md:p-[32px] flex items-center justify-center">
+        <div className="text-center">Loading profile...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen  p-[16px] md:p-[32px]">
@@ -126,18 +217,20 @@ export default function ProfilePage() {
                     src={isEditing ? tempImage : profileImage}
                     alt="Profile"
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = "/default-avatar.png";
+                    }}
                   />
                 </div>
                 {isEditing && (
                   <label className="absolute bottom-0 right-0 w-8 h-8  sm:w-9 sm:h-9 bg-white rounded-full flex items-center justify-center cursor-pointer transition-colors shadow-md border-2 border-white">
-                    {/* <Edit2 size={16} className="text-white" /> */}
                     <HugeiconsIcon icon={PencilEdit02Icon} />
-
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleImageChange}
                       className="hidden"
+                      disabled={isLoading}
                     />
                   </label>
                 )}
@@ -147,9 +240,9 @@ export default function ProfilePage() {
             {!isEditing ? (
               <button
                 onClick={handleEdit}
-                className="flex items-center gap-2 px-4 py-2 bg-[#C9A040] hover:bg-[#a38337] text-gray-800 rounded-lg font-medium transition-colors self-start sm:self-center"
+                disabled={isLoading}
+                className="flex items-center gap-2 px-4 py-2 bg-[#C9A040] hover:bg-[#a38337] text-gray-800 rounded-lg font-medium transition-colors self-start sm:self-center disabled:opacity-50"
               >
-                {/* <Edit2 size={18} /> */}
                 <HugeiconsIcon icon={PencilEdit02Icon} />
                 Edit
               </button>
@@ -157,16 +250,18 @@ export default function ProfilePage() {
               <div className="flex gap-2 self-start sm:self-center">
                 <button
                   onClick={handleSave}
-                  className="flex items-center gap-2 px-2 md:px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
+                  disabled={isLoading}
+                  className="flex items-center gap-2 px-2 md:px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
                 >
-                  <Save  />
-                  Save
+                  <Save />
+                  {isLoading ? "Saving..." : "Save"}
                 </button>
                 <button
                   onClick={handleCancel}
-                  className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg font-medium transition-colors"
+                  disabled={isLoading}
+                  className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
                 >
-                  <X  />
+                  <X />
                   Cancel
                 </button>
               </div>
@@ -184,20 +279,29 @@ export default function ProfilePage() {
               label="First Name"
               field="firstName"
               value={isEditing ? formData.firstName : profileData.firstName}
-              placeholder="john"
+              isEditing={isEditing}
+              onChange={handleInputChange}
+              placeholder="Enter first name"
+              disabled={isLoading}
             />
             <InputField
               label="Last Name"
               field="lastName"
               value={isEditing ? formData.lastName : profileData.lastName}
-              placeholder="Doe"
+              isEditing={isEditing}
+              onChange={handleInputChange}
+              placeholder="Enter last name"
+              disabled={isLoading}
             />
             <div className="md:col-span-2">
               <InputField
                 label="Email"
                 field="email"
                 value={isEditing ? formData.email : profileData.email}
-                placeholder="Mokhail@email.com"
+                isEditing={isEditing}
+                onChange={handleInputChange}
+                placeholder="Enter email"
+                disabled={true} // Email should not be editable
               />
             </div>
             <div className="md:col-span-2">
@@ -205,7 +309,10 @@ export default function ProfilePage() {
                 label="Phone"
                 field="phone"
                 value={isEditing ? formData.phone : profileData.phone}
-                placeholder="Mokhail"
+                isEditing={isEditing}
+                onChange={handleInputChange}
+                placeholder="Enter phone number"
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -222,7 +329,10 @@ export default function ProfilePage() {
                 label="Country"
                 field="country"
                 value={isEditing ? formData.country : profileData.country}
-                placeholder="Dhaka"
+                isEditing={isEditing}
+                onChange={handleInputChange}
+                placeholder="Enter country"
+                disabled={isLoading}
               />
             </div>
 
@@ -231,7 +341,10 @@ export default function ProfilePage() {
                 label="City"
                 field="city"
                 value={isEditing ? formData.city : profileData.city}
-                placeholder="Dhaka"
+                isEditing={isEditing}
+                onChange={handleInputChange}
+                placeholder="Enter city"
+                disabled={isLoading}
               />
             </div>
             <div className="md:col-span-2">
@@ -239,29 +352,39 @@ export default function ProfilePage() {
                 label="Address"
                 field="address"
                 value={isEditing ? formData.address : profileData.address}
-                placeholder="Mokhail"
+                isEditing={isEditing}
+                onChange={handleInputChange}
+                placeholder="Enter address"
+                disabled={isLoading}
               />
             </div>
             <InputField
               label="Postal"
               field="postal"
               value={isEditing ? formData.postal : profileData.postal}
-              placeholder="1212"
+              isEditing={isEditing}
+              onChange={handleInputChange}
+              placeholder="Enter postal code"
+              disabled={isLoading}
             />
             <div className="grid grid-cols-2 gap-4">
               <InputField
                 label="House Number"
-                field="houseNumber"
-                value={
-                  isEditing ? formData.houseNumber : profileData.houseNumber
-                }
-                placeholder="45"
+                field="houseNo"
+                value={isEditing ? formData.houseNo : profileData.houseNo}
+                isEditing={isEditing}
+                onChange={handleInputChange}
+                placeholder="Enter house number"
+                disabled={isLoading}
               />
               <InputField
                 label="Suffix"
                 field="suffix"
                 value={isEditing ? formData.suffix : profileData.suffix}
-                placeholder="A"
+                isEditing={isEditing}
+                onChange={handleInputChange}
+                placeholder="Enter suffix"
+                disabled={isLoading}
               />
             </div>
           </div>

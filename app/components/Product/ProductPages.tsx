@@ -144,7 +144,7 @@ export default function ProductsPage() {
       }
 
       // Price range filter
-      const productPrice = parseFloat(product.currentPrice) || 0;
+      const productPrice = (product.currentPrice) || 0;
       if (productPrice < filters.priceRange[0] || productPrice > filters.priceRange[1]) {
         return false;
       }

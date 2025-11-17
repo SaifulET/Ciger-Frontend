@@ -6,8 +6,8 @@ interface ProductType {
   brand: string;
   name: string;
   image: string;
-  originalPrice: string;
-  currentPrice: string;
+  originalPrice: number;
+  currentPrice: number;
   newBestSeller: boolean;
   newSeller: boolean;
   inStock: boolean;

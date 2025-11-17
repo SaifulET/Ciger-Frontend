@@ -6,30 +6,9 @@ import api from "@/lib/axios";
 import Cookies from "js-cookie";
 import { getEmail, setEmail, unauthorized } from "../utility/utility";
 
-// --------------------
-// Types
-// --------------------
-
-interface Profile {
-  cus_add: string;
-  cus_city: string;
-  cus_country: string;
-  cus_fax: string;
-  cus_name: string;
-  cus_phone: string;
-  cus_postcode: string;
-  cus_state: string;
-  ship_name: string;
-  ship_phone: string;
-  ship_country: string;
-  ship_city: string;
-  ship_state: string;
-  ship_postcode: string;
-  ship_add: string;
-}
-
 interface UserStoreState {
-  isLoggedIn: boolean; // Add this as state
+  isLoggedIn: boolean;
+  user: string;
   isLogin: () => boolean;
 
   // Login
@@ -74,25 +53,14 @@ interface UserStoreState {
   ) => Promise<{ status: "success" | "error" | "false"; message?: string }>;
 
   UserLogoutRequest: () => Promise<string>;
-
-  // Profile
-  ProfileForm: Profile;
-  ProfileFormChange: (name: string, value: string) => void;
-
-  ProfileDetails: Profile | null;
-  ProfileDetailsRequest: () => Promise<void>;
-  ProfileSaveRequest: (PostBody: Profile) => Promise<boolean>;
 }
-
-// --------------------
-// Persisted Zustand store
-// --------------------
 
 const useUserStore = create<UserStoreState>()(
   persist(
     (set, get) => ({
       // ---- Auth ----
-      isLoggedIn: !!Cookies.get("token"), // Initialize based on current token
+      user: "",
+      isLoggedIn: !!Cookies.get("token"),
       isLogin: () => !!Cookies.get("token"),
 
       // ---- Login ----
@@ -129,7 +97,8 @@ const useUserStore = create<UserStoreState>()(
           });
           
           Cookies.set("token", res.data.token);
-          set({ isLoggedIn: true }); // Update login state
+          set({ user: res.data.data._id });
+          set({ isLoggedIn: true });
 
           return {
             status: "success",
@@ -219,84 +188,17 @@ const useUserStore = create<UserStoreState>()(
         console.log("logiout")
         const res = await api.post("/auth/signout");
         Cookies.remove("token");
-        set({ isLoggedIn: false }); // Update login state
+        set({ user: "" });
+        set({ isLoggedIn: false });
        
         return res.data["status"];
       },
-
-      // ---- Profile ----
-      ProfileForm: {
-        cus_add: "",
-        cus_city: "",
-        cus_country: "",
-        cus_fax: "",
-        cus_name: "",
-        cus_phone: "",
-        cus_postcode: "",
-        cus_state: "",
-        ship_name: "",
-        ship_phone: "",
-        ship_country: "",
-        ship_city: "",
-        ship_state: "",
-        ship_postcode: "",
-        ship_add: "",
-      },
-
-      ProfileFormChange: (name, value) => {
-        set((state) => ({
-          ProfileForm: {
-            ...state.ProfileForm,
-            [name]: value,
-          },
-        }));
-      },
-
-      ProfileDetails: null,
-
-      ProfileDetailsRequest: async () => {
-        try {
-          const res = await axios.get("/api/ReadUserProfile", {
-            withCredentials: true,
-          });
-
-          if (res.data?.Message?.data) {
-            set({
-              ProfileDetails: res.data.Message.data,
-              ProfileForm: res.data.Message.data,
-            });
-          } else {
-            set({ ProfileDetails: null });
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      },
-
-      ProfileSaveRequest: async (PostBody) => {
-        try {
-          set({ ProfileDetails: null });
-          const res = await axios.post("/api/UpdateUserProfile", PostBody, {
-            withCredentials: true,
-          });
-          return res.data["status"] === "success";
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (e: any) {
-          if (e.response?.status) {
-            unauthorized(e.response.status);
-          }
-          return false;
-        }
-      },
     }),
     {
-      name: "user-store", // key in localStorage
+      name: "user-store",
       partialize: (state) => ({
-        // persist only what you need
-        isLoggedIn: state.isLoggedIn, // Add this to persist login state
+        isLoggedIn: state.isLoggedIn,
         loginFormData: state.loginFormData,
-        ProfileDetails: state.ProfileDetails,
-        ProfileForm: state.ProfileForm,
       }),
     }
   )

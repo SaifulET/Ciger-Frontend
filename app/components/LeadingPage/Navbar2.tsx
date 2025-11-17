@@ -56,6 +56,7 @@ const Navbar: React.FC = () => {
   // Set isClient to true after component mounts on client
   useEffect(() => {
     setIsClient(true);
+    
   }, []);
 
   // Prevent body scroll when mobile modal is open

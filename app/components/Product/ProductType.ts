@@ -1,14 +1,15 @@
 export interface ProductType {
-  id: string;
+  id: string|number;
   brand: string;
   name: string;
   image: string;
-  originalPrice?: string; // Add ? to make it optional
-  currentPrice: string;
+  originalPrice?: number; // Add ? to make it optional
+  currentPrice: number;
   newBestSeller: boolean;
   newSeller: boolean;
   inStock?: boolean;
   feature?: string[];
   category?: string;
   subcategory?: string;
+  available?:number;
 }

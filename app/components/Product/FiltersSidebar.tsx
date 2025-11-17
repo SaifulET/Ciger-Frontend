@@ -54,7 +54,7 @@ export default function FiltersSidebar({
   const brands = Array.from(new Set(products.map((p) => p.brand)));
   const availability = ["In Stock", "Out of Stock"];
   const features = ["Best Seller", "New Arrival"];
-  const prices = products.map((p) => parseFloat(p.currentPrice));
+  const prices = products.map((p) => (p.currentPrice));
   const minPrice = 0;
   const maxPrice = 100;
 

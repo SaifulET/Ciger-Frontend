@@ -1,7 +1,6 @@
 import React from 'react';
 import OrderItemsTable, { OrderItem } from './OrderItemsTable';
-
-type OrderStatus = 'processing' | 'shipped' | 'delivered' | 'cancelled';
+import { useOrderStore, OrderStatus } from '@/app/store/orderStore';
 
 export interface Order {
   id: string;
@@ -30,6 +29,11 @@ interface OrderCardProps {
 
 const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
   const statusConfig = STATUS_CONFIG[order.status];
+  const { cancelOrder } = useOrderStore();
+
+  const handleCancelOrder = async () => {
+    await cancelOrder(order.id);
+  };
 
   return (
     <div className="bg-white p-[16px] md:p-[32px]">
@@ -40,20 +44,20 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
           <p className="text-sm text-gray-600">Placed on {order.placedDate}</p>
         </div>
         <div className="text-right">
-          <div  className={`flex justify-center items-center gap-2 font-medium text-sm p-2 rounded-lg 
-    ${statusConfig.color}  ${
-      statusConfig.color === 'text-yellow-500'
-        ? 'bg-yellow-50'
-        : statusConfig.color === 'text-red-500'
-        ? 'bg-red-50'
-        : statusConfig.color === 'text-green-500'
-        ? 'bg-green-100'
-        : 'bg-gray-100'
-    }`}>
+          <div className={`flex justify-center items-center gap-2 font-medium text-sm p-2 rounded-lg 
+            ${statusConfig.color}  ${
+              statusConfig.color === 'text-yellow-500'
+                ? 'bg-yellow-50'
+                : statusConfig.color === 'text-red-500'
+                ? 'bg-red-50'
+                : statusConfig.color === 'text-green-500'
+                ? 'bg-green-100'
+                : 'bg-gray-100'
+            }`}>
             <span>{statusConfig.label}</span>
             <div className={`w-2 h-2 rounded-full ${statusConfig.dotColor}`}></div>
           </div>
-          <p className="text-xs text-gray-600 mt-1">Tracking no: {order.trackingNo}</p>
+          <p className="text-xs text-gray-600 mt-1">Tracking no: {order.trackingNo || 'Not assigned'}</p>
         </div>
       </div>
 
@@ -63,7 +67,10 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
       {/* Cancel Button */}
       {order.status === 'processing' && (
         <div className="mt-4 flex justify-end">
-          <button className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded">
+          <button 
+            onClick={handleCancelOrder}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded"
+          >
             Cancel Order
           </button>
         </div>
