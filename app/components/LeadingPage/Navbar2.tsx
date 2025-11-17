@@ -49,7 +49,7 @@ const Navbar: React.FC = () => {
   const [isProduct, setIsProduct] = useState<boolean>(false);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
 
-  const { isLoggedIn, isLogin, UserLogoutRequest } = useUserStore();
+  const { user, isLogin, UserLogoutRequest } = useUserStore();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -238,7 +238,7 @@ const Navbar: React.FC = () => {
           {/* Buttons */}
           <div className="flex flex-row justify-end items-center gap-2 md:gap-4 flex-shrink-0">
             {/* FIXED: Use isLoggedIn from Zustand store */}
-            {!isLoggedIn ? (
+            {user.length==0 ? (
               <>
                 <Link href="/auth/signup">
                   <button
@@ -416,7 +416,7 @@ const Navbar: React.FC = () => {
                         {mobileProfileOpen && (
                           <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 shadow-lg rounded-md z-50 p-3 animate-fadeIn">
                             {/* FIXED: Use isLoggedIn from Zustand store */}
-                            {!isLoggedIn ? (
+                            {user.length==0 ? (
                               <div className="flex flex-col gap-2">
                                 <Link href="/auth/signin">
                                   <button
@@ -591,7 +591,7 @@ const Navbar: React.FC = () => {
                       {mobileProfileOpen && (
                         <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 shadow-lg rounded-md z-50 p-3 animate-fadeIn">
                           {/* FIXED: Use isLoggedIn from Zustand store */}
-                          {!isLoggedIn ? (
+                          {user.length==0 ? (
                             <div className="flex flex-col gap-2">
                               <Link href="/auth/signin">
                                 <button

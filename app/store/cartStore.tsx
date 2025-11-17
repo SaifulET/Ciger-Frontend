@@ -4,28 +4,26 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 // Helper function to parse price strings
-const parsePrice = (price: any): number => {
+const parsePrice = (price: string | number): number => {
   if (typeof price === 'number') return price;
-  if (typeof price === 'string') {
-    // Remove $ symbol and any other non-numeric characters except decimal point
-    const cleaned = price.replace(/[^\d.]/g, '');
-    const parsed = parseFloat(cleaned);
-    return isNaN(parsed) ? 0 : parsed;
-  }
-  return 0;
+  
+  const cleaned = price.replace(/[^\d.]/g, '');
+  const parsed = parseFloat(cleaned);
+  return isNaN(parsed) ? 0 : parsed;
 };
 
 // Types based on your API response
 export interface Product {
-  _id: string;
+  _id?: string ;
   name: string;
-  image: string;
+  image: string | string[];
   price: number;
   discount?: number;
   description?: string;
   isInStock?: boolean;
   brand?: string;
   available?: number;
+  images?: string[];
 }
 
 export interface CartItem {
@@ -46,7 +44,7 @@ interface CartState {
   
   // Actions
   initializeCart: (userId: string | null) => Promise<void>;
-  addItem: (product: Product, userId: string | null) => Promise<void>;
+  addItem: (product: Product, userId: string |null) => Promise<void>;
   updateQuantity: (cartItemId: string, newQuantity: number, userId: string | null) => Promise<void>;
   removeItem: (cartItemId: string, userId: string | null) => Promise<void>;
   clearCart: (userId: string | null) => Promise<void>;
@@ -75,8 +73,7 @@ export const useCartStore = create<CartState>()(
             const result = await response.data;
             
             if (result.success) {
-              const backendItems: CartItem[] = result.data.map((item: any) => {
-                // Parse price properly (handle $ symbols)
+              const backendItems: CartItem[] = result.data.map((item: CartItem) => {
                 const price = parsePrice(item.productId.price);
                 const quantity = Number(item.quantity) || 1;
                 const total = price * quantity;
@@ -86,7 +83,7 @@ export const useCartStore = create<CartState>()(
                   userId: item.userId,
                   productId: {
                     ...item.productId,
-                    price: price, // Store as clean number
+                    price: price,
                     image: item.productId.image || item.productId.images?.[0] || ''
                   },
                   quantity: quantity,
@@ -110,19 +107,15 @@ export const useCartStore = create<CartState>()(
       // Add item to cart
       addItem: async (product: Product, userId: string | null) => {
         const { items, getItemQuantity } = get();
-        const existingQuantity = getItemQuantity(product._id);
+        
         
         if (userId) {
           set({ isSyncing: true });
           try {
             const response = await api.post('/cart/createCart', {
-             
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                userId: userId,
-                productId: product._id,
-                quantity: existingQuantity > 0 ? existingQuantity + 1 : 1
-              })
+              userId: userId,
+              productId: product._id,
+              quantity:  1
             });
             
             const result = await response.data;
@@ -137,7 +130,7 @@ export const useCartStore = create<CartState>()(
           }
         } else {
           const existingItem = items.find(item => item.productId._id === product._id);
-          const price = parsePrice(product.price); // Use price parser
+          const price = parsePrice(product.price);
           
           if (existingItem) {
             const newQuantity = existingItem.quantity + 1;
@@ -157,7 +150,7 @@ export const useCartStore = create<CartState>()(
               userId: 'guest',
               productId: {
                 ...product,
-                price: price, // Store as clean number
+                price: price,
                 image: product.image || ''
               },
               quantity: 1,
@@ -171,18 +164,23 @@ export const useCartStore = create<CartState>()(
         }
       },
 
-      // Update item quantity
+      // Update item quantity - FIXED THIS FUNCTION
       updateQuantity: async (cartItemId: string, newQuantity: number, userId: string | null) => {
+        console.log('updateQuantity called:', { cartItemId, newQuantity, userId });
+        
         const { items } = get();
         
         if (userId) {
           set({ isSyncing: true });
           try {
-            const response = await api.put(`/cart/updateCart/${cartItemId}`, {
-             
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ quantity: newQuantity })
-            });
+            console.log('Making API call to update quantity...');
+            // FIX: Use proper axios syntax
+            const response = await api.put(`/cart/updateCart/${cartItemId}`, 
+              { quantity: newQuantity }, // Request data
+              { headers: { 'Content-Type': 'application/json' } } // Config
+            );
+            
+            console.log('API response:', response.data);
             
             if (response.data) {
               await get().initializeCart(userId);
@@ -193,20 +191,24 @@ export const useCartStore = create<CartState>()(
             set({ isSyncing: false });
           }
         } else {
+          console.log('Updating local cart quantity...');
           const updatedItems = items.map(item => {
             if (item._id === cartItemId) {
-              const price = parsePrice(item.productId.price); // Use price parser
+              const price = parsePrice(item.productId.price);
               const quantity = Number(newQuantity) || 1;
-              return {
+              const updatedItem = {
                 ...item,
                 quantity: quantity,
                 total: price * quantity,
                 updatedAt: new Date().toISOString()
               };
+              console.log('Updated item:', updatedItem);
+              return updatedItem;
             }
             return item;
           });
           set({ items: updatedItems });
+          console.log('Local cart updated with items:', updatedItems);
         }
       },
 
@@ -264,12 +266,9 @@ export const useCartStore = create<CartState>()(
           await Promise.all(
             items.map(item =>
               api.post('/cart/createCart', {
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  userId: userId,
-                  productId: item.productId._id,
-                  quantity: item.quantity
-                })
+                userId: userId,
+                productId: item.productId._id,
+                quantity: item.quantity
               })
             )
           );

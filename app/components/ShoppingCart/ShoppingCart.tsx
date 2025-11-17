@@ -6,6 +6,12 @@ import Image from "next/image";
 import { useCartStore } from "@/app/store/cartStore";
 import useUserStore from "@/app/store/userStore";
 
+// Add a fallback image (optional)
+const FALLBACK_IMAGE = "/images/placeholder-product.jpg";
+
+// Update the type to include string arrays
+type ImageSource = string | string[] | null | undefined;
+
 export default function ShoppingCart() {
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
   
@@ -26,12 +32,35 @@ export default function ShoppingCart() {
   // Get user state
   const { user } = useUserStore();
   const userId = user || null;
-  const subprice= getFormattedSubtotal()
+  const subprice = getFormattedSubtotal();
 
   // Initialize cart when component mounts
   useEffect(() => {
     initializeCart(userId);
   }, [userId, initializeCart]);
+
+  // Helper function to get safe image source with proper typing
+  const getSafeImageSrc = (image: ImageSource): string => {
+    if (!image) return FALLBACK_IMAGE;
+    
+    // If image is a string and looks like a valid URL or path
+    if (typeof image === 'string' && image.trim() !== '') {
+      return image;
+    }
+    
+    // If image is an array, use the first image
+    if (Array.isArray(image) && image.length > 0 && typeof image[0] === 'string' && image[0].trim() !== '') {
+      return image[0];
+    }
+    
+    return FALLBACK_IMAGE;
+  };
+
+  // Helper function to handle image error with proper typing
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    const target = e.target as HTMLImageElement;
+    target.src = FALLBACK_IMAGE;
+  };
 
   const toggleCheck = (id: string) => {
     const newChecked = new Set(checkedItems);
@@ -92,13 +121,6 @@ export default function ShoppingCart() {
     setTimeout(() => {
       window.location.href = "/pages/checkout";
     }, 100);
-  };
-
-  const calculateTotal = () => {
-    const total = items
-      .filter((item) => checkedItems.has(item._id))
-      .reduce((sum, item) => sum + (item.total || 0), 0);
-    return total;
   };
 
   // Show loading state
@@ -179,17 +201,14 @@ export default function ShoppingCart() {
                         disabled={isSyncing}
                       />
                       <div className="flex items-center justify-center w-12 h-12 md:w-[70px] md:h-[70px] bg-[#F5F5F5] border border-[#B0B0B0] rounded-xl flex-shrink-0">
-                        {item.productId.image ? (
-                          <Image
-                            src={item.productId.image}
-                            alt={item.productId.name}
-                            width={30}
-                            height={30}
-                            className="object-contain"
-                          />
-                        ) : (
-                          <div className="text-xs text-gray-400">No Image</div>
-                        )}
+                        <Image
+                          src={getSafeImageSrc(item.productId.image)}
+                          alt={item.productId.name || "Product image"}
+                          width={30}
+                          height={30}
+                          className="object-contain"
+                          onError={handleImageError}
+                        />
                       </div>
                     </div>
                     <button
@@ -220,7 +239,7 @@ export default function ShoppingCart() {
                       <div className="flex justify-between items-center border-b pb-1">
                         <p className="text-gray-600">Price</p>
                         <p className="font-semibold text-gray-900">
-                          {(item.productId.price || 0)}
+                          ${(item.productId.price || 0).toFixed(2)}
                         </p>
                       </div>
                       
@@ -250,7 +269,7 @@ export default function ShoppingCart() {
                       <div className="flex justify-between items-center">
                         <p className="text-gray-600">Total</p>
                         <p className="font-semibold text-gray-900">
-                          {(item.total || 0)}
+                          ${((item.productId.price || 0) * item.quantity).toFixed(2)}
                         </p>
                       </div>
                     </div>
@@ -270,17 +289,14 @@ export default function ShoppingCart() {
                   </div>
                   <div className="col-span-1 flex justify-start">
                     <div className="flex items-center justify-center w-12 h-12 md:w-[70px] md:h-[70px] bg-[#F5F5F5] border border-[#B0B0B0] rounded-xl flex-shrink-0">
-                      {item.productId.image ? (
-                        <Image
-                          src={item.productId.image}
-                          alt={item.productId.name}
-                          width={30}
-                          height={30}
-                          className="object-contain"
-                        />
-                      ) : (
-                        <div className="text-xs text-gray-400">No Image</div>
-                      )}
+                      <Image
+                        src={getSafeImageSrc(item.productId.image)}
+                        alt={item.productId.name || "Product image"}
+                        width={30}
+                        height={30}
+                        className="object-contain"
+                        onError={handleImageError}
+                      />
                     </div>
                   </div>
                   <div className="col-span-3">
@@ -295,7 +311,7 @@ export default function ShoppingCart() {
                     </p>
                   </div>
                   <div className="col-span-2 text-center text-sm font-semibold text-gray-900">
-                    ${(item.productId.price || 0)}
+                    ${(item.productId.price || 0).toFixed(2)}
                   </div>
                   <div className="col-span-2 flex justify-center items-center">
                     <div className="flex items-center gap-0 border border-gray-300 rounded-full font-semibold text-base text-center">
@@ -319,7 +335,7 @@ export default function ShoppingCart() {
                     </div>
                   </div>
                   <div className="col-span-2 text-center text-sm font-semibold text-gray-900">
-                    ${(item.total || 0)}
+                    ${((item.productId.price || 0) * item.quantity).toFixed(2)}
                   </div>
                   <div className="col-span-1 text-center">
                     <button

@@ -42,12 +42,12 @@ interface ApiOrder {
   trackingNo: string;
   date: string;
   carts: ApiOrderItem[];
-  // Add other fields from API if needed
 }
 
 interface ApiResponse {
   success: boolean;
-  data: ApiOrder[];
+  data: ApiOrder[] | string | ApiOrder ;
+  message?: string;
 }
 
 interface OrderStore {
@@ -79,6 +79,61 @@ const formatDate = (dateString: string): string => {
   });
 };
 
+// Type guard to check if value is ApiOrder
+const isApiOrder = (value: unknown): value is ApiOrder => {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'orderId' in value &&
+    'state' in value &&
+    'date' in value
+  );
+};
+
+// Type guard to check if value is ApiOrder array
+const isApiOrderArray = (value: unknown): value is ApiOrder[] => {
+  return Array.isArray(value) && value.every(isApiOrder);
+};
+
+// Helper function to safely parse and normalize data
+const normalizeOrdersData = (data: ApiOrder[] | string | ApiOrder | null): ApiOrder[] => {
+  // If it's already an array of ApiOrder, return it
+  if (isApiOrderArray(data)) {
+    return data;
+  }
+
+  // If it's a string, try to parse it
+  if (typeof data === 'string') {
+    const trimmed = data.trim();
+    
+    // If it's a non-JSON message like "No orders", return empty array
+    if (!trimmed.startsWith('[') && !trimmed.startsWith('{')) {
+      return [];
+    }
+    
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (isApiOrderArray(parsed)) {
+        return parsed;
+      }
+      if (isApiOrder(parsed)) {
+        return [parsed];
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  }
+
+  // If it's a single ApiOrder object, wrap in array
+  if (isApiOrder(data)) {
+    return [data];
+  }
+
+  // For null, undefined, or other unknown types
+  return [];
+};
+
 export const useOrderStore = create<OrderStore>()(
   persist(
     (set, get) => ({
@@ -89,56 +144,73 @@ export const useOrderStore = create<OrderStore>()(
       fetchOrders: async (userId: string) => {
         set({ loading: true, error: null });
         try {
-          const response = await api.get(`/api/order/userOrder/${userId}`);
-          const data: ApiResponse = await response.data;
+          const response = await api.get(`/order/userOrder/${userId}`);
+          const data: ApiResponse = response.data;
+
+          console.log('API Response:', data);
 
           if (data.success) {
+            // Normalize the data to always be an array of ApiOrder
+            const ordersData = normalizeOrdersData(data.data);
+
+            console.log('Normalized orders data:', ordersData);
+
             // Transform API data to match our Order interface
-            const transformedOrders: Order[] = data.data.map((apiOrder: ApiOrder) => {
+            const transformedOrders: Order[] = ordersData.map((apiOrder: ApiOrder) => {
+              // Ensure carts is always an array
+              const cartItems = Array.isArray(apiOrder.carts) ? apiOrder.carts : [];
+              
               // Transform cart items to our OrderItem format
-              const items: OrderItem[] = apiOrder.carts.map((cartItem, index) => ({
+              const items: OrderItem[] = cartItems.map((cartItem, index) => ({
                 id: cartItem._id || `item-${index}`,
-                name: cartItem.name,
-                unitPrice: cartItem.price,
-                quantity: cartItem.quantity,
+                name: cartItem.name || 'Unknown Product',
+                unitPrice: typeof cartItem.price === 'number' ? cartItem.price : 0,
+                quantity: typeof cartItem.quantity === 'number' ? cartItem.quantity : 0,
                 image: cartItem.image || 'https://via.placeholder.com/60x60?text=Product'
               }));
 
               // Calculate totals based on cart items
               const subTotal = items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
-              const tax = 5; // Default tax percentage
-              const discount = 5; // Default discount percentage
-              const shippingCost = 10; // Default shipping cost
+              const tax = 5;
+              const discount = 5;
+              const shippingCost = 10;
               const taxAmount = (subTotal * tax) / 100;
               const discountAmount = (subTotal * discount) / 100;
               const paymentAmount = subTotal + taxAmount - discountAmount + shippingCost;
 
               return {
-                id: apiOrder.orderId,
-                status: mapApiStateToStatus(apiOrder.state),
-                placedDate: formatDate(apiOrder.date),
-                trackingNo: apiOrder.trackingNo,
+                id: apiOrder.orderId || apiOrder._id || `order-${Date.now()}`,
+                status: mapApiStateToStatus(apiOrder.state || 'processing'),
+                placedDate: formatDate(apiOrder.date || new Date().toISOString()),
+                trackingNo: apiOrder.trackingNo || '',
                 items,
                 tax,
                 discount,
                 shippingCost,
                 subTotal,
                 paymentAmount,
-                paid: true // Assuming all orders from API are paid based on your data
+                paid: true
               };
             });
 
             set({ 
               orders: transformedOrders, 
-              loading: false 
+              loading: false,
+              error: null
             });
           } else {
+            // Handle error case
+            const errorMessage = data.message || 
+                               (typeof data.data === 'string' ? data.data : 'Failed to fetch orders');
+            
             set({ 
-              error: 'Failed to fetch orders', 
-              loading: false 
+              error: errorMessage, 
+              loading: false,
+              orders: []
             });
           }
         } catch (error) {
+          console.error('Fetch orders error:', error);
           set({ 
             error: 'Network error occurred', 
             loading: false 
@@ -148,8 +220,6 @@ export const useOrderStore = create<OrderStore>()(
 
       cancelOrder: async (orderId: string) => {
         try {
-          // API call to cancel order would go here
-          // For now, we'll update local state
           set(state => ({
             orders: state.orders.map(order =>
               order.id === orderId 

@@ -53,8 +53,8 @@ type Product = {
   brand: string;
   name: string;
   image: string;
-  originalPrice?: string;
-  currentPrice: string;
+  originalPrice?: number;
+  currentPrice: number;
   newBestSeller: boolean;
   newSeller: boolean;
    inStock?: boolean;
@@ -136,31 +136,41 @@ export default function BestSeller() {
         return;
       }
       
-      const formattedProducts: Product[] = productsArray.map((item: ProductApiItem) => {
-        const imageUrl = item.images && Array.isArray(item.images) && item.images.length > 0 
-          ? validateImageUrl(item.images[0])
-          : "/default-product.png";
+   const formattedProducts: Product[] = productsArray.map((item: ProductApiItem) => {
+  const imageUrl = item.images && Array.isArray(item.images) && item.images.length > 0 
+    ? validateImageUrl(item.images[0])
+    : "/default-product.png";
 
-        const originalPrice = item.discount > 0 && item.price > 0 
-          ? `$${item.price.toFixed(2)}`
-          : undefined;
+  // Keep as numbers for calculations
+  const originalPrice = item.discount > 0 && item.price > 0 
+    ? item.price
+    : undefined;
 
-        const currentPriceValue = item.currentPrice || item.price;
-        const currentPrice = currentPriceValue 
-          ? `$${typeof currentPriceValue === 'number' ? currentPriceValue.toFixed(2) : currentPriceValue}`
-          : "$0.00";
+  const currentPriceValue = item.currentPrice || item.price || 0;
+  const currentPrice = typeof currentPriceValue === 'number' 
+    ? currentPriceValue 
+    : parseFloat(currentPriceValue) || 0;
 
-        return {
-          id: item._id || `product-${Math.random().toString(36).substr(2, 9)}`,
-          brand: item.brand || "Unknown Brand",
-          name: item.name || item.title || "Product Name",
-          image: imageUrl,
-          originalPrice,
-          currentPrice,
-          newBestSeller: Boolean(item.newBestSeller || item.isBest),
-          newSeller: Boolean(item.newSeller || item.isNew)
-        };
-      });
+  return {
+    id: item._id || `product-${Math.random().toString(36).substr(2, 9)}`,
+    brand: item.brand || "Unknown Brand",
+    name: item.name || item.title || "Product Name",
+    image: imageUrl,
+    originalPrice, // number | undefined
+    currentPrice,  // number
+    newBestSeller: Boolean(item.newBestSeller || item.isBest),
+    newSeller: Boolean(item.newSeller || item.isNew)
+  };
+});
+
+// Then format for display when needed
+const formatPrice = (price: number): string => {
+  return `$${price.toFixed(2)}`;
+};
+
+// Usage in components:
+// formatPrice(product.currentPrice)
+// product.originalPrice ? formatPrice(product.originalPrice) : undefined
       
       console.log("Formatted products:", formattedProducts);
       setProducts(formattedProducts);

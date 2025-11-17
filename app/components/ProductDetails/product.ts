@@ -11,15 +11,15 @@ export interface Review {
 
 export interface Product {
   id: string;
-  _id?: string;
+  _id: string  ;
   brand: string;
   name: string;
   title: string;
   price: number;
   originalPrice?: number;
   inStock: boolean;
-  newArrival?: boolean;
-  bestSeller?: boolean;
+  newArrival: boolean;
+  bestSeller: boolean;
   images: string[];
   colors: string[];
   description: string;
@@ -30,7 +30,7 @@ export interface Product {
   category?: string;
   subCategory?: string;
   discount?: number;
-  currentPrice?: string;
+  currentPrice: number;
   available?: number;
 }
 
@@ -39,10 +39,10 @@ export interface RelatedProduct {
   brand: string;
   name: string;
   image: string;
-  currentPrice: string;
-  originalPrice?: string;
-  newBestSeller?: boolean;
-  newSeller?: boolean;
+  currentPrice: number;
+  originalPrice: number;
+  newBestSeller: boolean;
+  newSeller: boolean;
 }
 
 export interface ApiProduct {
@@ -52,7 +52,7 @@ export interface ApiProduct {
   title: string;
   price: number;
   discount: number;
-  currentPrice: string;
+  currentPrice: number;
   averageRating: number;
   available: number;
   isBest: boolean;

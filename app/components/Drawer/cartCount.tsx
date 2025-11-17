@@ -11,6 +11,12 @@ import Link from "next/link";
 import { useCartStore } from "@/app/store/cartStore";
 import useUserStore from "@/app/store/userStore";
 
+// Add a fallback image
+const FALLBACK_IMAGE = "/images/placeholder-product.jpg";
+
+// Define proper type for image source
+type ImageSource = string | string[] | null | undefined;
+
 export default function CartDrawer() {
   const [isOpen, setIsOpen] = useState(false);
   const [showDrawer, setShowDrawer] = useState(false);
@@ -52,20 +58,64 @@ export default function CartDrawer() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const handleQuantityChange = (cartItemId: string, type: "inc" | "dec") => {
+  // Helper function to get safe image source with proper typing
+  const getSafeImageSrc = (image: ImageSource): string => {
+    if (!image) return FALLBACK_IMAGE;
+    
+    // If image is a string and looks like a valid URL or path
+    if (typeof image === 'string' && image.trim() !== '') {
+      return image;
+    }
+    
+    // If image is an array, use the first image
+    if (Array.isArray(image) && image.length > 0 && typeof image[0] === 'string' && image[0].trim() !== '') {
+      return image[0];
+    }
+    
+    return FALLBACK_IMAGE;
+  };
+
+  // Helper function to handle image error with proper typing
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    const target = e.target as HTMLImageElement;
+    target.src = FALLBACK_IMAGE;
+  };
+
+  const handleQuantityChange = async (cartItemId: string, type: "inc" | "dec") => {
     const item = cartItems.find(item => item._id === cartItemId);
     if (!item) return;
 
     const newQuantity = type === "inc" ? item.quantity + 1 : Math.max(1, item.quantity - 1);
-    updateQuantity(cartItemId, newQuantity, userId);
+    
+    // Debug logging
+    console.log('Quantity change:', {
+      cartItemId,
+      currentQuantity: item.quantity,
+      newQuantity,
+      type
+    });
+    
+    try {
+      await updateQuantity(cartItemId, newQuantity, userId);
+    } catch (error) {
+      console.error('Failed to update quantity:', error);
+    }
   };
 
-  const handleRemove = (cartItemId: string) => {
-    removeItem(cartItemId, userId);
+  const handleRemove = async (cartItemId: string) => {
+    try {
+      await removeItem(cartItemId, userId);
+    } catch (error) {
+      console.error('Failed to remove item:', error);
+    }
   };
 
-  const handleClearCart = () => {
-    clearCart(userId);
+  const handleClearCart = async () => {
+    try {
+      await clearCart(userId);
+    } catch (error) {
+      console.error('Failed to clear cart:', error);
+    }
   };
 
   // Handle animation
@@ -86,7 +136,7 @@ export default function CartDrawer() {
           <HugeiconsIcon icon={ShoppingCart02Icon} />
           {(cartCount > 0 || isLoading) && (
             <span className="absolute -top-2 md:-top-1 -right-1 bg-[#C9A040] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-              {isLoading ? "..." : cartCount}
+              {cartCount === 0 ? "" : cartCount}
             </span>
           )}
         </div>
@@ -117,8 +167,11 @@ export default function CartDrawer() {
             <div className="flex justify-between items-center p-6 md:p-8 bg-white border-b border-gray-200 sticky top-0 z-10">
               <div>
                 <h2 className="text-[28px] md:text-[28px] font-semibold text-[#0C0C0C] font-montserrat">
-                  Your Cart {isSyncing && "(Syncing...)"}
+                  Your Cart 
                 </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  {isSyncing ? "Updating..." : `${cartCount} items`}
+                </p>
               </div>
               <div className="flex flex-col gap-2">
                 <button onClick={closeDrawer} className="p-2 rounded-full bg-gray-200 flex justify-center items-center md:rounded-xl">
@@ -173,84 +226,89 @@ export default function CartDrawer() {
                   </p>
                 </div>
 
-                {cartItems.map((item) => (
-                  <div
-                    key={item._id}
-                    className="flex justify-between items-center border-t border-gray-200 pt-4"
-                  >
-                    {/* Product Info */}
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <button
-                        onClick={() => handleRemove(item._id)}
-                        disabled={isSyncing}
-                        className="flex justify-center items-center w-6 h-6 md:w-8 md:h-8 bg-[#DD2C2C] rounded-xl flex-shrink-0 disabled:opacity-50"
-                      >
-                        <X className="text-white w-3 h-3 md:w-4 md:h-4" />
-                      </button>
+                {cartItems.map((item) => {
+                  const safeImageSrc = getSafeImageSrc(item.productId.image);
+                  const productName = item.productId.name || "Product Name";
+                  const brandName = item.productId.brand || "Brand";
+                  const unitPrice = item.productId.price || 0;
+                  const itemTotal = unitPrice * item.quantity;
 
-                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div className="flex items-center justify-center w-12 h-12 md:w-[70px] md:h-[70px] bg-[#F5F5F5] border border-[#B0B0B0] rounded-xl flex-shrink-0">
-                          {item.productId.image ? (
+                  return (
+                    <div
+                      key={item._id}
+                      className="flex justify-between items-center border-t border-gray-200 pt-4"
+                    >
+                      {/* Product Info */}
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <button
+                          onClick={() => handleRemove(item._id)}
+                          disabled={isSyncing}
+                          className="flex justify-center items-center w-6 h-6 md:w-8 md:h-8 bg-[#DD2C2C] rounded-xl flex-shrink-0 disabled:opacity-50"
+                        >
+                          <X className="text-white w-3 h-3 md:w-4 md:h-4" />
+                        </button>
+
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className="flex items-center justify-center w-12 h-12 md:w-[70px] md:h-[70px] bg-[#F5F5F5] border border-[#B0B0B0] rounded-xl flex-shrink-0">
                             <Image
-                              src={item.productId.image}
-                              alt={item.productId.name}
+                              src={safeImageSrc}
+                              alt={productName}
                               width={isMobile ? 30 : 50}
                               height={isMobile ? 30 : 50}
                               className="object-contain"
+                              onError={handleImageError}
                             />
-                          ) : (
-                            <div className="text-xs text-gray-400">No Image</div>
-                          )}
-                        </div>
+                          </div>
 
-                        <div className="flex flex-col gap-1 min-w-0 flex-1">
-                          <p className="font-semibold text-[12px] md:text-[14px] font-openSans text-[#0C0C0C] truncate">
-                            {item.productId.brand || "Brand"}
-                          </p>
-                          <p className="text-[12px] md:text-[14px] text-[#0C0C0C] font-openSans truncate">
-                            {item.productId.name}
-                          </p>
-                          <div className="flex items-center gap-1 flex-wrap">
-                            <p className="text-[12px] md:text-[14px] font-semibold font-openSans">
-                              ${(item.productId.price || 0)}
+                          <div className="flex flex-col gap-1 min-w-0 flex-1">
+                            <p className="font-semibold text-[12px] md:text-[14px] font-openSans text-[#0C0C0C] truncate">
+                              {brandName}
                             </p>
-                            <p className="text-[10px] md:text-[12px] font-openSans text-gray-500">
-                              {item.productId.isInStock ? "In Stock" : "Out of Stock"}
+                            <p className="text-[12px] md:text-[14px] text-[#0C0C0C] font-openSans truncate">
+                              {productName}
                             </p>
+                            <div className="flex items-center gap-1 flex-wrap">
+                              <p className="text-[12px] md:text-[14px] font-semibold font-openSans">
+                                ${unitPrice.toFixed(2)}
+                              </p>
+                              <p className="text-[10px] md:text-[12px] font-openSans text-gray-500">
+                                {item.productId.isInStock ? "In Stock" : "Out of Stock"}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Quantity */}
-                    <div className="flex items-center gap-2 mx-2">
-                      <div className="flex items-center justify-between bg-[#F5F5F5] border border-[#C9A040] rounded-xl">
-                        <button
-                          onClick={() => handleQuantityChange(item._id, "dec")}
-                          disabled={isSyncing || item.quantity <= 1}
-                          className="flex justify-center items-center w-8 h-8 md:w-[36px] md:h-[36px] bg-[#C9A040] rounded-xl disabled:opacity-50"
-                        >
-                          <Minus className="text-[#0C0C0C] w-3 h-3" />
-                        </button>
-                        <span className="text-[12px] md:text-[14px] font-semibold font-openSans w-6 md:w-8 text-center">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => handleQuantityChange(item._id, "inc")}
-                          disabled={isSyncing}
-                          className="flex justify-center items-center w-8 h-8 md:w-[36px] md:h-[36px] bg-[#C9A040] rounded-xl disabled:opacity-50"
-                        >
-                          <Plus className="text-[#0C0C0C] w-3 h-3" />
-                        </button>
+                      {/* Quantity */}
+                      <div className="flex items-center gap-2 mx-2">
+                        <div className="flex items-center justify-between bg-[#F5F5F5] border border-[#C9A040] rounded-xl">
+                          <button
+                            onClick={() => handleQuantityChange(item._id, "dec")}
+                            disabled={isSyncing || item.quantity <= 1}
+                            className="flex justify-center items-center w-8 h-8 md:w-[36px] md:h-[36px] bg-[#C9A040] rounded-xl disabled:opacity-50"
+                          >
+                            <Minus className="text-[#0C0C0C] w-3 h-3" />
+                          </button>
+                          <span className="text-[12px] md:text-[14px] font-semibold font-openSans w-6 md:w-8 text-center">
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() => handleQuantityChange(item._id, "inc")}
+                            disabled={isSyncing}
+                            className="flex justify-center items-center w-8 h-8 md:w-[36px] md:h-[36px] bg-[#C9A040] rounded-xl disabled:opacity-50"
+                          >
+                            <Plus className="text-[#0C0C0C] w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Total */}
-                    <p className="text-[12px] md:text-[14px] font-openSans w-12 md:w-[60px] text-right truncate">
-                      ${(item.total || 0)}
-                    </p>
-                  </div>
-                ))}
+                      {/* Total */}
+                      <p className="text-[12px] md:text-[14px] font-openSans w-12 md:w-[60px] text-right truncate">
+                        ${itemTotal.toFixed(2)}
+                      </p>
+                    </div>
+                  );
+                })}
 
                 {cartItems.length === 0 && (
                   <div className="text-center py-8">
@@ -266,7 +324,7 @@ export default function CartDrawer() {
                   disabled={cartItems.length === 0 || isSyncing}
                   className="w-full bg-white rounded-xl py-3 text-[14px] md:text-[16px] font-semibold font-openSans border border-gray-300 disabled:opacity-50"
                 >
-                  Clear Cart
+                  {isSyncing ? "Clearing..." : "Clear Cart"}
                 </button>
                 <Link href="/pages/checkout" className="w-full">
                   <button
@@ -274,7 +332,7 @@ export default function CartDrawer() {
                     disabled={cartItems.length === 0 || !agree || isSyncing}
                     className="w-full bg-[#C9A040] rounded-xl py-3 text-[14px] md:text-[16px] font-semibold font-openSans text-white disabled:opacity-50"
                   >
-                    Checkout
+                    {isSyncing ? "Processing..." : "Checkout"}
                   </button>
                 </Link>
               </div>

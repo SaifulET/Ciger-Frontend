@@ -16,7 +16,9 @@ export default function OrderHistoryPage() {
 
   useEffect(() => {
    
-    fetchOrders(user);
+    const asb=fetchOrders(user);
+    console.log(asb)
+
   }, [fetchOrders]);
 
   const filteredOrders = useMemo(() => {

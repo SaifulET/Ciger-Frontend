@@ -109,11 +109,11 @@ export default function ProductDetailPage() {
           />
           <ProductInfo
             product={currentProduct}
-            quantity={quantity}
-            setQuantity={setQuantity}
+           
+           
             selectedColor={selectedColor}
             setSelectedColor={setSelectedColor}
-            handleAddToCart={handleAddToCart}
+            
           />
         </div>
 

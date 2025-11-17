@@ -1,12 +1,12 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import ProductCard from "../universalComponents/Card";
 import rightArrow from "@/public/rightArrow.svg";
 import Image from "next/image";
 import Leftarrow from "@/public/leftArrow.svg";
 import { RelatedProduct } from "./product";
 import { useProductsStore } from "../../store/productDetailsStore";
+import ProductCard from "../Product/ProductCard";
 
 interface Props {
   relatedProducts: RelatedProduct[];

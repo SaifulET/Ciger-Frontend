@@ -198,6 +198,7 @@ const useUserStore = create<UserStoreState>()(
       name: "user-store",
       partialize: (state) => ({
         isLoggedIn: state.isLoggedIn,
+        user: state.user,
         loginFormData: state.loginFormData,
       }),
     }

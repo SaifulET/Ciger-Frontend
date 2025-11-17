@@ -1,19 +1,36 @@
 import React from "react";
 import { Product } from "./product";
 import Link from "next/link";
-import { useProductsStore } from "../../store/productDetailsStore";
+import { useCartStore } from "@/app/store/cartStore"; // Import from cartStore
+import useUserStore from "@/app/store/userStore"; // Import userStore to get userId
+
+
+
 
 interface Props {
   product: Product;
-  quantity: number;
-  setQuantity: (q: number) => void;
   selectedColor: string;
   setSelectedColor: (color: string) => void;
-  handleAddToCart: () => void;
 }
 
-export default function ProductInfo({ product, quantity, setQuantity, selectedColor, setSelectedColor, handleAddToCart }: Props) {
-  const { cartItems } = useProductsStore();
+export default function ProductInfo({ product, selectedColor, setSelectedColor }: Props) {
+  const { user } = useUserStore();
+  const userId = user || null;
+  
+  // Get cart state and actions from cartStore
+  const { 
+    items: cartItems, 
+    getItemQuantity, 
+    addItem, 
+    updateQuantity, 
+    removeItem,
+    getCartCount,
+    isLoading,
+    isSyncing
+  } = useCartStore();
+
+  // Get current quantity of this product in cart
+  const currentQuantity = getItemQuantity(product._id);
 
   // Generate color styles dynamically
   const getColorStyle = (color: string) => {
@@ -28,6 +45,69 @@ export default function ProductInfo({ product, quantity, setQuantity, selectedCo
     
     return colorMap[color.toLowerCase()] || 'bg-gray-200';
   };
+
+  // Handle add to cart
+  const handleAddToCart = async () => {
+    if (!product.inStock) return;
+    
+    try {
+      await addItem(
+        {
+          _id: product._id ,
+          name: product.name,
+          image: product.images,
+          price: product.currentPrice || product.price,
+          discount: product.discount,
+          description: product.description,
+          isInStock: product.inStock,
+          brand: product.brand,
+          available: product.available
+        },
+        userId
+      );
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+    }
+  };
+
+  // Handle quantity increase
+  const handleIncreaseQuantity = async () => {
+    const cartItem = cartItems.find(item => item.productId._id === product._id);
+    if (cartItem) {
+      try {
+        await updateQuantity(cartItem._id, currentQuantity + 1, userId);
+      } catch (error) {
+        console.error('Failed to increase quantity:', error);
+      }
+    } else {
+      // If item not in cart, add it
+      await handleAddToCart();
+    }
+  };
+
+  // Handle quantity decrease
+  const handleDecreaseQuantity = async () => {
+    const cartItem = cartItems.find(item => item.productId._id === product._id);
+    if (!cartItem) return;
+
+    if (currentQuantity > 1) {
+      try {
+        await updateQuantity(cartItem._id, currentQuantity - 1, userId);
+      } catch (error) {
+        console.error('Failed to decrease quantity:', error);
+      }
+    } else {
+      // If quantity is 1, remove the item from cart
+      try {
+        await removeItem(cartItem._id, userId);
+      } catch (error) {
+        console.error('Failed to remove item:', error);
+      }
+    }
+  };
+
+  // Check if this product is in cart
+  const isInCart = currentQuantity > 0;
 
   return (
     <div className="space-y-6 bg-white p-[16px] md:p-[32px] rounded-lg shadow-sm ">
@@ -91,30 +171,38 @@ export default function ProductInfo({ product, quantity, setQuantity, selectedCo
         <label className="block mb-2 font-bold text-gray-800">Quantity</label>
         <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden w-40">
           <button 
-            onClick={() => setQuantity(Math.max(1, quantity - 1))} 
-            className="px-4 py-2 text-gray-600 bg-[#C9A040] hover:bg-[#b59853] disabled:bg-gray-300 disabled:cursor-not-allowed"
-            disabled={quantity <= 1}
+            onClick={handleDecreaseQuantity}
+            disabled={!isInCart || currentQuantity <= 1 || isSyncing}
+            className="px-4 py-2 text-gray-600 bg-[#C9A040] hover:bg-[#b59853] disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
             −
           </button>
-          <span className="flex-1 text-center font-bold">{quantity}</span>
+          <span className="flex-1 text-center font-bold">
+            {isInCart ? currentQuantity : 0}
+          </span>
           <button 
-            onClick={() => setQuantity(quantity + 1)} 
-            className="px-4 py-2 text-gray-600 bg-[#C9A040] hover:bg-[#b59853]"
+            onClick={handleIncreaseQuantity}
+            disabled={!product.inStock || isSyncing}
+            className="px-4 py-2 text-gray-600 bg-[#C9A040] hover:bg-[#b59853] disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
             +
           </button>
         </div>
+        {/* {isInCart && (
+          <p className="text-sm text-green-600 mt-1">
+            {currentQuantity} in cart
+          </p>
+        )} */}
       </div>
 
       {/* Price */}
       <div className="flex items-baseline justify-start gap-4">
         <span className="text-4xl font-bold text-gray-900">
-          ${product.currentPrice || product.price.toFixed(2)}
+          ${(product.currentPrice || product.price)}
         </span>
         {product.originalPrice && product.originalPrice > product.price && (
           <span className="text-xl text-gray-500 line-through">
-            ${product.originalPrice.toFixed(2)}
+            ${product.originalPrice}
           </span>
         )}
         {product.discount && product.discount > 0 && (
@@ -124,18 +212,20 @@ export default function ProductInfo({ product, quantity, setQuantity, selectedCo
         )}
       </div>
 
-      {/* Add to Cart */}
-      <button 
-        onClick={handleAddToCart} 
-        disabled={!product.inStock}
-        className="w-full bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 rounded-lg transition"
-      >
-        {product.inStock ? "Add To Cart" : "Out of Stock"}
-      </button>
+      {/* Add to Cart / Cart Actions */}
+     
+        <button 
+          onClick={handleAddToCart} 
+          disabled={!product.inStock || isSyncing}
+          className="w-full bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 rounded-lg transition-colors"
+        >
+          {isSyncing ? "Adding..." : product.inStock ? "Add To Cart" : "Out of Stock"}
+        </button>
+     
       
       <Link href="/pages/shoppingcart">
         <button className="w-full font-bold py-3 rounded-lg transition bg-gray-200 hover:bg-gray-300">
-          View Cart ({cartItems})
+          View Cart ({getCartCount()})
         </button>
       </Link>
     </div>

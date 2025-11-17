@@ -14,15 +14,15 @@ const SignInPage: NextPage = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
-  const { isLoggedIn, UserLoginRequest } = useUserStore();
+  const { user, UserLoginRequest } = useUserStore();
   const router = useRouter();
 
   // Redirect if already logged in
   useEffect(() => {
-    if (isLoggedIn) {
+    if (user.length>0) {
       router.push("/");
     }
-  }, [isLoggedIn, router]);
+  }, [user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,7 +62,7 @@ const SignInPage: NextPage = () => {
   };
 
   // If already logged in, show loading while redirecting
-  if (isLoggedIn) {
+  if (user.length>0) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">

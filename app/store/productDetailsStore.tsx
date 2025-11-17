@@ -40,7 +40,7 @@ interface ProductsState {
   // Actions - Products
   fetchProductById: (id: string) => Promise<void>;
   updateProduct: (id: string, productData: Partial<Product>) => Promise<void>;
-  fetchFeaturedProducts: () => Promise<void>;
+  fetchFeaturedProducts: (productId: string) => Promise<void>;
   fetchBestSellers: () => Promise<void>;
   fetchNewArrivals: () => Promise<void>;
   
@@ -60,6 +60,21 @@ interface ProductsState {
   clearCurrentProduct: () => void;
   clearErrors: () => void;
   clearLoading: () => void;
+}
+
+// Interface for API review response
+interface ApiReviewResponse {
+  _id: string;
+  rating: number;
+  review: string;
+  createdAt: string;
+  userId?: {
+    _id: string;
+    email: string;
+  };
+  productId?: {
+    _id: string;
+  };
 }
 
 export const useProductsStore = create<ProductsState>()(
@@ -104,7 +119,6 @@ export const useProductsStore = create<ProductsState>()(
       
       try {
         const response = await api.get(`/product/getProductById/${id}`);
-        console.log(response,"107")
         const result = response.data;
         
         if (result.success) {
@@ -116,9 +130,7 @@ export const useProductsStore = create<ProductsState>()(
             loading: { ...get().loading, product: false }
           });
           
-          // Fetch reviews for this product
           get().fetchProductReviews(id);
-          // Fetch related products
           if (apiProduct.category) {
             get().fetchRelatedProducts(apiProduct.category);
           }
@@ -142,12 +154,9 @@ export const useProductsStore = create<ProductsState>()(
       
       try {
         const response = await api.put(`/product/updateProductById/${id}`, productData);
-        console.log(response,"145")
-        
         const result = response.data;
         
         if (result.success) {
-          // Update current product if it's the same product
           const { currentProduct } = get();
           if (currentProduct && currentProduct.id === id) {
             set({ 
@@ -167,15 +176,14 @@ export const useProductsStore = create<ProductsState>()(
     },
 
     // Fetch featured products
-    fetchFeaturedProducts: async (productId:string) => {
+    fetchFeaturedProducts: async (productId: string) => {
       set(state => ({ 
         loading: { ...state.loading, featured: true },
         errors: { ...state.errors, products: null }
       }));
       
       try {
- const response = await api.get(`/review/getAllReview?productId=${productId}`);
-        console.log(response,"178")
+        const response = await api.get(`/review/getAllReview?productId=${productId}`);
         const result = response.data;
         
         if (result.success) {
@@ -266,15 +274,13 @@ export const useProductsStore = create<ProductsState>()(
       
       try {
         const response = await api.get('/review/getAllReview');
-        
         const result = response.data;
         
         if (result.success) {
-          const apiReviews = result.data; // This is the array of reviews from your API
+          const apiReviews: ApiReviewResponse[] = result.data;
           
-          // Filter reviews for the specific product and transform them
           const productReviews = apiReviews
-            .filter((review: any) => review.productId?._id === productId)
+            .filter((review: ApiReviewResponse) => review.productId?._id === productId)
             .map(transformApiReviewToReview);
           
           set({ 
@@ -282,7 +288,6 @@ export const useProductsStore = create<ProductsState>()(
             loading: { ...get().loading, reviews: false }
           });
           
-          // Update current product with review stats
           const { currentProduct } = get();
           if (currentProduct && currentProduct.id === productId) {
             set({
@@ -309,13 +314,11 @@ export const useProductsStore = create<ProductsState>()(
     // Add a new review
     addReview: async (productId: string, reviewData: Omit<Review, 'id' | 'author' | 'date'>) => {
       try {
-        // Check if user is logged in
         const isLoggedIn = !!document.cookie.includes('token');
         if (!isLoggedIn) {
           throw new Error('Please login to add a review');
         }
 
-        // Send review to API
         const response = await api.post('/review/createReview', {
           productId,
           ...reviewData
@@ -324,7 +327,6 @@ export const useProductsStore = create<ProductsState>()(
         const result = response.data;
         
         if (result.success) {
-          // Refresh reviews after adding new one
           get().fetchProductReviews(productId);
         } else {
           throw new Error(result?.message || 'Failed to add review');
@@ -345,11 +347,9 @@ export const useProductsStore = create<ProductsState>()(
       
       try {
         const response = await api.put(`/review/updateReview/${reviewId}`, reviewData);
-        
         const result = response.data;
         
         if (result.success) {
-          // Refresh reviews to get updated data
           const { currentProduct } = get();
           if (currentProduct) {
             get().fetchProductReviews(currentProduct.id);
@@ -387,7 +387,7 @@ export const useProductsStore = create<ProductsState>()(
             name: apiProduct.name,
             image: apiProduct.images[0] || '',
             currentPrice: apiProduct.currentPrice,
-            originalPrice: apiProduct.discount > 0 ? apiProduct.price.toString() : undefined,
+            originalPrice: apiProduct.discount > 0 ? apiProduct.price :0,
             newBestSeller: apiProduct.newBestSeller,
             newSeller: apiProduct.newSeller,
           }));
@@ -479,7 +479,7 @@ const transformApiProductToProduct = (apiProduct: ApiProduct): Product => {
   };
 };
 
-const transformApiReviewToReview = (apiReview: any): Review => {
+const transformApiReviewToReview = (apiReview: ApiReviewResponse): Review => {
   const date = new Date(apiReview.createdAt);
   const now = new Date();
   const diffTime = Math.abs(now.getTime() - date.getTime());
@@ -487,7 +487,6 @@ const transformApiReviewToReview = (apiReview: any): Review => {
   const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
   const diffMinutes = Math.ceil(diffTime / (1000 * 60));
   
-  // Format the date display
   let displayDate = '';
   if (diffMinutes < 60) {
     displayDate = `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
@@ -503,13 +502,12 @@ const transformApiReviewToReview = (apiReview: any): Review => {
     });
   }
   
-  // Use email username as author name
   const email = apiReview.userId?.email || 'anonymous@example.com';
   const authorName = email.split('@')[0];
   
   return {
     id: apiReview._id,
-    author: authorName.charAt(0).toUpperCase() + authorName.slice(1), // Capitalize first letter
+    author: authorName.charAt(0).toUpperCase() + authorName.slice(1),
     rating: apiReview.rating,
     date: displayDate,
     text: apiReview.review,
