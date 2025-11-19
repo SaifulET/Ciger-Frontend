@@ -12,4 +12,5 @@ export interface ProductType {
   category?: string;
   subcategory?: string;
   available?:number;
+  price?:number;
 }

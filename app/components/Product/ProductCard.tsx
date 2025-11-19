@@ -6,6 +6,7 @@ import { ProductType } from "./ProductType";
 import Link from "next/link";
 import { useCartStore } from "@/app/store/cartStore";
 import useUserStore from "@/app/store/userStore";
+import { useEffect } from "react";
 
 interface ProductCardProps {
   product: ProductType;
@@ -72,8 +73,8 @@ const handleAddToCart = () => {
           </div>
           <h3 className="font-semibold text-gray-900 text-base line-clamp-2">{product?.name}</h3>
           <div className="flex items-baseline gap-2">
-            <span className="text-lg font-bold text-gray-900">{(product?.currentPrice)   }</span>
-            {product?.originalPrice && <span className="text-lg text-gray-400 line-through">{(product?.originalPrice)   }</span>}
+            <span className="text-lg font-bold text-gray-900">${(product?.currentPrice)   }</span>
+            {product?.originalPrice && <span className="text-lg text-gray-400 line-through">${(product?.originalPrice)   }</span>}
           </div>
         </div>
       </div>

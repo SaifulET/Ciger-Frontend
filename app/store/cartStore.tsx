@@ -74,7 +74,7 @@ export const useCartStore = create<CartState>()(
             
             if (result.success) {
               const backendItems: CartItem[] = result.data.map((item: CartItem) => {
-                const price = parsePrice(item.productId.price);
+                const price = (item.productId?.price);
                 const quantity = Number(item.quantity) || 1;
                 const total = price * quantity;
                 
@@ -84,7 +84,7 @@ export const useCartStore = create<CartState>()(
                   productId: {
                     ...item.productId,
                     price: price,
-                    image: item.productId.image || item.productId.images?.[0] || ''
+                    image: item.productId?.image || item.productId?.images?.[0] || ''
                   },
                   quantity: quantity,
                   isSelected: item.isSelected !== undefined ? item.isSelected : true,
@@ -130,7 +130,7 @@ export const useCartStore = create<CartState>()(
           }
         } else {
           const existingItem = items.find(item => item.productId._id === product._id);
-          const price = parsePrice(product.price);
+          const price = (product.price);
           
           if (existingItem) {
             const newQuantity = existingItem.quantity + 1;
@@ -194,7 +194,7 @@ export const useCartStore = create<CartState>()(
           console.log('Updating local cart quantity...');
           const updatedItems = items.map(item => {
             if (item._id === cartItemId) {
-              const price = parsePrice(item.productId.price);
+              const price = (item.productId.price);
               const quantity = Number(newQuantity) || 1;
               const updatedItem = {
                 ...item,

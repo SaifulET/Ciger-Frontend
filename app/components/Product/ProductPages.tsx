@@ -44,51 +44,70 @@ export default function ProductsPage() {
     fetchProducts 
   } = useProductStore();
 
-  // Get exclusive filter from URL
-  const getExclusiveFilter = () => {
-    const category = searchParams.get('sub');
-    const brand = searchParams.get('brand');
-    const subcategory = searchParams.get('subPro');
-    const isNew = searchParams.get('new') === 'true';
-    const hasDiscount = searchParams.get('discount') === 'true';
-    const isBest = searchParams.get('best') === 'true';
-
-    if (category) return { type: 'category', value: category };
-    if (brand) return { type: 'brand', value: brand };
-    if (subcategory) return { type: 'subcategory', value: subcategory };
-    if (isNew) return { type: 'new', value: 'true' };
-    if (hasDiscount) return { type: 'discount', value: 'true' };
-    if (isBest) return { type: 'best', value: 'true' };
-    
-    return null;
-  };
-
   // Build query parameters for fetchProducts
   const buildQueryParams = () => {
-    const exclusiveFilter = getExclusiveFilter();
     const params: Record<string, string> = {};
 
-    // Add exclusive filter if exists
-    if (exclusiveFilter) {
-      params[exclusiveFilter.type] = exclusiveFilter.value;
-    }
+    // Get all URL parameters and pass them directly
+    const urlParams = [
+      'sub', 'subPro', 'category', 'brand', 'new', 'discount', 'best',
+      'page', 'sort', 'search'
+    ];
 
-    // Add pagination and sorting
-    const page = searchParams.get('page');
-    const sort = searchParams.get('sort');
-    const search = searchParams.get('search');
-    
-    if (page) params.page = page;
-    if (sort) params.sort = sort;
-    if (search) params.search = search;
+    urlParams.forEach(param => {
+      const value = searchParams.get(param);
+      if (value) {
+        params[param] = value;
+      }
+    });
 
     return params;
   };
 
+  // Fetch products when URL parameters change
   useEffect(() => {
     const queryParams = buildQueryParams();
+    console.log("Fetching with query params:", queryParams);
     fetchProducts(queryParams);
   }, [searchParams, fetchProducts]);
+
+  // Reset current page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [localFilters, searchParams]);
+
+  // Initialize localFilters with available values from products
+  useEffect(() => {
+    if (products.length > 0) {
+      // Get unique brands from products
+      const availableBrands = [...new Set(products.map(product => product.brand).filter(Boolean))] as string[];
+      
+      // Get unique categories and subcategories
+      const availableCategories = [...new Set(products.flatMap(product => {
+        const categories = [];
+        if (product.category) {
+          categories.push(product.category);
+          if (product.subcategory) {
+            categories.push(`${product.category}|${product.subcategory}`);
+          }
+        }
+        return categories;
+      }).filter(Boolean))] as string[];
+
+      // Get price range from products
+      const prices = products.map(product => product.currentPrice || 0).filter(price => price > 0);
+      const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+      const maxPrice = prices.length > 0 ? Math.max(...prices) : 100;
+
+      // Update localFilters with available values (but preserve user selections)
+      setLocalFilters(prev => ({
+        ...prev,
+        brand: prev.brand.length > 0 ? prev.brand : availableBrands,
+        product: prev.product.length > 0 ? prev.product : availableCategories,
+        priceRange: prev.priceRange[0] === 0 && prev.priceRange[1] === 100 ? [minPrice, maxPrice] : prev.priceRange
+      }));
+    }
+  }, [products]);
 
   useEffect(() => {
     const updatePageSize = () => {
@@ -103,48 +122,47 @@ export default function ProductsPage() {
 
   // Client-side filtering function
   const filterProducts = (products: ProductType[], filters: LocalFilters): ProductType[] => {
+    if (!products || products.length === 0) return [];
+
     return products.filter(product => {
-      // Brand filter
+      // Brand filter - if brands are selected, product must match one of them
       if (filters.brand.length > 0 && !filters.brand.includes(product.brand)) {
         return false;
       }
 
       // Feature filter
       if (filters.feature.length > 0) {
-        if (filters.feature.includes("Best Seller") && !product.newBestSeller) {
+        const hasMatchingFeature = filters.feature.some(feature => {
+          if (feature === "Best Seller" && product.newBestSeller) return true;
+          if (feature === "New Arrival" && product.newSeller) return true;
           return false;
-        }
-        if (filters.feature.includes("New Arrival") && !product.newSeller) {
-          return false;
-        }
+        });
+        if (!hasMatchingFeature) return false;
       }
 
       // Category/Subcategory filter
       if (filters.product.length > 0) {
-        const categoryMatch = filters.product.some(filter => {
+        const hasMatchingCategory = filters.product.some(filter => {
           const [category, subcategory] = filter.split("|");
           const matchesCategory = category ? product.category === category : true;
           const matchesSubcategory = subcategory ? product.subcategory === subcategory : true;
           return matchesCategory && matchesSubcategory;
         });
-        
-        if (!categoryMatch) {
-          return false;
-        }
+        if (!hasMatchingCategory) return false;
       }
 
       // Availability filter
       if (filters.availability.length > 0) {
-        if (filters.availability.includes("In Stock") && !product.inStock) {
+        const hasMatchingAvailability = filters.availability.some(availability => {
+          if (availability === "In Stock" && product.inStock) return true;
+          if (availability === "Out of Stock" && !product.inStock) return true;
           return false;
-        }
-        if (filters.availability.includes("Out of Stock") && product.inStock) {
-          return false;
-        }
+        });
+        if (!hasMatchingAvailability) return false;
       }
 
       // Price range filter
-      const productPrice = (product.currentPrice) || 0;
+      const productPrice = product.currentPrice || 0;
       if (productPrice < filters.priceRange[0] || productPrice > filters.priceRange[1]) {
         return false;
       }
@@ -153,8 +171,14 @@ export default function ProductsPage() {
     });
   };
 
+  console.log("Products:", products);
+  console.log("Local Filters:", localFilters);
+  
   const filteredProducts = filterProducts(products, localFilters);
   const totalPages = Math.ceil(filteredProducts.length / pageSize);
+  
+  console.log("Filtered Products:", filteredProducts);
+  
   const paginated = filteredProducts.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize

@@ -26,7 +26,7 @@
         "label": "Nicotine Vapes",
         "link": "/pages/products?sub=nicotineVapes",
         "subItems": [
-          { "label": "Disposables", "link": "/pages/products?sub=nicotineVapes?subPro=Disposables" }
+          { "label": "Disposables", "link": "/pages/products?sub=nicotineVapes&subPro=Disposables" }
           
         ]
       }
@@ -34,10 +34,10 @@
         "label": "Smokeless Tobacco",
         "link": "/pages/products?sub=SmokelessTobacco",
         "subItems": [
-          { "label": "Chewing Tobacco", "link": "/pages/products?sub=SmokelessTobacco?subPro=ChewingTobacco" },
-          { "label": "Snuff", "link": "/pages/products?sub=SmokelessTobacco?subPro=snuff" },
-          { "label": "Nicotine Pouches", "link": "/pages/products?sub=SmokelessTobacco?subPro=Nicotine Pouches" },
-          { "label": "Snus", "link": "/pages/products?sub=SmokelessTobacco?subPro=Snus" }
+          { "label": "Chewing Tobacco", "link": "/pages/products?sub=SmokelessTobacco&subPro=ChewingTobacco" },
+          { "label": "Snuff", "link": "/pages/products?sub=SmokelessTobacco&subPro=snuff" },
+          { "label": "Nicotine Pouches", "link": "/pages/products?sub=SmokelessTobacco&subPro=Nicotine Pouches" },
+          { "label": "Snus", "link": "/pages/products?sub=SmokelessTobacco&subPro=Snus" }
           
         ]
       }
@@ -45,11 +45,11 @@
         "label": "General Accessories",
         "link": "/pages/products?sub=GeneralAccessories",
         "subItems": [
-          { "label": "Lighters & Torch Lighters", "link": "/pages/products?sub=GeneralAccessories?subPro=LightersTorchLighters" },
-          { "label": "Ashtrays", "link": "/pages/products?sub=GeneralAccessories?subPro=Ashtrays" },
-          { "label": "Tolling Machines", "link": "/pages/products?sub=GeneralAccessories?subPro=TollingMachines" },
-          { "label": "Storage & Cases", "link": "/pages/products?sub=GeneralAccessories?subPro=StorageCases" },
-          { "label": "Cleaning Tools", "link": "/pages/products?sub=GeneralAccessories?subPro=CleaningTools" }
+          { "label": "Lighters & Torch Lighters", "link": "/pages/products?sub=GeneralAccessories&subPro=LightersTorchLighters" },
+          { "label": "Ashtrays", "link": "/pages/products?sub=GeneralAccessories&subPro=Ashtrays" },
+          { "label": "Tolling Machines", "link": "/pages/products?sub=GeneralAccessories&subPro=TollingMachines" },
+          { "label": "Storage & Cases", "link": "/pages/products?sub=GeneralAccessories&subPro=StorageCases" },
+          { "label": "Cleaning Tools", "link": "/pages/products?sub=GeneralAccessories&subPro=CleaningTools" }
           
         ]
       }
@@ -57,25 +57,24 @@
         "label": "THC",
         "link": "/pages/products?sub=THC",
         "subItems": [
-          { "label": "Flowers", "link": "/pages/products?sub=THC?subPro=Flowers" },
-          { "label": "PreRolls", "link": "/pages/products?sub=THC?subPro=PreRolls" },
-          { "label": "Disposables/Cartridges", "link": "/pages/products?sub=THC?subPro=Disposables" },
-          { "label": "Edibles", "link": "/pages/products?sub=THC?subPro=Edibles" },
-          { "label": "Concentrates", "link": "/pages/products?sub=THC?subPro=concentrates" }
+          { "label": "Flowers", "link": "/pages/products?sub=THC&subPro=Flowers" },
+          { "label": "PreRolls", "link": "/pages/products?sub=THC&subPro=PreRolls" },
+          { "label": "Disposables/Cartridges", "link": "/pages/products?sub=THC&subPro=Disposables" },
+          { "label": "Edibles", "link": "/pages/products?sub=THC&subPro=Edibles" },
+          { "label": "Concentrates", "link": "/pages/products?sub=THC&subPro=concentrates" }
           
         ]
       }
       ,{
-        "label": "7-Hydroxy",
-        "link": "/pages/products?sub=7Hydroxy",
-        "subItems": [
-          { "label": "Tabs", "link": "/pages/products?sub=7Hydroxy?subPro=Tabs" },
-          { "label": "Vapes", "link": "/pages/products?sub=7Hydroxy?subPro=Vapes" },
-          { "label": "Shots", "link": "/pages/products?sub=7Hydroxy?subPro=shots" }
-         
-          
-        ]
-      }
+  "label": "Roll Your Own",
+  "link": "/pages/products?sub=RollYourOwn",
+  "subItems": [
+    { "label": "Tubes", "link": "/pages/products?sub=RollYourOwn&subPro=Tubes" },
+    { "label": "Wraps", "link": "/pages/products?sub=RollYourOwn&subPro=Wraps" },
+    { "label": "Rolling Papers", "link": "/pages/products?sub=RollYourOwn&subPro=RollingPapers" },
+    { "label": "Pre-Rolled Cones", "link": "/pages/products?sub=RollYourOwn&subPro=PreRolledCones" }
+  ]
+}
     ]
   },
   { "label": "Discounts", "link": "/pages/discounts" },
