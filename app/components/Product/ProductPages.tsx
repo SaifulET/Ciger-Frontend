@@ -24,6 +24,7 @@ export default function ProductsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
+  // Initialize localFilters with proper default values
   const [localFilters, setLocalFilters] = useState<LocalFilters>({
     brand: [],
     availability: [],
@@ -69,6 +70,15 @@ export default function ProductsPage() {
     const queryParams = buildQueryParams();
     console.log("Fetching with query params:", queryParams);
     fetchProducts(queryParams);
+    
+    // Reset local filters when URL parameters change
+    setLocalFilters({
+      brand: [],
+      availability: [],
+      feature: [],
+      priceRange: [0, 100],
+      product: [],
+    });
   }, [searchParams, fetchProducts]);
 
   // Reset current page when filters change
@@ -97,15 +107,28 @@ export default function ProductsPage() {
       // Get price range from products
       const prices = products.map(product => product.currentPrice || 0).filter(price => price > 0);
       const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
-      const maxPrice = prices.length > 0 ? Math.max(...prices) : 100;
+      const maxPrice = prices.length > 0 ? Math.max(...prices) : 1000;
 
-      // Update localFilters with available values (but preserve user selections)
-      setLocalFilters(prev => ({
-        ...prev,
-        brand: prev.brand.length > 0 ? prev.brand : availableBrands,
-        product: prev.product.length > 0 ? prev.product : availableCategories,
-        priceRange: prev.priceRange[0] === 0 && prev.priceRange[1] === 100 ? [minPrice, maxPrice] : prev.priceRange
-      }));
+      // Update localFilters with available values
+      setLocalFilters(prev => {
+        // Only update if the available values are different from current state
+        // This prevents unnecessary re-renders
+        const shouldUpdate = 
+          JSON.stringify(prev.brand) !== JSON.stringify(availableBrands) ||
+          JSON.stringify(prev.product) !== JSON.stringify(availableCategories) ||
+          prev.priceRange[0] !== minPrice ||
+          prev.priceRange[1] !== maxPrice;
+
+        if (!shouldUpdate) return prev;
+
+        return {
+          brand: availableBrands,
+          availability: [],
+          feature: [],
+          priceRange: [minPrice, maxPrice],
+          product: availableCategories,
+        };
+      });
     }
   }, [products]);
 
@@ -171,13 +194,8 @@ export default function ProductsPage() {
     });
   };
 
-  console.log("Products:", products);
-  console.log("Local Filters:", localFilters);
-  
   const filteredProducts = filterProducts(products, localFilters);
   const totalPages = Math.ceil(filteredProducts.length / pageSize);
-  
-  console.log("Filtered Products:", filteredProducts);
   
   const paginated = filteredProducts.slice(
     (currentPage - 1) * pageSize,
