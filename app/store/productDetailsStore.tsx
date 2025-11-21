@@ -50,7 +50,7 @@ interface ProductsState {
   updateReview: (reviewId: string, reviewData: Partial<Review>) => Promise<void>;
   
   // Actions - Related Products
-  fetchRelatedProducts: (category: string) => Promise<void>;
+  fetchRelatedProducts: (category: string,_id:string) => Promise<void>;
   
   // Actions - Cart
   addToCart: (quantity: number) => void;
@@ -132,7 +132,7 @@ export const useProductsStore = create<ProductsState>()(
           
           get().fetchProductReviews(id);
           if (apiProduct.category) {
-            get().fetchRelatedProducts(apiProduct.category);
+            get().fetchRelatedProducts(apiProduct.category,apiProduct._id);
           }
         } else {
           throw new Error(result?.message || 'Failed to fetch product');
@@ -366,7 +366,7 @@ export const useProductsStore = create<ProductsState>()(
     },
 
     // Fetch related products
-    fetchRelatedProducts: async (category: string) => {
+    fetchRelatedProducts: async (category: string,id:string) => {
       set(state => ({ 
         loading: { ...state.loading, related: true },
         errors: { ...state.errors, related: null }
@@ -380,8 +380,10 @@ export const useProductsStore = create<ProductsState>()(
         const result = response.data;
         
         if (result.success) {
+          
           const apiProducts: ApiProduct[] = result.data;
-          const relatedProducts: RelatedProduct[] = apiProducts.slice(0, 6).map(apiProduct => ({
+const filteredProducts = apiProducts.filter(p => p._id !== id);
+          const relatedProducts: RelatedProduct[] =filteredProducts.slice(0, 6).map(apiProduct => ({
             id: apiProduct._id,
             brand: apiProduct.brand,
             name: apiProduct.name,
@@ -473,6 +475,7 @@ const transformApiProductToProduct = (apiProduct: ApiProduct): Product => {
     averageRating: apiProduct.averageRating,
     ratingBreakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
     category: apiProduct.category,
+    subCategory:apiProduct.subCategory,
     discount: apiProduct.discount,
     currentPrice: apiProduct.currentPrice,
     available: apiProduct.available,

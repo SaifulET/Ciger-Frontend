@@ -113,7 +113,7 @@ export default function ProductInfo({ product, selectedColor, setSelectedColor }
     <div className="space-y-6 bg-white p-[16px] md:p-[32px] rounded-lg shadow-sm ">
       {/* Badges */}
       <div className="font-semibold text-[16px] leading-[24px] text-[#0C0C0C] flex-none order-0 flex-grow-0 ">
-        {product.category || "Category"}/{product.subCategory || "SubCategory"}
+        {product.category }{product.subCategory?'/':""}{product.subCategory}
       </div>
       <div className="flex gap-2 justify-end">
         {product.bestSeller && (

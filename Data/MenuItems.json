@@ -7,10 +7,11 @@
     "subItems": [
       {
         "label": "Tobacco Products",
-        "link": "/pages/products?sub=Tobacco",
+        "link": "/pages/products?sub=TobaccoProducts",
         "subItems": [
-           { "label": "Cigar", "link": "/pages/products?sub=Tobacco&subPro=Cigar" },
-          { "label": "Premium Cigar", "link": "/pages/products?sub=Tobacco&subPro=PremiumCigar" }
+           { "label": "Cigar", "link": "/pages/products?sub=TobaccoProducts&subPro=Cigar" },
+          { "label": "Premium Cigar", "link": "/pages/products?sub=TobaccoProducts&subPro=PremiumCigar" },
+          { "label": "Pipe Tobacco", "link": "/pages/products?sub=TobaccoProducts&subPro=PipeTobacco" }
          
         ]
       },
@@ -36,7 +37,7 @@
         "subItems": [
           { "label": "Chewing Tobacco", "link": "/pages/products?sub=SmokelessTobacco&subPro=ChewingTobacco" },
           { "label": "Snuff", "link": "/pages/products?sub=SmokelessTobacco&subPro=snuff" },
-          { "label": "Nicotine Pouches", "link": "/pages/products?sub=SmokelessTobacco&subPro=Nicotine Pouches" },
+          { "label": "Nicotine Pouches", "link": "/pages/products?sub=SmokelessTobacco&subPro=NicotinePouches" },
           { "label": "Snus", "link": "/pages/products?sub=SmokelessTobacco&subPro=Snus" }
           
         ]

@@ -13,7 +13,10 @@ export default function ProductDescription({ description }: ProductDescriptionPr
   return (
     <div className="bg-white rounded-lg shadow-sm mt-[16px] md:mt-[32px] p-[16px] md:p-[32px]">
       <h2 className="text-[28px] font-semibold leading-[36px] mb-[16px] md:mb-[32px]">Product Description</h2>
-      <p className="text-[14px] font-normal leading-6">{displayDescription}</p>
+      <p
+  className="text-[14px] font-normal leading-6"
+  dangerouslySetInnerHTML={{ __html: displayDescription }}
+></p>
     </div>
   );
 }
