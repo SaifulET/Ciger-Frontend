@@ -22,9 +22,14 @@ type ProductApiItem = {
   isNew: boolean;
   newBestSeller: boolean;
   newSeller: boolean;
-  brand: string;
+  brandId: {
+    _id: string;
+    name: string;
+    
+  };
   available: number;
   inStock: boolean;
+  
 };
 
 type ApiResponseData = {
@@ -135,15 +140,17 @@ export default function BestSeller() {
         setProducts([]);
         return;
       }
+      console.log(responseData,'139')
       
    const formattedProducts: Product[] = productsArray.map((item: ProductApiItem) => {
   const imageUrl = item.images && Array.isArray(item.images) && item.images.length > 0 
+  
     ? validateImageUrl(item.images[0])
     : "/default-product.png";
 
   // Keep as numbers for calculations
   const originalPrice = item.discount > 0 && item.price > 0 
-    ? item.price
+    ? Math.round(item.price*100/item.discount)
     : undefined;
 
   const currentPriceValue = item.currentPrice || item.price || 0;
@@ -153,13 +160,15 @@ export default function BestSeller() {
 
   return {
     id: item._id || `product-${Math.random().toString(36).substr(2, 9)}`,
-    brand: item.brand || "Unknown Brand",
+    brand: item.brandId.name || "Unknown Brand",
     name: item.name || item.title || "Product Name",
     image: imageUrl,
     originalPrice, // number | undefined
     currentPrice,  // number
     newBestSeller: Boolean(item.newBestSeller || item.isBest),
-    newSeller: Boolean(item.newSeller || item.isNew)
+    newSeller: Boolean(item.newSeller || item.isNew),
+     available:item.available,
+    rating:item.averageRating
   };
 });
 
@@ -359,7 +368,7 @@ const formatPrice = (price: number): string => {
       <section className="bg-white p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg">
         <div className="flex pb-[32px] items-center">
           <h2 className="text-[28px] flex-1 font-bold text-gray-900 flex justify-center pl-[50px]">
-            <span>New Seller</span>
+            <span>New Arrivals</span>
           </h2>
         </div>
         <div className="flex justify-center items-center h-40">
@@ -374,7 +383,7 @@ const formatPrice = (price: number): string => {
       <section className="bg-white p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg">
         <div className="flex pb-[32px] items-center">
           <h2 className="text-[28px] flex-1 font-bold text-gray-900 flex justify-center pl-[50px]">
-            <span>Best Seller</span>
+            <span>New Arrivals</span>
           </h2>
         </div>
         <div className="flex justify-center items-center h-40">
@@ -389,7 +398,7 @@ const formatPrice = (price: number): string => {
       <section className="bg-white p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg">
         <div className="flex pb-[32px] items-center">
           <h2 className="text-[28px] flex-1 font-bold text-gray-900 flex justify-center pl-[50px]">
-            <span>Best Seller</span>
+            <span>New Arrivals</span>
           </h2>
         </div>
         <div className="flex justify-center items-center h-40">

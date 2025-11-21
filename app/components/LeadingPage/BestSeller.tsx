@@ -22,7 +22,11 @@ type ProductApiItem = {
   isNew: boolean;
   newBestSeller: boolean;
   newSeller: boolean;
-  brand: string;
+  brandId: {
+    _id: string;
+    name: string;
+    // Add other brand properties if they exist in the API response
+  };
   available: number;
   inStock: boolean;
 };
@@ -135,6 +139,9 @@ export default function BestSeller() {
         setProducts([]);
         return;
       }
+
+
+      console.log(productsArray,"144")
       
       const formattedProducts: Product[] = productsArray.map((item: ProductApiItem) => {
   const imageUrl = item.images && Array.isArray(item.images) && item.images.length > 0 
@@ -143,7 +150,7 @@ export default function BestSeller() {
 
   // Keep as numbers for calculations
   const originalPrice = item.discount > 0 && item.price > 0 
-    ? item.price
+    ? Math.round(item.price*100/item.discount)
     : undefined;
 
   const currentPriceValue = item.currentPrice || item.price || 0;
@@ -153,13 +160,15 @@ export default function BestSeller() {
 
   return {
     id: item._id || `product-${Math.random().toString(36).substr(2, 9)}`,
-    brand: item.brand || "Unknown Brand",
+    brand: item.brandId.name || "Unknown Brand",
     name: item.name || item.title || "Product Name",
     image: imageUrl,
-    originalPrice, // number | undefined
+    originalPrice:originalPrice, // number | undefined
     currentPrice,  // number
     newBestSeller: Boolean(item.newBestSeller || item.isBest),
-    newSeller: Boolean(item.newSeller || item.isNew)
+    newSeller: Boolean(item.newSeller || item.isNew),
+    available:item.available,
+    rating:item.averageRating
   };
 });
 

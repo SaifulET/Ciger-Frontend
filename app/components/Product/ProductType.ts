@@ -13,4 +13,11 @@ export interface ProductType {
   subcategory?: string;
   available?:number;
   price?:number;
+   brandId?: {
+    _id: string;
+    name: string;
+    // Add other brand properties if they exist in the API response
+  };
+  rating?:number;
+  averageRating?:number;
 }

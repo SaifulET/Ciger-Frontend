@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Brand } from "./types";
 
 export default function BrandCard({ brand }: { brand: Brand }) {
+
+  console.log(brand,"8")
   return (
     <div className="flex-shrink-0 basis-1/3 md:basis-1/4 lg:basis-1/5 px-2">
       <div className="flex flex-col items-center gap-4 p-4 border border-gray-200 rounded-lg hover:shadow-md transition bg-white h-full">

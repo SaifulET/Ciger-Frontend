@@ -13,6 +13,7 @@ interface Brand {
   image: string;
   createdAt?: string;
   updatedAt?: string;
+  feature?:boolean;
   __v?: number;
 }
 
@@ -51,12 +52,12 @@ export default function ProductCarousel() {
         if (!response.data) {
           throw new Error(`Failed to fetch brands: ${response.status}`);
         }
-        console.log(response.data ,"abc")
         
         const data: ApiResponse = await response.data;
         
+        
         if (data.success) {
-          setBrands(data.data);
+          setBrands(data.data.filter(item => item.feature === true));
         } else {
           throw new Error("API returned unsuccessful response");
         }

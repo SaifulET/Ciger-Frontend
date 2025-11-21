@@ -480,6 +480,7 @@ const transformApiProductToProduct = (apiProduct: ApiProduct): Product => {
     currentPrice: apiProduct.currentPrice,
     available: apiProduct.available,
   };
+  console.log("12",transformApiProductToProduct);
 };
 
 const transformApiReviewToReview = (apiReview: ApiReviewResponse): Review => {

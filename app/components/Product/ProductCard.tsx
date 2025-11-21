@@ -18,19 +18,21 @@ export default function ProductCard({ product, onAddCart}: ProductCardProps) {
  const { addItem, getItemQuantity } = useCartStore();
   const { user } = useUserStore();
   const userId = user || null;
+
+  
   
   const currentQuantity = getItemQuantity(product.id.toString());
 const handleAddToCart = () => {
     addItem({
       _id:product.id.toString(),
-      brand: product.brand,
+      brand: product.brandId?.name,
       name: product.name,
       price: product.currentPrice,
       available: product.available,
       image: product.image,
+
     }, userId);
   };
-
 
 
 
@@ -67,9 +69,9 @@ const handleAddToCart = () => {
         <div className="space-y-2 flex-1">
           <p className="text-sm text-gray-500">{product?.brand}</p>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold">4.5</span>
+            <span className="text-xs font-semibold">{product.rating?product.rating:product.averageRating?product.averageRating:"0"}</span>
             <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-            <span className="text-xs text-gray-500">(245)</span>
+            <span className="text-xs text-gray-500">({(product.available)})</span>
           </div>
           <h3 className="font-semibold text-gray-900 text-base line-clamp-2">{product?.name}</h3>
           <div className="flex items-baseline gap-2">

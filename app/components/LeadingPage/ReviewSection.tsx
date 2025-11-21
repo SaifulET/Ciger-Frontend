@@ -73,7 +73,7 @@ export default function ReviewSection() {
         setLoading(true);
         setError(null);
         const response = await api.get<ApiResponse>('/review/getAllReview');
-        
+        console.log(response.data.data,"76")
         if (response.data.success) {
           const formattedReviews: ReviewCardData[] = response.data.data.map((review) => ({
             id: review._id,
@@ -277,7 +277,7 @@ export default function ReviewSection() {
     return (
       <section className="bg-white p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg">
         <div className="flex justify-center items-center py-8">
-          <p className="text-red-600">{error}</p>
+          <p className="text-red-600">No Review Available</p>
         </div>
       </section>
     );

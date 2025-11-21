@@ -82,6 +82,7 @@ fetchProducts: async (filters = {}) => {
     }
     
     const data = response.data;
+    console.log(response.data,"85")
     
     if (!data) {
       throw new Error('No data received from server');
@@ -96,13 +97,14 @@ fetchProducts: async (filters = {}) => {
     if (!Array.isArray(productsArray)) {
       throw new Error('Invalid data format: expected an array of products');
     }
+    console.log(productsArray,"kdkdk")
     
     const transformedProducts: ProductType[] = productsArray.map((product) => ({
       id: product._id,
       brand: product.brandId?.name || product.brand || '',
       name: product.name || '',
       image: product.images?.[0] || '/placeholder-product.png',
-      originalPrice: product.price || 0,
+      originalPrice: product.discount || 0,
       currentPrice: product.currentPrice || product.price || 0,
       newBestSeller: product.isBest || false,
       newSeller: product.isNew || false,
