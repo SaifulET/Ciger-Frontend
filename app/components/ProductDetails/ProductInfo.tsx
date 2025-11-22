@@ -197,17 +197,17 @@ export default function ProductInfo({ product, selectedColor, setSelectedColor }
 
       {/* Price */}
       <div className="flex items-baseline justify-start gap-4">
-        <span className="text-4xl font-bold text-gray-900">
+        <span className="text-[24px] font-bold text-gray-900">
           ${(product.currentPrice || product.price)}
         </span>
-        {product.originalPrice && product.originalPrice > product.price && (
+        {/* {product.originalPrice && product.originalPrice > product.price && (
           <span className="text-xl text-gray-500 line-through">
             ${product.originalPrice}
           </span>
-        )}
+        )} */}
         {product.discount && product.discount > 0 && (
-          <span className="text-sm font-semibold text-green-600">
-            Save {product.discount}%
+          <span className="text-[24px] font-semibold text-gray-600 line-through">
+             ${Math.round(product.price *100/product.discount)}
           </span>
         )}
       </div>

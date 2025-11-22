@@ -388,8 +388,8 @@ const filteredProducts = apiProducts.filter(p => p._id !== id);
             brand: apiProduct.brand,
             name: apiProduct.name,
             image: apiProduct.images[0] || '',
-            currentPrice: apiProduct.currentPrice,
-            originalPrice: apiProduct.discount > 0 ? apiProduct.price :0,
+            currentPrice: apiProduct.price,
+            originalPrice: apiProduct.discount > 0 ? Math.round(apiProduct.price+(apiProduct.price*apiProduct.discount)/100) :0,
             newBestSeller: apiProduct.newBestSeller,
             newSeller: apiProduct.newSeller,
           }));

@@ -43,6 +43,7 @@ export interface RelatedProduct {
   originalPrice: number;
   newBestSeller: boolean;
   newSeller: boolean;
+  price?:number;
 }
 
 export interface ApiProduct {

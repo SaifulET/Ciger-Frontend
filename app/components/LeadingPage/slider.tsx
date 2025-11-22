@@ -1,20 +1,60 @@
 "use client";
+import api from "@/lib/axios";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 
-const slides = [
-  "/slider.png",
-  "/slider.png",
-  "/slider.png",
-  "/slider.png",
-];
+interface CarouselImage {
+  _id: string;
+  imageUrl: string;
+  __v: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ApiResponse {
+  success: boolean;
+  data: CarouselImage[];
+}
 
 export default function Slider() {
+  const [slides, setSlides] = useState<string[]>([]);
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState<"forward" | "backward">("forward");
   const [isHovered, setIsHovered] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch carousel images from API
+  const fetchCarouselImages = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await api.get("/carousel/getAllImages");
+      const result: ApiResponse = await response.data;
+      
+      if (result.success && result.data) {
+        const imageUrls = result.data.map((item) => item.imageUrl);
+        setSlides(imageUrls);
+      } else {
+        setError("Failed to load carousel images");
+      }
+    } catch (err) {
+      console.error("Error fetching carousel images:", err);
+      setError("Error loading carousel images");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
+    fetchCarouselImages();
+  }, []);
+
+  // Auto-slide effect
+  useEffect(() => {
+    if (slides.length === 0) return;
+
     const interval = setInterval(() => {
       setCurrent((prev) => {
         if (direction === "forward") {
@@ -31,20 +71,55 @@ export default function Slider() {
           return prev - 1;
         }
       });
-    }, 3000); // 2 seconds
+    }, 3000);
 
     return () => clearInterval(interval);
-  }, [direction]);
+  }, [direction, slides.length]);
 
   const nextSlide = () => {
+    if (slides.length === 0) return;
     setDirection("forward");
     setCurrent((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
   };
 
   const prevSlide = () => {
+    if (slides.length === 0) return;
     setDirection("backward");
     setCurrent((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="relative w-full mx-auto overflow-hidden">
+        <div className="lg:h-[600px] md:h-[450px] h-[300px] bg-gray-200 flex items-center justify-center">
+          <div className="text-gray-500">Loading carousel...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="relative w-full mx-auto overflow-hidden">
+        <div className="lg:h-[600px] md:h-[450px] h-[300px] bg-gray-200 flex items-center justify-center">
+          <div className="text-red-500">{error}</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state
+  if (slides.length === 0) {
+    return (
+      <div className="relative w-full mx-auto overflow-hidden">
+        <div className="lg:h-[600px] md:h-[450px] h-[300px] bg-gray-200 flex items-center justify-center">
+          <div className="text-gray-500">No carousel images available</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 
@@ -67,7 +142,7 @@ export default function Slider() {
               alt={`Slide ${index + 1}`}
               fill
               className="object-cover"
-              priority
+              priority={index === 0}
             />
           </div>
         ))}
