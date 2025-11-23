@@ -21,7 +21,7 @@ export interface Product {
   discount?: number;
   description?: string;
   isInStock?: boolean;
-  brand?: string;
+  brand?:string;
   available?: number;
   images?: string[];
 }
@@ -84,8 +84,9 @@ export const useCartStore = create<CartState>()(
                   productId: {
                     ...item.productId,
                     price: price,
-                    image: item.productId?.image || item.productId?.images?.[0] || ''
+                    image: item.productId?.image || item.productId?.images?.[0] || '',
                   },
+                  
                   quantity: quantity,
                   isSelected: item.isSelected !== undefined ? item.isSelected : true,
                   createdAt: item.createdAt,

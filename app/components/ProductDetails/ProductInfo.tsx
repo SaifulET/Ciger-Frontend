@@ -207,7 +207,7 @@ export default function ProductInfo({ product, selectedColor, setSelectedColor }
         )} */}
         {product.discount && product.discount > 0 && (
           <span className="text-[24px] font-semibold text-gray-600 line-through">
-             ${Math.round(product.price *100/product.discount)}
+             ${(product.price *100/product.discount).toFixed(2)}
           </span>
         )}
       </div>

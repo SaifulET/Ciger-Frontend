@@ -1,0 +1,49 @@
+'use client'
+import React from 'react';
+
+interface ImageItem {
+  id: string;
+  name: string;
+  image: string;
+  link: string;
+}
+
+interface ImageGalleryProps {
+  images: ImageItem[];
+}
+
+const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
+ const handleImageClick = (link: string) => {
+  // Open link in new tab
+  window.open(link, '_blank', 'noopener,noreferrer');
+};
+
+  return (
+    <div className="grid grid-cols-1 gap-6 p-4 sm:grid-cols-2 md:gap-8 md:p-6 lg:grid-cols-3 xl:grid-cols-4 2xl:gap-10 2xl:p-8">
+      {images.map((image) => (
+        <div 
+          key={image.id}
+          className="group cursor-pointer overflow-hidden rounded-xl bg-white shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl active:translate-y-0 active:shadow-xl"
+          onClick={() => handleImageClick(image.link)}
+        >
+          <div className="relative aspect-[4/3] overflow-hidden">
+            <img 
+              src={image.image} 
+              alt={image.name}
+              className=" object-fit m-auto transition-transform duration-300 group-hover:scale-105"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/10" />
+          </div>
+          <div className="bg-gray-50 px-4 py-3 text-center transition-colors duration-300 group-hover:bg-gray-100 md:px-6 md:py-4">
+            <h3 className="text-lg font-semibold text-gray-800 md:text-xl">
+              {image.name}
+            </h3>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default ImageGallery;
