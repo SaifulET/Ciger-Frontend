@@ -39,7 +39,7 @@ const handleAddToCart = () => {
 
   const router = useRouter();
   const newbestSeller= product?.newBestSeller;
-
+console.log(product,"42")
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col h-full shadow-sm hover:shadow-md transition">
@@ -62,7 +62,7 @@ const handleAddToCart = () => {
         )}
 
         <div className="aspect-square flex items-center justify-center bg-gray-100 rounded-lg mb-4 relative mt-4 overflow-hidden">
-          <img src={product?.image } alt={product?.name}  className=""  />
+          <img src={product?.image } alt={product?.name}  className="product Image"  />
         
         </div>
 

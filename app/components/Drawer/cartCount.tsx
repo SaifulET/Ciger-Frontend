@@ -40,10 +40,12 @@ export default function CartDrawer() {
   console.log(cartItems,"40")
   // Get user state
   const { user } = useUserStore();
+
   const userId = user || null;
 
   const cartCount = getCartCount();
   const subtotal = getFormattedSubtotal();
+console.log(user)
 
   // Initialize cart when component mounts or user changes
   useEffect(() => {
@@ -229,7 +231,7 @@ export default function CartDrawer() {
                 {cartItems.map((item) => {
                   const safeImageSrc = getSafeImageSrc(item.productId.image);
                   const productName = item.productId.name || "Product Name";
-                  const brandName = item.productId.brand || "Brand";
+                  const brandName = item.productId.brandId.name || "Brand";
                   const unitPrice = item.productId.price || 0;
                   const itemTotal = unitPrice * item.quantity;
 

@@ -13,6 +13,7 @@ export interface ProductType {
   subcategory?: string;
   available?:number;
   price?:number;
+  
    brandId?: {
     _id: string;
     name: string;

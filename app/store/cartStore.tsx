@@ -22,6 +22,9 @@ export interface Product {
   description?: string;
   isInStock?: boolean;
   brand?:string;
+  brandId?:{
+    name:string;
+  };
   available?: number;
   images?: string[];
 }
@@ -71,7 +74,7 @@ export const useCartStore = create<CartState>()(
           if (userId) {
             const response = await api.get(`/cart/getUserCart/${userId}`);
             const result = await response.data;
-            
+            console.log(result.data,"74")
             if (result.success) {
               const backendItems: CartItem[] = result.data.map((item: CartItem) => {
                 const price = (item.productId?.price);
@@ -107,6 +110,7 @@ export const useCartStore = create<CartState>()(
 
       // Add item to cart
       addItem: async (product: Product, userId: string | null) => {
+        
         const { items, getItemQuantity } = get();
         
         
@@ -300,6 +304,7 @@ export const useCartStore = create<CartState>()(
 
       getItemQuantity: (productId: string) => {
         const { items } = get();
+        console.log(productId,'306')
         const item = items.find(item => item.productId._id === productId);
         return item ? (item.quantity || 0) : 0;
       }

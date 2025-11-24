@@ -383,7 +383,8 @@ export const useProductsStore = create<ProductsState>()(
           
           const apiProducts: ApiProduct[] = result.data;
 const filteredProducts = apiProducts.filter(p => p._id !== id);
-          const relatedProducts: RelatedProduct[] =filteredProducts.slice(0, 6).map(apiProduct => ({
+console.log(filteredProducts,"386")
+const relatedProducts: RelatedProduct[] =filteredProducts.slice(0, 6).map(apiProduct => ({
             id: apiProduct._id,
             brand: apiProduct.brand,
             name: apiProduct.name,
@@ -392,6 +393,7 @@ const filteredProducts = apiProducts.filter(p => p._id !== id);
             originalPrice: apiProduct.discount > 0 ? (apiProduct.price+(apiProduct.price*apiProduct.discount)/100) :0,
             newBestSeller: apiProduct.newBestSeller,
             newSeller: apiProduct.newSeller,
+            available:apiProduct.available,
           }));
           
           set({ 

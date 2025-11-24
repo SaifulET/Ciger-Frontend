@@ -22,6 +22,7 @@ import {
   Search01Icon,
   Menu01Icon,
   MultiplicationSignIcon,
+  SecurityValidationIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useRouter, usePathname } from "next/navigation";
@@ -183,6 +184,7 @@ const Navbar: React.FC = () => {
       Brands: BrandfetchIcon,
       Products: PackageIcon,
       "Contact Us": Mail01FreeIcons,
+      "COA":SecurityValidationIcon,
       Blogs: File01Icon,
       Discounts: Discount01FreeIcons,
     };
