@@ -1,240 +1,220 @@
 import api from '@/lib/axios';
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
-export type OrderStatus = 'processing' | 'shipped' | 'delivered' | 'cancelled';
-
-export interface OrderItem {
-  id: string;
+// Interfaces based on API responses
+interface Brand {
+  _id: string;
   name: string;
-  unitPrice: number;
-  quantity: number;
-  image: string;
+  feature?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
 }
 
-export interface Order {
-  id: string;
-  status: OrderStatus;
-  placedDate: string;
+interface Product {
+  _id: string;
+  name: string;
+  images: string[];
+  price: number;
+  discount: number;
+  averageRating: number;
+  available: number;
+  quantity: string;
+  isBest: boolean;
+  isNew: boolean;
+  isInStock: boolean;
+  brandId: Brand;
+  category: string;
+  subCategory: string;
+  colors: string[];
+  description: string;
+  updatedAt: string;
+  __v: number;
+}
+
+interface CartItem {
+  _id: string;
+  userId: string;
+  productId: Product;
+  quantity: number;
+  total: number;
+  isSelected: boolean;
+  isOrdered: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+interface User {
+  _id: string;
+  email: string;
+}
+
+export interface ApiOrder {
+  _id: string;
+  name: string;
+  address: string;
+  email: string;
+  phone: string;
+  orderId: string;
+  date: string;
   trackingNo: string;
-  items: OrderItem[];
+  state: "processing" | "shipped" | "delivered" | "cancelled" | "refunded";
   tax: number;
   discount: number;
   shippingCost: number;
-  subTotal: number;
-  paymentAmount: number;
-  paid: boolean;
-}
-
-// API Response Interfaces
-interface ApiOrderItem {
-  _id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image?: string;
-}
-
-interface ApiOrder {
-  _id: string;
-  orderId: string;
-  state: string;
-  trackingNo: string;
-  date: string;
-  carts: ApiOrderItem[];
-}
-
-interface ApiResponse {
-  success: boolean;
-  data: ApiOrder[] | string | ApiOrder ;
-  message?: string;
+  subtotal: number;
+  total: number;
+  userId: User;
+  isNextUsePayment: boolean;
+  carts: CartItem[];
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 interface OrderStore {
-  orders: Order[];
-  loading: boolean;
-  error: string | null;
-  fetchOrders: (userId: string) => Promise<void>;
-  cancelOrder: (orderId: string) => Promise<void>;
+  // Orders list state
+  orders: ApiOrder[];
+  ordersLoading: boolean;
+  ordersError: string | null;
+  
+  // Single order state
+  currentOrder: ApiOrder | null;
+  orderLoading: boolean;
+  orderError: string | null;
+  
+  // Update order state
+  updateLoading: boolean;
+  updateError: string | null;
+  
+  // Actions
+  fetchAllOrders: () => Promise<void>;
+  fetchOrderById: (orderId: string) => Promise<void>;
+  updateOrder: (orderId: string, updates: { trackingNo?: string; state?: string }) => Promise<void>;
+  clearOrders: () => void;
+  clearCurrentOrder: () => void;
+  clearErrors: () => void;
 }
 
-// Transform API state to our OrderStatus type
-const mapApiStateToStatus = (state: string): OrderStatus => {
-  const statusMap: Record<string, OrderStatus> = {
-    'processing': 'processing',
-    'shipped': 'shipped',
-    'delivered': 'delivered',
-    'cancelled': 'cancelled'
-  };
-  return statusMap[state] || 'processing';
-};
-
-// Transform API date to our format
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric' 
-  });
-};
-
-// Type guard to check if value is ApiOrder
-const isApiOrder = (value: unknown): value is ApiOrder => {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'orderId' in value &&
-    'state' in value &&
-    'date' in value
-  );
-};
-
-// Type guard to check if value is ApiOrder array
-const isApiOrderArray = (value: unknown): value is ApiOrder[] => {
-  return Array.isArray(value) && value.every(isApiOrder);
-};
-
-// Helper function to safely parse and normalize data
-const normalizeOrdersData = (data: ApiOrder[] | string | ApiOrder | null): ApiOrder[] => {
-  // If it's already an array of ApiOrder, return it
-  if (isApiOrderArray(data)) {
-    return data;
+// Helper function to extract error message
+const getErrorMessage = (error: unknown): string => {
+  if (typeof error === 'string') {
+    return error;
   }
-
-  // If it's a string, try to parse it
-  if (typeof data === 'string') {
-    const trimmed = data.trim();
-    
-    // If it's a non-JSON message like "No orders", return empty array
-    if (!trimmed.startsWith('[') && !trimmed.startsWith('{')) {
-      return [];
+  
+  if (error instanceof Error) {
+    return error.message;
+  }
+  
+  if (typeof error === 'object' && error !== null) {
+    if ('response' in error) {
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      if (axiosError.response?.data?.message) {
+        return axiosError.response.data.message;
+      }
     }
-    
+    if ('message' in error && typeof (error as { message: string }).message === 'string') {
+      return (error as { message: string }).message;
+    }
+  }
+  
+  return 'An unexpected error occurred';
+};
+
+export const useOrderStore = create<OrderStore>((set, get) => ({
+  // Initial state
+  orders: [],
+  ordersLoading: false,
+  ordersError: null,
+  currentOrder: null,
+  orderLoading: false,
+  orderError: null,
+  updateLoading: false,
+  updateError: null,
+
+  // Fetch all orders
+  fetchAllOrders: async () => {
+    set({ ordersLoading: true, ordersError: null });
     try {
-      const parsed = JSON.parse(trimmed);
-      if (isApiOrderArray(parsed)) {
-        return parsed;
+      const response = await api.get('/order/getAllOrder');
+      const data = response.data;
+      
+      if (data.success) {
+        set({ orders: data.data || [], ordersLoading: false });
+      } else {
+        set({ ordersError: data.message || 'Failed to fetch orders', ordersLoading: false });
       }
-      if (isApiOrder(parsed)) {
-        return [parsed];
-      }
-      return [];
-    } catch {
-      return [];
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
+      console.log("Error fetching orders:", error);
+      set({ ordersError: errorMessage, ordersLoading: false });
     }
-  }
+  },
 
-  // If it's a single ApiOrder object, wrap in array
-  if (isApiOrder(data)) {
-    return [data];
-  }
-
-  // For null, undefined, or other unknown types
-  return [];
-};
-
-export const useOrderStore = create<OrderStore>()(
-  persist(
-    (set, get) => ({
-      orders: [],
-      loading: false,
-      error: null,
-
-      fetchOrders: async (userId: string) => {
-        set({ loading: true, error: null });
-        try {
-          const response = await api.get(`/order/userOrder/${userId}`);
-          const data: ApiResponse = response.data;
-
-          console.log('API Response:', data);
-
-          if (data.success) {
-            // Normalize the data to always be an array of ApiOrder
-            const ordersData = normalizeOrdersData(data.data);
-
-            console.log('Normalized orders data:', ordersData);
-
-            // Transform API data to match our Order interface
-            const transformedOrders: Order[] = ordersData.map((apiOrder: ApiOrder) => {
-              // Ensure carts is always an array
-              const cartItems = Array.isArray(apiOrder.carts) ? apiOrder.carts : [];
-              
-              // Transform cart items to our OrderItem format
-              const items: OrderItem[] = cartItems.map((cartItem, index) => ({
-                id: cartItem._id || `item-${index}`,
-                name: cartItem.name || 'Unknown Product',
-                unitPrice: typeof cartItem.price === 'number' ? cartItem.price : 0,
-                quantity: typeof cartItem.quantity === 'number' ? cartItem.quantity : 0,
-                image: cartItem.image || 'https://via.placeholder.com/60x60?text=Product'
-              }));
-
-              // Calculate totals based on cart items
-              const subTotal = items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
-              const tax = 5;
-              const discount = 5;
-              const shippingCost = 10;
-              const taxAmount = (subTotal * tax) / 100;
-              const discountAmount = (subTotal * discount) / 100;
-              const paymentAmount = subTotal + taxAmount - discountAmount + shippingCost;
-
-              return {
-                id: apiOrder.orderId || apiOrder._id || `order-${Date.now()}`,
-                status: mapApiStateToStatus(apiOrder.state || 'processing'),
-                placedDate: formatDate(apiOrder.date || new Date().toISOString()),
-                trackingNo: apiOrder.trackingNo || '',
-                items,
-                tax,
-                discount,
-                shippingCost,
-                subTotal,
-                paymentAmount,
-                paid: true
-              };
-            });
-
-            set({ 
-              orders: transformedOrders, 
-              loading: false,
-              error: null
-            });
-          } else {
-            // Handle error case
-            const errorMessage = data.message || 
-                               (typeof data.data === 'string' ? data.data : 'Failed to fetch orders');
-            
-            set({ 
-              error: errorMessage, 
-              loading: false,
-              orders: []
-            });
-          }
-        } catch (error) {
-          console.error('Fetch orders error:', error);
-          set({ 
-            error: 'Network error occurred', 
-            loading: false 
-          });
-        }
-      },
-
-      cancelOrder: async (orderId: string) => {
-        try {
-          set(state => ({
-            orders: state.orders.map(order =>
-              order.id === orderId 
-                ? { ...order, status: 'cancelled' as OrderStatus }
-                : order
-            )
-          }));
-        } catch (error) {
-          set({ error: 'Failed to cancel order' });
-        }
+  // Fetch order by ID
+  fetchOrderById: async (orderId: string) => {
+    set({ orderLoading: true, orderError: null });
+    try {
+      const response = await api.get(`/order/getOrderById/${orderId}`);
+      const data = response.data;
+      
+      if (data.success) {
+        set({ currentOrder: data.data, orderLoading: false });
+      } else {
+        set({ orderError: data.message || 'Failed to fetch order', orderLoading: false });
       }
-    }),
-    {
-      name: 'order-storage',
-      partialize: (state) => ({ orders: state.orders })
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
+      console.log("Error fetching order:", error);
+      set({ orderError: errorMessage, orderLoading: false });
     }
-  )
-);
+  },
+
+  // Update order (status and/or tracking number) - WORKING VERSION
+  updateOrder: async (orderId: string, updates: { trackingNo?: string; state?: string }) => {
+    set({ updateLoading: true, updateError: null });
+    try {
+      const response = await api.put(`/order/updateOrderById/${orderId}`, updates);
+      const data = response.data;
+      
+      if (data.success) {
+        // Get current state
+        const state = get();
+        
+        // Update current order if it matches
+        const updatedCurrentOrder = state.currentOrder?._id === orderId 
+          ? { ...state.currentOrder, ...updates }
+          : state.currentOrder;
+
+        // Update orders list
+        const updatedOrders = state.orders.map(order =>
+          order._id === orderId ? { ...order, ...updates } : order
+        );
+
+        // Set all updates at once using direct object assignment
+        set({
+          currentOrder: updatedCurrentOrder,
+          orders: updatedOrders,
+          updateLoading: false
+        } as OrderStore);
+      } else {
+        set({ 
+          updateError: data.message || 'Failed to update order', 
+          updateLoading: false 
+        });
+      }
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
+      console.log("Error updating order:", error);
+      set({ 
+        updateError: errorMessage, 
+        updateLoading: false 
+      });
+    }
+  },
+
+  clearOrders: () => set({ orders: [], ordersError: null }),
+  clearCurrentOrder: () => set({ currentOrder: null, orderError: null }),
+  clearErrors: () => set({ ordersError: null, orderError: null, updateError: null }),
+}));

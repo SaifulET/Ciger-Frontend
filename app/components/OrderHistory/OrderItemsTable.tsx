@@ -28,6 +28,13 @@ const OrderItemsTable: React.FC<OrderItemsTableProps> = ({
   paymentAmount,
   paid,
 }) => {
+  // Calculate tax and discount percentages
+  const taxPercentage = subTotal > 0 ? ((tax / subTotal) * 100).toFixed(1) : '0';
+  const discountPercentage = subTotal > 0 ? ((discount / subTotal) * 100).toFixed(1) : '0';
+  
+  // Calculate total
+  const total = subTotal + tax + shippingCost - discount;
+
   return (
     <div>
       <div className="mb-6">
@@ -62,69 +69,59 @@ const OrderItemsTable: React.FC<OrderItemsTableProps> = ({
 
       {/* Tax / Discount / Shipping Row */}
         
- <div className='grid grid-cols-12 gap-4 mb-8 items-center'>
-         <div className='col-span-2'><p className="font-semibold text-[16px] leading-6 tracking-normal">Sub Total</p></div> 
-         <div className='col-span-3'></div>
-          <div className='col-span-2'><p className="text-sm text-gray-900 font-medium"></p></div>
-          <div className='col-span-3'></div>
-          <div className='col-span-2'><p className="text-sm text-right text-gray-900 font-medium">$</p>
-          </div>
+      <div className='grid grid-cols-12 gap-4 mb-8 items-center'>
+        <div className='col-span-2'><p className="font-semibold text-[16px] leading-6 tracking-normal">Sub Total</p></div> 
+        <div className='col-span-3'></div>
+        <div className='col-span-2'><p className="text-sm text-gray-900 font-medium"></p></div>
+        <div className='col-span-3'></div>
+        <div className='col-span-2'><p className="text-sm text-right text-gray-900 font-medium">${subTotal.toFixed(2)}</p>
         </div>
+      </div>
 
-          <div  className="grid grid-cols-5 md:grid-cols-7 gap-4 mb-[16px] md:mb-[32px] items-center">
-         <div className='col-span-3 md:col-span-5'><p className="font-semibold text-[16px] leading-6 tracking-normal">Tax</p></div> 
-         
-          <div className='col-span-1 text-right md:text-center'><p className="text-sm text-gray-900 font-medium text-center ">{tax}%</p></div>
-        
-          <div className='col-span-1 md:col-span-1 text-right '><p className="text-sm text-gray-900 font-medium">$120</p></div>
-        </div>
+      <div className="grid grid-cols-5 md:grid-cols-7 gap-4 mb-[16px] md:mb-[32px] items-center">
+        <div className='col-span-3 md:col-span-5'><p className="font-semibold text-[16px] leading-6 tracking-normal">Tax</p></div> 
+        <div className='col-span-1 text-right md:text-center'><p className="text-sm text-gray-900 font-medium text-center ">{tax}%</p></div>
+        <div className='col-span-1 md:col-span-1 text-right '><p className="text-sm text-gray-900 font-medium">${((tax/100)*subTotal).toFixed(2)}</p></div>
+      </div>
 
-
-          <div  className="grid grid-cols-5 md:grid-cols-7 gap-4 mb-[16px] md:mb-[32px] items-center">
-         <div className='col-span-3 md:col-span-5'><p className="font-semibold text-[16px] leading-6 tracking-normal">Discount</p></div> 
-         
-          <div className='col-span-1 text-right md:text-center'><p className="text-sm text-gray-900 font-medium text-center ">{discount}%</p></div>
-        
-          <div className='col-span-1 md:col-span-1 text-right '><p className="text-sm text-gray-900 font-medium">$120</p></div>
-        </div>
+      <div className="grid grid-cols-5 md:grid-cols-7 gap-4 mb-[16px] md:mb-[32px] items-center">
+        <div className='col-span-3 md:col-span-5'><p className="font-semibold text-[16px] leading-6 tracking-normal">Discount</p></div> 
+        <div className='col-span-1 text-right md:text-center'><p className="text-sm text-gray-900 font-medium text-center ">{discount}%</p></div>
+        <div className='col-span-1 md:col-span-1 text-right '><p className="text-sm text-gray-900 font-medium">-${((discount/100)*subTotal).toFixed(2)}</p></div>
+      </div>
     
-          
-        
-      
-        <div className='grid grid-cols-12 gap-4 mb-8 items-center'>
-         <div className='col-span-2'><p className="font-semibold text-[16px] leading-6 tracking-normal">Shipping</p></div> 
-         <div className='col-span-3'></div>
-          <div><p className="text-sm text-gray-900 font-medium"></p></div>
-          <div className='col-span-2'></div>
-          <div className='col-span-2'></div>
-          <div className='col-span-2'><p className="text-sm text-right text-gray-900 font-medium">${shippingCost}</p></div>
-        </div>
+      <div className='grid grid-cols-12 gap-4 mb-8 items-center'>
+        <div className='col-span-2'><p className="font-semibold text-[16px] leading-6 tracking-normal">Shipping</p></div> 
+        <div className='col-span-3'></div>
+        <div><p className="text-sm text-gray-900 font-medium"></p></div>
+        <div className='col-span-2'></div>
+        <div className='col-span-2'></div>
+        <div className='col-span-2'><p className="text-sm text-right text-gray-900 font-medium">${shippingCost.toFixed(2)}</p></div>
+      </div>
 
-        <div className='grid grid-cols-12 gap-4 mb-8 items-center'>
-         <div className='col-span-2'><p className="font-semibold text-[16px] leading-6 tracking-normal">Total</p></div> 
-         <div className='col-span-3'></div>
-          <div className='col-span-2'><p className="text-sm text-gray-900 font-medium"></p></div>
-          <div className='col-span-3'></div>
-          <div className='col-span-2'><p className="text-sm text-right text-gray-900 font-medium">$</p>
-          </div>
+      <div className='grid grid-cols-12 gap-4 mb-8 items-center'>
+        <div className='col-span-2'><p className="font-semibold text-[16px] leading-6 tracking-normal">Total</p></div> 
+        <div className='col-span-3'></div>
+        <div className='col-span-2'><p className="text-sm text-gray-900 font-medium"></p></div>
+        <div className='col-span-3'></div>
+        <div className='col-span-2'><p className="text-sm text-right text-gray-900 font-medium">${total.toFixed(2)}</p>
         </div>
+      </div>
 
       {/* Subtotal / Payment */}
       <div className="  p-[16px] md:p-[32px] bg-[#F5F5F5] rounded-lg">
-          <p className="font-semibold text-[18px] leading-[26px] tracking-[0%] mb-4">Payment</p>
-          <div className=' p-4 bg-white rounded-lg'>
+        <p className="font-semibold text-[18px] leading-[26px] tracking-[0%] mb-4">Payment</p>
+        <div className=' p-4 bg-white rounded-lg'>
           <div className="flex justify-between items-center mb-3"> 
-          <div>Paid</div>
-          <div>{paid && <Check size={16} className="text-green-500" />}</div>
-        </div>
-        <div className='flex justify-between items-center'>
-          <div>Amount</div>
-          <div className="text-2xl font-bold text-gray-900">€{paymentAmount.toFixed(2)}</div>
-        </div> 
+            <div>Paid</div>
+            <div>{paid && <Check size={16} className="text-green-500" />}</div>
           </div>
-        
+          <div className='flex justify-between items-center'>
+            <div>Amount</div>
+            <div className="text-2xl font-bold text-gray-900">${paymentAmount.toFixed(2)}</div>
+          </div> 
+        </div>
       </div>
-      {/* <p className="text-sm text-gray-700">{paid ? 'Paid' : 'Pending'}</p> */}
     </div>
   );
 };

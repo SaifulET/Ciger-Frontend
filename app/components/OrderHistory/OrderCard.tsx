@@ -1,10 +1,10 @@
 import React from 'react';
 import OrderItemsTable, { OrderItem } from './OrderItemsTable';
-import { useOrderStore, OrderStatus } from '@/app/store/orderStore';
+import { useOrderStore } from '@/app/store/orderStore';
 
 export interface Order {
   id: string;
-  status: OrderStatus;
+  status: 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
   placedDate: string;
   trackingNo: string;
   items: OrderItem[];
@@ -16,11 +16,12 @@ export interface Order {
   paid: boolean;
 }
 
-const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string; dotColor: string }> = {
+const STATUS_CONFIG: Record<Order['status'], { label: string; color: string; dotColor: string }> = {
   processing: { label: 'Processing', color: 'text-yellow-500', dotColor: 'bg-yellow-500' },
   shipped: { label: 'Shipped', color: 'text-gray-500', dotColor: 'bg-gray-500' },
   delivered: { label: 'Delivered', color: 'text-green-500', dotColor: 'bg-green-500' },
   cancelled: { label: 'Cancelled', color: 'text-red-500', dotColor: 'bg-red-500' },
+  refunded: { label: 'Refunded', color: 'text-purple-500', dotColor: 'bg-purple-500' },
 };
 
 interface OrderCardProps {
@@ -29,10 +30,14 @@ interface OrderCardProps {
 
 const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
   const statusConfig = STATUS_CONFIG[order.status];
-  const { cancelOrder } = useOrderStore();
+  const { updateOrder } = useOrderStore();
 
   const handleCancelOrder = async () => {
-    await cancelOrder(order.id);
+    try {
+      await updateOrder(order.id, { state: 'cancelled' });
+    } catch (error) {
+      console.error('Failed to cancel order:', error);
+    }
   };
 
   return (
@@ -52,6 +57,8 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
                 ? 'bg-red-50'
                 : statusConfig.color === 'text-green-500'
                 ? 'bg-green-100'
+                : statusConfig.color === 'text-purple-500'
+                ? 'bg-purple-50'
                 : 'bg-gray-100'
             }`}>
             <span>{statusConfig.label}</span>

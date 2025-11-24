@@ -34,7 +34,7 @@ const BlogCard: React.FC<BlogCardProps> = ({ product }) => {
         <Image
           src={image}
           alt={title}
-          className="object-cover w-full"
+          className="object-fit h-100 w-full"
           width={362}
           height={200}
           sizes="(max-width: 362px) 100vw, 362px"

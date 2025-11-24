@@ -2,32 +2,59 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { ChevronDown, Search } from 'lucide-react';
 import OrderCard, { Order } from './OrderCard';
-import { useOrderStore, OrderStatus } from '@/app/store/orderStore';
+import { useOrderStore } from '@/app/store/orderStore';
 import useUserStore from "@/app/store/userStore";
-
 
 export default function OrderHistoryPage() {
   const [searchId, setSearchId] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   
-  const { orders, loading, error, fetchOrders } = useOrderStore();
-  const {user }  = useUserStore()
+  const { orders, ordersLoading, ordersError, fetchAllOrders } = useOrderStore();
+  const { user } = useUserStore();
 
   useEffect(() => {
-   
-    const asb=fetchOrders(user);
-    console.log(asb)
+    if (user) {
+      fetchAllOrders();
+    }
+  }, [fetchAllOrders, user]);
 
-  }, [fetchOrders]);
+  // Transform store data to component format
+  const transformedOrders: Order[] = useMemo(() => {
+    if (!orders || orders.length === 0) return [];
+    
+    return orders.map((apiOrder) => ({
+      id: apiOrder.orderId,
+      status: apiOrder.state,
+      placedDate: new Date(apiOrder.createdAt).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      }),
+      trackingNo: apiOrder.trackingNo,
+      items: apiOrder.carts.map((cartItem, index) => ({
+        id: cartItem._id || `item-${index}`,
+        name: cartItem.productId.name,
+        unitPrice: cartItem.productId.price,
+        quantity: cartItem.quantity,
+        image: cartItem.productId.images?.[0] || "/api/placeholder/50/50"
+      })),
+      tax: apiOrder.tax,
+      discount: apiOrder.discount,
+      shippingCost: apiOrder.shippingCost,
+      subTotal: apiOrder.subtotal,
+      paymentAmount: apiOrder.total,
+      paid: true // Assuming all orders from store are paid
+    }));
+  }, [orders]);
 
   const filteredOrders = useMemo(() => {
-    return orders.filter((order) => {
+    return transformedOrders.filter((order) => {
       const matchesSearch = order.id.toLowerCase().includes(searchId.toLowerCase());
       const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
-  }, [orders, searchId, statusFilter]);
+  }, [transformedOrders, searchId, statusFilter]);
 
   const itemsPerPage = 6;
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
@@ -36,7 +63,7 @@ export default function OrderHistoryPage() {
     currentPage * itemsPerPage
   );
 
-  if (loading) {
+  if (ordersLoading) {
     return (
       <div className="min-h-screen p-[16px] md:p-[32px] flex items-center justify-center">
         <div className="text-center">Loading orders...</div>
@@ -44,10 +71,10 @@ export default function OrderHistoryPage() {
     );
   }
 
-  if (error) {
+  if (ordersError) {
     return (
       <div className="min-h-screen p-[16px] md:p-[32px] flex items-center justify-center">
-        <div className="text-center text-red-500">Error: {error}</div>
+        <div className="text-center text-red-500">Error: {ordersError}</div>
       </div>
     );
   }
@@ -103,7 +130,7 @@ export default function OrderHistoryPage() {
           ))}
         </div>
 
-        {filteredOrders.length === 0 && !loading && (
+        {filteredOrders.length === 0 && !ordersLoading && (
           <div className="text-center text-gray-600 mt-8">
             <p>No orders found</p>
           </div>

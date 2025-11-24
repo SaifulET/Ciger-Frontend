@@ -37,7 +37,7 @@ export default function CartDrawer() {
     clearCart,
     initializeCart
   } = useCartStore();
-  
+  console.log(cartItems,"40")
   // Get user state
   const { user } = useUserStore();
   const userId = user || null;
@@ -251,7 +251,7 @@ export default function CartDrawer() {
                         <div className="flex items-center gap-3 min-w-0 flex-1">
                           <div className="flex items-center justify-center w-12 h-12 md:w-[70px] md:h-[70px] bg-[#F5F5F5] border border-[#B0B0B0] rounded-xl flex-shrink-0">
                             <Image
-                              src={safeImageSrc}
+                              src={safeImageSrc?safeImageSrc:""}
                               alt={productName}
                               width={isMobile ? 30 : 50}
                               height={isMobile ? 30 : 50}
