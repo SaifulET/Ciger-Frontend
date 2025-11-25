@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { Edit2, Save, X } from "lucide-react";
 import { PencilEdit02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -35,8 +35,8 @@ const initialProfileData: ProfileData = {
   image: "",
 };
 
-// Move InputField component outside to prevent re-creation
-const InputField = ({
+// Memoized InputField component to prevent unnecessary re-renders
+const InputField = memo(({
   label,
   field,
   value,
@@ -72,24 +72,75 @@ const InputField = ({
       </div>
     )}
   </div>
-);
+));
+
+InputField.displayName = "InputField";
+
+// Memoized ProfileImage component with proper error handling
+const ProfileImage = memo(({ src, alt }: { src: string; alt: string }) => {
+  const [imageSrc, setImageSrc] = useState("https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png");
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    if (src && src.trim() !== "") {
+      setImageSrc(src);
+      setHasError(false);
+    } else {
+      setImageSrc("https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png");
+    }
+  }, [src]);
+
+  const handleError = () => {
+    if (!hasError) {
+      setHasError(true);
+      setImageSrc("https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png");
+    }
+  };
+
+  return (
+    <img
+      src={imageSrc}
+      alt={alt}
+      className="w-full h-full object-cover"
+      onError={handleError}
+      loading="lazy"
+    />
+  );
+});
+
+ProfileImage.displayName = "ProfileImage";
+
+// Helper function to stabilize image URLs
+const getStableImageUrl = (url: string | undefined): string => {
+  if (!url || url.trim() === "") {
+    return "/default-avatar.png";
+  }
+  
+  // If it's a base64 data URL, return as is
+  if (url.startsWith('data:')) return url;
+  
+  // If it's a relative path, ensure it's consistent
+  if (url.startsWith('/')) return url;
+  
+  return url;
+};
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>(initialProfileData);
   const [formData, setFormData] = useState<ProfileData>(initialProfileData);
-  const [profileImage, setProfileImage] = useState("/default-avatar.png");
-  const [tempImage, setTempImage] = useState(profileImage);
+  const [profileImage, setProfileImage] = useState("https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png");
+  const [tempImage, setTempImage] = useState("https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png");
   const [isLoading, setIsLoading] = useState(false);
+  const [hasFetched, setHasFetched] = useState(false);
   const { user } = useUserStore();
 
   // Fetch profile data from backend
-  const fetchProfileData = async () => {
+  const fetchProfileData = useCallback(async () => {
     try {
       setIsLoading(true);
-
       const response = await api.get("profile/profile");
-       console.log(response.data,"121")
+      
       if (response.data.success && response.data.data) {
         const userData = response.data.data;
         const formattedData: ProfileData = {
@@ -103,24 +154,27 @@ export default function ProfilePage() {
           postal: userData.postal || "",
           houseNo: userData.houseNo || "",
           suffix: userData.suffix || "",
-          image: userData.image || "/default-avatar.png",
+          image: userData.image || "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png",
         };
+        
+        const stableImageUrl = getStableImageUrl(userData.image);
+        
         setProfileData(formattedData);
         setFormData(formattedData);
-        setProfileImage(userData.image || "/default-avatar.png");
-        setTempImage(userData.image || "/default-avatar.png");
+        setProfileImage(stableImageUrl);
+        setTempImage(stableImageUrl);
+        setHasFetched(true);
       }
     } catch (error) {
       console.error("Error fetching profile data:", error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   // Update profile data to backend
-  const updateProfileData = async (data: ProfileData) => {
+  const updateProfileData = useCallback(async (data: ProfileData) => {
     try {
-     
       setIsLoading(true);
       const updateData = {
         firstName: data.firstName,
@@ -138,8 +192,10 @@ export default function ProfilePage() {
       const response = await api.put("profile/profile", updateData);
       
       if (response.data.success) {
+        const stableImageUrl = getStableImageUrl(tempImage !== profileImage ? tempImage : data.image);
+        
         setProfileData(data);
-        setProfileImage(tempImage);
+        setProfileImage(stableImageUrl);
         return true;
       }
       return false;
@@ -149,52 +205,82 @@ export default function ProfilePage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [tempImage, profileImage]);
 
+  // Fetch data when user changes and hasn't been fetched yet
+  useEffect(() => {
+    if (user && !hasFetched && !isLoading) {
+      fetchProfileData();
+    }
+  }, [user, hasFetched, isLoading, fetchProfileData]);
+
+  // Reset hasFetched when user changes
   useEffect(() => {
     if (user) {
-      fetchProfileData();
+      setHasFetched(false);
     }
   }, [user]);
 
-  const handleInputChange = (field: keyof ProfileData, value: string) => {
+  const handleInputChange = useCallback((field: keyof ProfileData, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
-  };
+  }, []);
 
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     setFormData(profileData);
     setTempImage(profileImage);
     setIsEditing(true);
-  };
+  }, [profileData, profileImage]);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     const success = await updateProfileData(formData);
     if (success) {
       setIsEditing(false);
     }
-  };
+  }, [formData, updateProfileData]);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setFormData(profileData);
     setTempImage(profileImage);
     setIsEditing(false);
-  };
+  }, [profileData, profileImage]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file type and size
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      
+      if (!validTypes.includes(file.type)) {
+        alert('Please select a valid image file (JPEG, PNG, GIF, WebP)');
+        return;
+      }
+      
+      if (file.size > maxSize) {
+        alert('Image size should be less than 5MB');
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
-        setTempImage(reader.result as string);
+        if (reader.result) {
+          setTempImage(reader.result as string);
+        }
+      };
+      reader.onerror = () => {
+        console.error('Error reading file');
       };
       reader.readAsDataURL(file);
     }
-  };
+    
+    // Reset the input
+    e.target.value = '';
+  }, []);
 
-  if (isLoading && !profileData.email) {
+  if (isLoading && !profileData.email && !hasFetched) {
     return (
       <div className="min-h-screen p-[16px] md:p-[32px] flex items-center justify-center">
         <div className="text-center">Loading profile...</div>
@@ -210,19 +296,16 @@ export default function ProfilePage() {
             Profile
           </h1>
         </div>
+        
         {/* Profile Header */}
         <div className="bg-white rounded-lg shadow-sm p-[16px] md:p-[32px]  mb-[16px] md:mb-[32px]">
           <div className="flex flex-row justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
                 <div className="w-full h-full rounded-full bg-gray-200 overflow-hidden">
-                  <img
-                    src={isEditing ? tempImage : profileImage}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.src = "/default-avatar.png";
-                    }}
+                  <ProfileImage 
+                    src={isEditing ? tempImage : profileImage} 
+                    alt="Profile" 
                   />
                 </div>
                 {isEditing && (
