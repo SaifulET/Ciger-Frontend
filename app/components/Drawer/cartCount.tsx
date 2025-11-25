@@ -231,7 +231,7 @@ console.log(user)
                 {cartItems.map((item) => {
                   const safeImageSrc = getSafeImageSrc(item.productId.image);
                   const productName = item.productId.name || "Product Name";
-                  const brandName = item.productId.brandId.name || "Brand";
+                  const brandName = item?.productId?.brandId?.name;
                   const unitPrice = item.productId.price || 0;
                   const itemTotal = unitPrice * item.quantity;
 

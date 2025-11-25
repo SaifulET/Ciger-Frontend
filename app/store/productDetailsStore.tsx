@@ -390,7 +390,7 @@ const relatedProducts: RelatedProduct[] =filteredProducts.slice(0, 6).map(apiPro
             name: apiProduct.name,
             image: apiProduct.images[0] || '',
             currentPrice: apiProduct.price,
-            originalPrice: apiProduct.discount > 0 ? (apiProduct.price+(apiProduct.price*apiProduct.discount)/100) :0,
+            originalPrice: apiProduct.discount > 0 ? ((apiProduct.price *100)/apiProduct.discount) :0,
             newBestSeller: apiProduct.newBestSeller,
             newSeller: apiProduct.newSeller,
             available:apiProduct.available,
@@ -482,7 +482,7 @@ const transformApiProductToProduct = (apiProduct: ApiProduct): Product => {
     currentPrice: apiProduct.currentPrice,
     available: apiProduct.available,
   };
-  console.log("12",transformApiProductToProduct);
+
 };
 
 const transformApiReviewToReview = (apiReview: ApiReviewResponse): Review => {
