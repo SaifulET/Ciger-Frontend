@@ -91,6 +91,8 @@ interface OrderStore {
   // Actions
   fetchAllOrders: () => Promise<void>;
   fetchOrderById: (orderId: string) => Promise<void>;
+  fetchOrderByUserId: (orderId: string) => Promise<void>;
+
   updateOrder: (orderId: string, updates: { trackingNo?: string; state?: string }) => Promise<void>;
   clearOrders: () => void;
   clearCurrentOrder: () => void;
@@ -170,14 +172,35 @@ export const useOrderStore = create<OrderStore>((set, get) => ({
       set({ orderError: errorMessage, orderLoading: false });
     }
   },
+  fetchOrderByUserId: async (userId: string) => {
+    set({ orderLoading: true, orderError: null });
+    try {
+      const response = await api.get(`/order/userOrder/${userId}`);
+      const data = response.data;
+      console.log(response.data.data,"180")
+      
+      if (data.success) {
+        set({ currentOrder: data.data, orderLoading: false, orders: data.data });
+      } else {
+        set({ orderError: data.message || 'Failed to fetch order', orderLoading: false });
+      }
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
+      console.log("Error fetching order:", error);
+      set({ orderError: errorMessage, orderLoading: false });
+    }
+  },
 
   // Update order (status and/or tracking number) - WORKING VERSION
   updateOrder: async (orderId: string, updates: { trackingNo?: string; state?: string }) => {
     set({ updateLoading: true, updateError: null });
     try {
-      const response = await api.put(`/order/updateOrderById/${orderId}`, updates);
-      const data = response.data;
+      console.log(orderId,updates, "ddkkd")
+      const id = orderId;
+      const response = await api.put(`/order/updateOrderById/${id}`, updates);
       
+      const data = response.data;
+      console.log(data,"201")
       if (data.success) {
         // Get current state
         const state = get();

@@ -15,21 +15,22 @@ export default function OrderHistoryPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   
-  const { orders, ordersLoading, ordersError, fetchAllOrders } = useOrderStore();
+  const { orders, ordersLoading, ordersError, fetchAllOrders,fetchOrderByUserId } = useOrderStore();
   const { user } = useUserStore();
 
   useEffect(() => {
     if (user) {
-      fetchAllOrders();
+      fetchOrderByUserId(user);
     }
   }, [fetchAllOrders, user]);
 
   // Transform store data to component format
   const transformedOrders: Order[] = useMemo(() => {
+    console.log(orders,ordersLoading,"dk")
     if (!orders || orders.length === 0) return [];
     
     return orders.map((apiOrder) => ({
-      id: apiOrder.orderId,
+      id: apiOrder._id,
       status: apiOrder.state,
       placedDate: new Date(apiOrder.createdAt).toLocaleDateString('en-US', {
         year: 'numeric',

@@ -180,21 +180,22 @@ export default function ProfilePage() {
   // Update profile data to backend
   const updateProfileData = useCallback(async (data: ProfileData) => {
     try {
+      console.log("183",data,"183")
       setIsLoading(true);
       const updateData = {
-        firstName: data.firstName,
-        lastName: data.lastName,
-        phone: data.phone,
-        country: data.country,
-        city: data.city,
-        address: data.address,
-        postal: data.postal,
-        houseNo: data.houseNo,
-        suffix: data.suffix,
-        image: tempImage !== profileImage ? tempImage : data.image,
+        firstName: data?.firstName,
+        lastName: data?.lastName,
+        phone: data?.phone,
+        country: data?.country,
+        city: data?.city,
+        address: data?.address,
+        postal: data?.postal,
+        houseNo: data?.houseNo,
+        suffix: data?.suffix,
+        image: tempImage !== profileImage ? tempImage : data?.image,
       };
-
-      const response = await api.put("profile/profile", updateData);
+console.log(updateData,"197")
+      const response = await api.put("profile/profile", updateData,{headers: { 'Content-Type': 'multipart/form-data' }},);
 
       
       if (response.data.success) {
