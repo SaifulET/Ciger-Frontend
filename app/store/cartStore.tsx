@@ -26,7 +26,7 @@ export interface Product {
     name:string;
   };
   available?: number;
-  images?: string[];
+  images?: string|string[];
 }
 
 export interface CartItem {
@@ -156,7 +156,7 @@ export const useCartStore = create<CartState>()(
               productId: {
                 ...product,
                 price: price,
-                image: product.image || ''
+                image: product?.image || ''
               },
               quantity: 1,
               isSelected: true,

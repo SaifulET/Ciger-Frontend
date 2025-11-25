@@ -87,7 +87,9 @@ export default function ProfilePage() {
   const fetchProfileData = async () => {
     try {
       setIsLoading(true);
+
       const response = await api.get("profile/profile");
+       console.log(response.data,"121")
       if (response.data.success && response.data.data) {
         const userData = response.data.data;
         const formattedData: ProfileData = {
@@ -118,6 +120,7 @@ export default function ProfilePage() {
   // Update profile data to backend
   const updateProfileData = async (data: ProfileData) => {
     try {
+     
       setIsLoading(true);
       const updateData = {
         firstName: data.firstName,
