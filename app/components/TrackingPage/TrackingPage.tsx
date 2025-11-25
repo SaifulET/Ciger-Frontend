@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { TrackingData } from './types';
 import useUserStore from '@/app/store/userStore';
 import api from '@/lib/axios';
-
+  import Cookies from "js-cookie";
+import {useRouter} from "next/navigation"
 
 
 interface ApiOrder {
@@ -31,6 +32,10 @@ interface ApiResponse {
 }
 
 export default function TrackingPage() {
+   const router = useRouter()
+  useEffect(()=>{
+    Cookies.get("token")?"":router.push("/pages")
+  },[Cookies.get("token")])
   const [trackingInput, setTrackingInput] = useState('');
   const [trackingResult, setTrackingResult] = useState<TrackingData | null>(null);
   const [userOrders, setUserOrders] = useState<ApiOrder[]>([]);

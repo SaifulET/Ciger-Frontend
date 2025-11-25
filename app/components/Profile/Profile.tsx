@@ -6,7 +6,8 @@ import { PencilEdit02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import api from "@/lib/axios";
 import useUserStore from "@/app/store/userStore";
-
+  import Cookies from "js-cookie";
+import {useRouter} from "next/navigation"
 interface ProfileData {
   firstName: string;
   lastName: string;
@@ -171,6 +172,10 @@ export default function ProfilePage() {
       setIsLoading(false);
     }
   }, []);
+   const router = useRouter()
+  useEffect(()=>{
+    Cookies.get("token")?"":router.push("/pages")
+  },[Cookies.get("token")])
 
   // Update profile data to backend
   const updateProfileData = useCallback(async (data: ProfileData) => {
@@ -190,6 +195,7 @@ export default function ProfilePage() {
       };
 
       const response = await api.put("profile/profile", updateData);
+
       
       if (response.data.success) {
         const stableImageUrl = getStableImageUrl(tempImage !== profileImage ? tempImage : data.image);
@@ -287,7 +293,7 @@ export default function ProfilePage() {
       </div>
     );
   }
-
+ 
   return (
     <div className="min-h-screen  p-[16px] md:p-[32px]">
       <div className=" ">

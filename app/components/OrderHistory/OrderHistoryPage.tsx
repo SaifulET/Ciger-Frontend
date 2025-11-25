@@ -4,8 +4,13 @@ import { ChevronDown, Search } from 'lucide-react';
 import OrderCard, { Order } from './OrderCard';
 import { useOrderStore } from '@/app/store/orderStore';
 import useUserStore from "@/app/store/userStore";
-
+import Cookies from "js-cookie";
+import {useRouter} from "next/navigation"
 export default function OrderHistoryPage() {
+  const router = useRouter()
+  useEffect(()=>{
+    Cookies.get("token")?"":router.push("/pages")
+  },[Cookies.get("token")])
   const [searchId, setSearchId] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);

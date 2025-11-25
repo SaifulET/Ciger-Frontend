@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import { Notification } from './types';
 import api from '@/lib/axios';
 import useUserStore from '@/app/store/userStore';
+  import Cookies from "js-cookie";
+import {useRouter} from "next/navigation"
 
 interface ApiNotification {
   _id: string;
@@ -43,6 +45,13 @@ const getIconAndColors = (
 };
 
 export default function NotificationsPage() {
+
+
+
+  const router = useRouter()
+  useEffect(()=>{
+    Cookies.get("token")?"":router.push("/pages")
+  },[Cookies.get("token")])
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
