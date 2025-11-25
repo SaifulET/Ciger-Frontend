@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import logo from "@/public/logo1.svg";
 import useUserStore from "@/app/store/userStore";
+import Cookies from "js-cookie";
 
 const SignInPage: NextPage = () => {
   const [email, setEmail] = useState<string>("");
@@ -14,15 +15,15 @@ const SignInPage: NextPage = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
-  const { user, UserLoginRequest } = useUserStore();
+  const {  UserLoginRequest } = useUserStore();
   const router = useRouter();
 
   // Redirect if already logged in
   useEffect(() => {
-    if (user.length>0) {
+    if (Cookies.get('token')) {
       router.push("/");
     }
-  }, [user, router]);
+  }, [Cookies.get('token'), router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,16 +63,7 @@ const SignInPage: NextPage = () => {
   };
 
   // If already logged in, show loading while redirecting
-  if (user.length>0) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirecting...</p>
-        </div>
-      </div>
-    );
-  }
+ 
 
   return (
     <div className="min-h-screen bg-white relative overflow-hidden">

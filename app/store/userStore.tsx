@@ -35,9 +35,7 @@ interface UserStoreState {
     lastName: string
   ) => Promise<{ status: "success" | "error" | "false"; message?: string }>;
 
-  UserForgetPasswordRequest: (
-    email: string
-  ) => Promise<{
+  UserForgetPasswordRequest: (email: string) => Promise<{
     status: "success" | "error";
     message?: string;
     token?: string;
@@ -95,7 +93,7 @@ const useUserStore = create<UserStoreState>()(
             email,
             password,
           });
-          
+
           Cookies.set("token", res.data.token);
           set({ user: res.data.data._id });
           set({ isLoggedIn: true });
@@ -185,12 +183,14 @@ const useUserStore = create<UserStoreState>()(
       },
 
       UserLogoutRequest: async () => {
-        console.log("logiout")
+        console.log("logiout");
+        console.log(Cookies.get('token'),"kdkd")
         const res = await api.post("/auth/signout");
+        
         Cookies.remove("token");
         set({ user: "" });
         set({ isLoggedIn: false });
-       
+
         return res.data["status"];
       },
     }),

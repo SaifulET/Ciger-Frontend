@@ -23,7 +23,7 @@ const CouponComponent = () => {
       try {
         setLoading(true);
         const response = await api.get("discount/getAllDiscount");
-        console.log(response.data,'26')
+        console.log(response.data.data,'26')
         setCoupons(response.data.data);
       } catch (err) {
         setError('Failed to fetch discounts');

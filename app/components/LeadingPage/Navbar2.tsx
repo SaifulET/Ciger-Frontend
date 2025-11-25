@@ -7,6 +7,7 @@ import { Search, ChevronDown, Menu, X, User } from "lucide-react";
 import logo from "@/public/logo1.svg";
 import menuData from "@/Data/MenuItems.json";
 import CartPage from "../Drawer/cartCount";
+import Cookies from "js-cookie";
 import {
   Clock05Icon,
   Logout01Icon,
@@ -51,6 +52,7 @@ const Navbar: React.FC = () => {
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
 
   const { user, isLogin, UserLogoutRequest } = useUserStore();
+  console.log(user,"54")
   const router = useRouter();
   const pathname = usePathname();
 
@@ -240,8 +242,9 @@ const Navbar: React.FC = () => {
           {/* Buttons */}
           <div className="flex flex-row justify-end items-center gap-2 md:gap-4 flex-shrink-0">
             {/* FIXED: Use isLoggedIn from Zustand store */}
-            {user.length==0 ? (
+            {!Cookies.get('token') ? (
               <>
+              
                 <Link href="/auth/signup">
                   <button
                     onClick={() => setMobileProfileOpen(false)}
@@ -593,7 +596,7 @@ const Navbar: React.FC = () => {
                       {mobileProfileOpen && (
                         <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 shadow-lg rounded-md z-50 p-3 animate-fadeIn">
                           {/* FIXED: Use isLoggedIn from Zustand store */}
-                          {user.length==0 ? (
+                          {!Cookies.get('token') ? (
                             <div className="flex flex-col gap-2">
                               <Link href="/auth/signin">
                                 <button
