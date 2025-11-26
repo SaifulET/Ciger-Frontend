@@ -12,7 +12,7 @@ function Advertise() {
       try {
         const response = await api.get("/servicePricing/getServicePricing");
         const data = await response.data;
-        
+
         if (data.success && data.data.AdvertisingText) {
           setAdvertisingText(data.data.AdvertisingText);
         }
@@ -36,17 +36,21 @@ function Advertise() {
       <div className="animate-marquee flex">
         {/* Duplicate the text for seamless scrolling */}
         <span className="mx-4">{advertisingText}</span>
-        <span className="mx-4">{advertisingText}</span>
+        {/* <span className="mx-4 ">{advertisingText}</span> */}
       </div>
 
       <style jsx>{`
         @keyframes marquee {
-          0% { transform: translateX(0%); }
-          100% { transform: translateX(600%); } 
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(300%);
+          }
         }
         .animate-marquee {
           display: inline-flex;
-          animation: marquee 10s linear infinite;
+          animation: marquee 18s linear infinite;
         }
       `}</style>
     </div>

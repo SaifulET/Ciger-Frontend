@@ -6,10 +6,14 @@ import api from "@/lib/axios";
 import Cookies from "js-cookie";
 import { getEmail, setEmail, unauthorized } from "../utility/utility";
 
+
+
 interface UserStoreState {
   isLoggedIn: boolean;
   user: string;
   isLogin: () => boolean;
+
+  
 
   // Login
   loginFormData: { email: string };
@@ -60,6 +64,7 @@ const useUserStore = create<UserStoreState>()(
       user: "",
       isLoggedIn: !!Cookies.get("token"),
       isLogin: () => !!Cookies.get("token"),
+       
 
       // ---- Login ----
       loginFormData: { email: "" },
