@@ -6,14 +6,20 @@ import api from "@/lib/axios";
 import Cookies from "js-cookie";
 import { getEmail, setEmail, unauthorized } from "../utility/utility";
 
-
+interface UserInfo {
+  _id: string;
+  email: string;
+  image?: string;
+  firstName: string;
+  lastName: string;
+}
 
 interface UserStoreState {
   isLoggedIn: boolean;
   user: string;
   isLogin: () => boolean;
-
-  
+  userInfo: UserInfo | null;
+  setUserInfo: (info: UserInfo | null) => void;
 
   // Login
   loginFormData: { email: string };
@@ -64,7 +70,8 @@ const useUserStore = create<UserStoreState>()(
       user: "",
       isLoggedIn: !!Cookies.get("token"),
       isLogin: () => !!Cookies.get("token"),
-       
+      userInfo: null,
+      setUserInfo: (info) => set({ userInfo: info }),
 
       // ---- Login ----
       loginFormData: { email: "" },
@@ -98,11 +105,19 @@ const useUserStore = create<UserStoreState>()(
             email,
             password,
           });
-
+console.log(res.data.data,'108')
           Cookies.set("token", res.data.token);
           set({ user: res.data.data._id });
           set({ isLoggedIn: true });
-
+          set({
+            userInfo: {
+              _id: res.data.data._id,
+              email: res.data.data.email,
+              image: res.data.data?.image,
+              firstName: res.data.data?.firstName,
+              lastName: res.data.data?.lastName,
+            },
+          });
           return {
             status: "success",
             message: res.data.message,
@@ -189,9 +204,9 @@ const useUserStore = create<UserStoreState>()(
 
       UserLogoutRequest: async () => {
         console.log("logiout");
-        console.log(Cookies.get('token'),"kdkd")
+        console.log(Cookies.get("token"), "kdkd");
         const res = await api.post("/auth/signout");
-        
+
         Cookies.remove("token");
         set({ user: "" });
         set({ isLoggedIn: false });
@@ -205,6 +220,7 @@ const useUserStore = create<UserStoreState>()(
         isLoggedIn: state.isLoggedIn,
         user: state.user,
         loginFormData: state.loginFormData,
+        userInfo: state.userInfo,
       }),
     }
   )

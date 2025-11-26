@@ -102,7 +102,7 @@ const ProfileImage = memo(({ src, alt }: { src: string; alt: string }) => {
     <img
       src={imageSrc}
       alt={alt}
-      className="w-full h-full object-cover"
+      className="w-full h-full object-fit"
       onError={handleError}
       loading="lazy"
     />
@@ -313,6 +313,7 @@ console.log(updateData,"197")
                   <ProfileImage 
                     src={isEditing ? tempImage : profileImage} 
                     alt="Profile" 
+                    
                   />
                 </div>
                 {isEditing && (

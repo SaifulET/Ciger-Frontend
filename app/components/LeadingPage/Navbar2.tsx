@@ -51,7 +51,7 @@ const Navbar: React.FC = () => {
   const [isProduct, setIsProduct] = useState<boolean>(false);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
 
-  const { user, isLogin, UserLogoutRequest } = useUserStore();
+  const { user, isLogin, UserLogoutRequest,userInfo } = useUserStore();
   console.log(user,"54")
   const router = useRouter();
   const pathname = usePathname();
@@ -61,6 +61,7 @@ const Navbar: React.FC = () => {
     setIsClient(true);
     
   }, []);
+  console.log(userInfo,"64")
 
   // Prevent body scroll when mobile modal is open
   useEffect(() => {
@@ -267,9 +268,22 @@ const Navbar: React.FC = () => {
                   className="flex items-center gap-2 text-base font-semibold px-6 md:px-8 py-3 md:py-5 rounded-lg text-[#0C0C0C] transition cursor-pointer"
                 >
                   <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center">
-                    <User size={20} />
+                    {userInfo?.image && <div>
+                       <Image
+                                    src={userInfo?.image}
+                                    alt={`profile`}
+                                    width={40}
+                                    height={40}
+                                    className="object-fit"
+                                    
+                                  />
+                    </div> }
+                    {!userInfo?.image && <div>
+                       <User size={20} />
+                    </div> }
+                  
                   </div>
-                  <span>User Name</span>
+                  <span>{userInfo?.firstName}</span>
                   <ChevronDown
                     size={20}
                     className={`transition ${
