@@ -76,7 +76,7 @@ export default function NotificationsPage() {
         }
 
         const result = response.data;
-        
+        console.log(result)
         if (result.success && Array.isArray(result.data)) {
           const transformedNotifications: Notification[] = result.data.map((item: ApiNotification) => ({
             id: item._id,
