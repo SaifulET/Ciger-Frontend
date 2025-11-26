@@ -117,12 +117,12 @@ export default function ProductInfo({ product, selectedColor, setSelectedColor }
       </div>
       <div className="flex gap-2 justify-end">
         {product.bestSeller && (
-          <span className="flex justify-center items-center px-4 py-2 bg-red-600 rounded-full text-white text-xs font-semibold">
+          <span className="flex justify-center items-center px-4 py-2 bg-[#cf2626] rounded-full text-white text-xs font-semibold">
             Best Seller
           </span>
         )}
         {product.newArrival && (
-          <span className="flex justify-center items-center px-4 py-2 bg-purple-900 rounded-[24px] text-white text-xs font-semibold">
+          <span className="flex justify-center items-center px-4 py-2 bg-[#6E1E2D]  rounded-[24px] text-white text-xs font-semibold">
             New Arrivals
           </span>
         )}
