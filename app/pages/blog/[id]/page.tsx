@@ -70,7 +70,7 @@ export default function BlogDetails() {
             src={blog.image} 
             alt={blog.name} 
             fill 
-            className="object-cover rounded-lg"  
+            className="object-fit rounded-lg"  
             priority
           />
         </div>
