@@ -47,12 +47,12 @@ export default function BlogPage({ blogs }: BlogPageProps) {
             className="flex flex-row bg-white rounded-lg border overflow-hidden"
           >
             {/* Image */}
-            <div className="w-1/2 h-[200px] md:h-[260px] relative">
+            <div className="w-1/2 h-[200px] md:h-[300px] relative">
               <Image
                 src={blog.image}
                 alt={blog.title}
                fill
-                className="object-cover"
+                className="object-fit"
                
               />
             </div>
