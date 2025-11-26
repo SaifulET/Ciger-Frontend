@@ -416,7 +416,7 @@ const formatPrice = (price: number): string => {
         <Link
           href={{
             pathname: "/pages/products",
-            query: { best: true },
+            query: { discount: true },
           }}
         >
           <button className="text-gray-800 text-[12px] hover:text-yellow-600">
