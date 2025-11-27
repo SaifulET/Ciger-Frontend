@@ -51,9 +51,9 @@ export default function Slider() {
     fetchCarouselImages();
   }, []);
 
-  // Auto-slide effect
+  // Auto-slide effect - only run if there are 2 or more slides
   useEffect(() => {
-    if (slides.length === 0) return;
+    if (slides.length < 2) return;
 
     const interval = setInterval(() => {
       setCurrent((prev) => {
@@ -77,13 +77,13 @@ export default function Slider() {
   }, [direction, slides.length]);
 
   const nextSlide = () => {
-    if (slides.length === 0) return;
+    if (slides.length < 2) return;
     setDirection("forward");
     setCurrent((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
   };
 
   const prevSlide = () => {
-    if (slides.length === 0) return;
+    if (slides.length < 2) return;
     setDirection("backward");
     setCurrent((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
   };
@@ -121,6 +121,24 @@ export default function Slider() {
     );
   }
 
+  // Single image state - no slider functionality
+  if (slides.length === 1) {
+    return (
+      <div className="relative w-full mx-auto overflow-hidden">
+        <div className="lg:h-[700px] md:h-[450px] h-[300px] relative">
+          <Image
+            src={slides[0]}
+            alt="Slide 1"
+            fill
+            className="object-fit"
+            priority
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Multiple images state - with slider functionality
   return (
     <div 
       className="relative w-full mx-auto overflow-hidden"
@@ -148,43 +166,49 @@ export default function Slider() {
         ))}
       </div>
 
-      {/* Navigation Arrows */}
-      <button
-        onClick={prevSlide}
-        className={`absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-300 z-20 ${
-          isHovered ? "opacity-100" : "opacity-0"
-        }`}
-        aria-label="Previous slide"
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-
-      <button
-        onClick={nextSlide}
-        className={`absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-300 z-20 ${
-          isHovered ? "opacity-100" : "opacity-0"
-        }`}
-        aria-label="Next slide"
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
-
-      {/* Bubbles (Navigation) */}
-      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20 bg-transparent p-2">
-        {slides.map((_, index) => (
+      {/* Navigation Arrows - Only show if there are 2 or more slides */}
+      {slides.length > 1 && (
+        <>
           <button
-            key={index}
-            onClick={() => setCurrent(index)}
-            className={`w-3 h-3 rounded-full border ${
-              current === index ? "bg-[#C9A040]" : "bg-white"
+            onClick={prevSlide}
+            className={`absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-300 z-20 ${
+              isHovered ? "opacity-100" : "opacity-0"
             }`}
-          ></button>
-        ))}
-      </div>
+            aria-label="Previous slide"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          <button
+            onClick={nextSlide}
+            className={`absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-300 z-20 ${
+              isHovered ? "opacity-100" : "opacity-0"
+            }`}
+            aria-label="Next slide"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </>
+      )}
+
+      {/* Bubbles (Navigation) - Only show if there are 2 or more slides */}
+      {slides.length > 1 && (
+        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20 bg-transparent p-2">
+          {slides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrent(index)}
+              className={`w-3 h-3 rounded-full border ${
+                current === index ? "bg-[#C9A040]" : "bg-white"
+              }`}
+            ></button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

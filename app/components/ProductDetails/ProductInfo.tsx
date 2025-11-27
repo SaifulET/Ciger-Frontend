@@ -198,7 +198,7 @@ export default function ProductInfo({ product, selectedColor, setSelectedColor }
       {/* Price */}
       <div className="flex items-baseline justify-start gap-4">
         <span className="text-[24px] font-bold text-gray-900">
-          ${(product.currentPrice || product.price)}
+          ${(product.currentPrice || product.price).toFixed(2) }
         </span>
         {/* {product.originalPrice && product.originalPrice > product.price && (
           <span className="text-xl text-gray-500 line-through">
