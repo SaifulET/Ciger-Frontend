@@ -85,14 +85,14 @@ export default function Footer() {
             <div className="flex items-center gap-3">
               <Phone className="w-5 h-5" />
               <span className="font-[Open_Sans] font-semibold text-[16px]">
-                689296744
+                904-990-2445
               </span>
             </div>
 
             <div className="flex items-center gap-3">
               <Mail className="w-5 h-5" />
               <span className="font-[Open_Sans] font-semibold text-[16px]">
-                admin@smokenza.com
+                support@smokenza.com
               </span>
             </div>
 

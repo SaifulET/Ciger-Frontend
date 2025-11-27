@@ -5,39 +5,22 @@ const values = [
   {
     id: 1,
     icon: "/shipping-truck-01.svg",
-    title: "Fast & Secure Transport",
-    desc: "Reliable logistics, on time and safe",
+    title: "Premium Products, Guaranteed Fresh",
+    desc: "We stock only authentic, high-quality tobacco, cigars, disposables, and smokeless products—stored in optimal conditions and delivered at peak freshness every time.",
   },
   {
     id: 2,
     icon: "/square-lock-01.svg",
-    title: "New & Innovative Ideas",
-    desc: "Creative, modern solutions tailored to your needs",
+    title: "Unbeatable Pricing & Exclusive Deals",
+    desc: "We curate top-tier tobacco and vape products at smart, accessible prices, bringing premium enjoyment within reach.",
   },
   {
     id: 3,
     icon: "/user-group.svg",
-    title: "Trusted by 200+ Clients",
-    desc: "Over 200 satisfied clients have already chosen us",
+    title: "Lightning-Fast, Secure Nationwide Shipping",
+    desc: "Your orders are packed with care and shipped with speed, accuracy, and full tracking, ensuring safe and reliable delivery—every single time.",
   },
-  {
-    id: 4,
-    icon: "/user-group.svg",
-    title: "Young and Motivated Team",
-    desc: "A passionate, energetic, and dedicated workforce",
-  },
-  {
-    id: 5,
-    icon: "/credit-card-pos.svg",
-    title: "Personalized Attention",
-    desc: "Tailored support for every client",
-  },
-  {
-    id: 6,
-    icon: "/credit-card-pos.svg",
-    title: "Personalized Attention",
-    desc: "Tailored support for every client",
-  },
+ 
 ];
 
 export default function ValueSection() {

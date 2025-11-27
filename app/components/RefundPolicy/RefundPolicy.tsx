@@ -1,132 +1,140 @@
-// RefundPolicy.tsx
 "use client";
 import React from 'react';
 
-// JSON data structure for e-commerce refund policy
+// JSON data structure for Smokenza refund policy
 const refundData = {
   sections: [
     {
       id: 1,
-      title: "Introduction",
+      title: "1. All Sales Are Final",
       content: [
         {
-          subtitle: "Scope of Refunds",
-          text: "This Refund Policy outlines the rules and procedures for returning products purchased from our e-commerce store. All purchases are subject to this policy."
+          text: "Because we sell age-restricted, consumable, and perishable items, we do not accept returns or exchanges for: Tobacco products, cigars and cigarillos, vape devices and disposable vapes, e-liquids and nicotine pouches, pipe tobacco, grabba/leaf, or rolling tobacco, any opened, unsealed, or partially used items. This policy helps us maintain product integrity and comply with federal/state regulations."
         }
       ]
     },
     {
       id: 2,
-      title: "Eligibility for Refund",
+      title: "2. No Refunds for Buyer's Remorse",
       content: [
         {
-          subtitle: "Timeframe",
-          text: "Refund requests must be submitted within 30 days from the date of delivery."
-        },
-        {
-          subtitle: "Condition of Items",
-          text: "Products must be unused, in original packaging, and include all accessories and documentation."
+          text: "We do not offer refunds for: Changing your mind, ordering the wrong item, not liking a flavor or strength, not reading product descriptions, purchasing by mistake, third-party package theft after delivery. Please double-check your order before submitting payment."
         }
       ]
     },
     {
       id: 3,
-      title: "Non-Refundable Items",
+      title: "3. Damaged or Incorrect Items",
       content: [
         {
-          subtitle: "Exclusions",
-          text: "Certain products such as digital downloads, gift cards, and personalized items are non-refundable."
+          text: "We only offer replacements for items that: Arrive damaged, are defective out of the box, are incorrect due to our mistake. To qualify, you must notify us via email at support@smokenza.com within 48 hours of delivery with: Your order number, photos of the product and packaging, description of the issue. If approved, we may send a replacement or store credit. Refunds will only be issued at our discretion."
         }
       ]
     },
     {
       id: 4,
-      title: "Return Process",
+      title: "4. Age Verification Failures",
       content: [
         {
-          subtitle: "Initiating a Return",
-          text: "Contact our customer support to request a return. Provide your order number and reason for return."
-        },
-        {
-          subtitle: "Shipping Instructions",
-          text: "You will receive a shipping label or instructions for sending the item back. Ensure the item is securely packaged."
+          text: "If your order fails age verification: Your order will be canceled, a restocking fee of up to 25% may be deducted, shipping fees are non-refundable. This protects us from fraudulent or underage purchases."
         }
       ]
     },
     {
       id: 5,
-      title: "Refund Processing Time",
+      title: "5. Lost, Stolen, or Delayed Packages",
       content: [
         {
-          subtitle: "Processing Duration",
-          text: "Once we receive your returned item, we will inspect it and process your refund within 7-10 business days."
+          text: "Once a package is marked 'Delivered' by the carrier, we are no longer responsible for: Stolen packages, packages delivered to the wrong address due to customer error, delayed deliveries caused by USPS/UPS/FedEx. If your package is lost in transit (not marked delivered), we will help file a claim with the carrier."
         }
       ]
     },
     {
       id: 6,
-      title: "Late or Missing Refunds",
+      title: "6. Canceling an Order",
       content: [
         {
-          subtitle: "Troubleshooting",
-          text: "If you haven’t received a refund after the processing time, please contact your bank or credit card company."
+          text: "Because orders begin processing immediately: Orders cannot be canceled once the shipping label is printed. If the order is still unprocessed, you may request cancellation. A 10–20% cancellation/restocking fee may apply (covers age verification, labor, and payment-processing costs)."
         }
       ]
     },
     {
       id: 7,
-      title: "Exchanges",
+      title: "7. No Returns on Clearance, Sale, or Promotional Items",
       content: [
         {
-          subtitle: "Exchange Policy",
-          text: "Exchanges are handled similarly to returns. Contact support to initiate an exchange if needed."
+          text: "All discounted, clearance, 'Buy X Get Y,' and promotional items are strictly final sale."
         }
       ]
     },
     {
       id: 8,
-      title: "Contact Information",
+      title: "8. Refused or Returned-to-Sender Packages",
       content: [
         {
-          subtitle: "Customer Support",
-          text: "For any questions regarding refunds or returns, please contact our support team at support@example.com."
+          text: "If a package is returned to us due to: Wrong address entered, failure to pick up from carrier, refusal at delivery, age-verification failure. Then: Refunds will be issued minus shipping + up to 30% restocking fee, or you may repay shipping to have it resent. Opened or damaged returns will not be refunded."
+        }
+      ]
+    },
+    {
+      id: 9,
+      title: "9. Chargebacks & Fraudulent Claims",
+      content: [
+        {
+          text: "We take fraudulent claims seriously. If a chargeback is filed for an order that: Was delivered, passed age verification, was not damaged, was not reported within 48 hours. We will provide the payment processor with: Photo evidence, age verification logs, shipping records, tracking confirmation, IP and device logs, customer communication history. Any fraudulent chargeback attempt will result in account termination and may be reported to the appropriate authorities."
+        }
+      ]
+    },
+    {
+      id: 10,
+      title: "10. Contact Us",
+      content: [
+        {
+          text: "For questions or concerns regarding your order, email us at: support@smokenza.com. We are happy to help resolve any legitimate issue quickly and fairly."
         }
       ]
     }
   ],
-  lastUpdated: "October 18, 2025"
+  lastUpdated: "Last Updated: November 27, 2025"
 };
 
 export default function RefundPolicy() {
-  const allPoints = refundData.sections.flatMap(section => section.content);
-
   return (
-    <div className="min-h-screen p-[16px] md:p-[32px] ">
+    <div className="min-h-screen p-[16px] md:p-[32px]">
       {/* Header */}
-      <div className="bg-white shadow-sm  rounded-lg p-[16px] md:p-[32px] mb-[16px] md:mb-[32px]">
-        <div className="  ">
-          <h1 className="text-[28px] font-semibold text-gray-900 text-center">
-            Refund Policy
+      <div className="bg-white shadow-sm rounded-lg p-[16px] md:p-[32px] mb-[16px] md:mb-[32px]">
+        <div>
+          <h1 className="text-[28px] font-semibold text-gray-900 text-center mb-4">
+            Refund & Return Policy
           </h1>
+          <div className="text-center text-gray-600 leading-relaxed">
+            <p>At Smokenza, we prioritize product authenticity, safety, and customer satisfaction.</p>
+            <p>Due to the nature of tobacco, nicotine, and consumable products, all sales are final.</p>
+            <p>Please review our policy carefully before placing your order.</p>
+          </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="   ">
-        <div className="bg-white rounded-lg shadow-sm p-[16px] md:p-[32px] ">
-          <div className="space-y-6">
-            {allPoints.map((item, index) => (
-              <div key={index} className="">
-                <div className="flex items-start">
-                  <span className="flex-shrink-0 w-2 h-2 rounded-full bg-amber-500 mt-2 mr-4"></span>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                      {item.subtitle}
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed">
-                      {item.text}
-                    </p>
-                  </div>
+      <div>
+        <div className="bg-white rounded-lg shadow-sm p-[16px] md:p-[32px]">
+          <div className="space-y-8">
+            {refundData.sections.map((section) => (
+              <div key={section.id} className="">
+                <h2 className="text-xl font-semibold text-gray-800 mb-3">
+                  {section.title}
+                </h2>
+                <div className="space-y-4">
+                  {section.content.map((item, index) => (
+                    <div key={index} className="flex items-start">
+                      {/* <span className="flex-shrink-0 w-2 h-2 rounded-full bg-amber-500 mt-2 mr-4"></span> */}
+                      <div className="flex-1">
+                        <p className="text-gray-600 leading-relaxed">
+                          {item.text}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}
@@ -135,7 +143,7 @@ export default function RefundPolicy() {
           {/* Last Updated */}
           <div className="mt-12 pt-6 border-t border-gray-200">
             <p className="text-sm text-gray-500">
-              Last Updated: {refundData.lastUpdated}
+              {refundData.lastUpdated}
             </p>
           </div>
         </div>

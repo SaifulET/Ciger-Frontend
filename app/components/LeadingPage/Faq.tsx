@@ -7,21 +7,39 @@ import negativeOne from "@/public/Vector (1).svg"
 const faqs = [
   {
     id: 1,
-    question: "What services do we offer?",
+    question: "Are all your tobacco and vape products authentic?",
     answer:
-      "We provide moving, furniture transport, storage, and professional packing services tailored to your needs.",
+      "Yes. We source directly from authorized distributors and reputable manufacturers, ensuring every product we sell is 100% authentic, fresh, and factory-sealed. No counterfeits, no grey-market items — ever.",
   },
   {
     id: 2,
-    question: "How to hire?",
+    question: "Do you verify age before shipping?",
     answer:
-      "You can book our services online through our website, or contact our support team directly for a personalized quote.",
+      "Absolutely. As a responsible smoke shop, we follow strict compliance protocols. Customers must be 21 or older, and all orders go through a secure age-verification process before shipment.",
   },
   {
     id: 3,
-    question: "What happens if something breaks?",
+    question: "How long does shipping take?",
     answer:
-      "All items are handled with care, but in case of damage, we provide insurance coverage and compensation.",
+      "Most orders are processed within 24 hours and delivered within 2–5 business days, depending on your location. Tracking information is provided for every purchase, so you can monitor your delivery in real time.",
+  },
+  {
+    id: 4,
+    question: "What payment methods do you accept?",
+    answer:
+      "We accept major secure payment options including credit/debit cards, digital wallets, and encrypted online checkout. All transactions are protected with industry-standard SSL security.",
+  },
+  {
+    id: 5,
+    question: "Do you offer discreet packaging?",
+    answer:"Yes. All orders are shipped in plain, unmarked packaging to ensure privacy and discretion at every step."
+
+  },
+  {
+    id: 6,
+    question: "Do you offer wholesale pricing for smoke shops and convenience stores?",
+    answer:
+      "Yes. We offer exclusive wholesale pricing, case discounts, and bulk rates on cigars, tobacco, vapes, nicotine pouches, and accessories. Approved wholesale accounts receive tiered pricing based on volume.",
   },
 ];
 
