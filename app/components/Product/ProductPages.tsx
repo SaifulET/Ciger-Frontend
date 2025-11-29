@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   DashboardSquare01Icon,
   LeftToRightListBulletIcon,
+  PlusSignIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useProductStore } from "@/app/store/productStore";
@@ -236,7 +237,55 @@ export default function ProductsPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-64">
+      <div className="flex relative py-[16px] md:py-0 mx-[16px] md:mx-[32px]">
+
+      <aside className="hidden lg:block w-[320px] p-4 border-r border-gray-200 flex-shrink-0">
+         <div className="space-y-3 w-full">
+          <div className="pb-2">
+              <button
+            className="w-full flex justify-between items-center bg-gray-50 hover:bg-gray-200 px-4 py-3 rounded-md font-medium text-gray-800 transition"
+          >
+             <span className="font-sans text-base font-semibold leading-6">All Products</span><HugeiconsIcon icon={PlusSignIcon} />
+        </button>
+          </div>
+          <div className="pb-2">
+              <button
+            className="w-full flex justify-between items-center bg-gray-50 hover:bg-gray-200 px-4 py-3 rounded-md font-medium text-gray-800 transition"
+          >
+             <span className="font-sans text-base font-semibold leading-6">Product</span><HugeiconsIcon icon={PlusSignIcon} />
+        </button>
+          </div>
+          <div className="pb-2">
+              <button
+            className="w-full flex justify-between items-center bg-gray-50 hover:bg-gray-200 px-4 py-3 rounded-md font-medium text-gray-800 transition"
+          >
+             <span className="font-sans text-base font-semibold leading-6">Brand</span><HugeiconsIcon icon={PlusSignIcon} />
+        </button>
+          </div>
+          <div className="pb-2">
+              <button
+            className="w-full flex justify-between items-center bg-gray-50 hover:bg-gray-200 px-4 py-3 rounded-md font-medium text-gray-800 transition"
+          >
+             <span className="font-sans text-base font-semibold leading-6">Availability</span><HugeiconsIcon icon={PlusSignIcon} />
+        </button>
+          </div>
+          <div className="pb-2">
+              <button
+            className="w-full flex justify-between items-center bg-gray-50 hover:bg-gray-200 px-4 py-3 rounded-md font-medium text-gray-800 transition"
+          >
+             <span className="font-sans text-base font-semibold leading-6">Feature</span><HugeiconsIcon icon={PlusSignIcon} />
+        </button>
+          </div>
+          <div className="pb-2">
+              <button
+            className="w-full flex justify-between items-center bg-gray-50 hover:bg-gray-200 px-4 py-3 rounded-md font-medium text-gray-800 transition"
+          >
+             <span className="font-sans text-base font-semibold leading-6">Price</span><HugeiconsIcon icon={PlusSignIcon} />
+        </button>
+          </div>
+
+         </div>
+      </aside>
         <div className="text-lg">Loading products...</div>
       </div>
     );
