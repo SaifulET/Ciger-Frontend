@@ -11,6 +11,9 @@ interface FilterSectionProps {
   onToggleOpen: () => void;
   counts?: Record<string, number>;
   children?: React.ReactNode;
+  showAllBrands?: boolean;
+  onShowAllBrands?: () => void;
+  hasMoreBrands?: boolean;
 }
 
 export default function FilterSection({
@@ -22,6 +25,9 @@ export default function FilterSection({
   onToggleOpen,
   counts = {},
   children,
+  showAllBrands = false,
+  onShowAllBrands,
+  hasMoreBrands = false,
 }: FilterSectionProps) {
   return (
     <div className="pb-2">
@@ -42,25 +48,35 @@ export default function FilterSection({
           {children ? (
             children
           ) : (
-            items.map((item) => (
-              <label
-                key={item}
-                className="flex justify-between text-sm items-center cursor-pointer"
-              >
-                <div className="flex items-center gap-2 font-sans text-base font-normal leading-6 pl-[12px]">
-                  <input
-                    type="checkbox"
-                    checked={selectedItems.includes(item)}
-                    onChange={() => onToggleItem?.(item)}
-                    className="w-4 h-4 accent-[#C9A040]"
-                  />
-                  {item}
-                </div>
-                <span className="text-gray-500 font-sans text-base font-normal leading-6 pr-4">
-                  ({counts[item] || 0})
-                </span>
-              </label>
-            ))
+            <>
+              {items.map((item) => (
+                <label
+                  key={item}
+                  className="flex justify-between text-sm items-center cursor-pointer"
+                >
+                  <div className="flex items-center gap-2 font-sans text-base font-normal leading-6 pl-[12px]">
+                    <input
+                      type="checkbox"
+                      checked={selectedItems.includes(item)}
+                      onChange={() => onToggleItem?.(item)}
+                      className="w-4 h-4 accent-[#C9A040]"
+                    />
+                    {item}
+                  </div>
+                  <span className="text-gray-500 font-sans text-base font-normal leading-6 pr-4">
+                    ({counts[item] || 0})
+                  </span>
+                </label>
+              ))}
+              {!showAllBrands && hasMoreBrands && onShowAllBrands && (
+                <button
+                  onClick={onShowAllBrands}
+                  className="w-full text-left text-sm text-blue-600 hover:text-blue-800 font-medium pl-[12px] py-1 transition-colors"
+                >
+                  See more...
+                </button>
+              )}
+            </>
           )}
         </div>
       )}

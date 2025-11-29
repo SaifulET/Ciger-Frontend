@@ -73,10 +73,10 @@ console.log(product,"42")
             <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
             <span className="text-xs text-gray-500">({(product.available)})</span>
           </div>
-          <h3 className="font-semibold text-gray-900 text-base line-clamp-2">{product?.name}</h3>
-          <div className="flex items-baseline gap-2">
-            <span className="text-lg font-bold text-gray-900">${(product?.currentPrice).toFixed(2)   }</span>
-            {product?.originalPrice && <span className="text-lg text-gray-400 line-through">${(product?.originalPrice).toFixed(2)   }</span>}
+          <h3 className="font-semibold text-gray-900 text-[16px] line-clamp-2">{product?.name}</h3>
+          <div className="flex items-baseline gap-1">
+            <span className="text-[24px] font-semibold text-gray-900">${(product?.currentPrice).toFixed(2)   }</span>
+            {product?.originalPrice && <span className="text-[14px] font-semibold text-gray-400 line-through">${(product?.originalPrice).toFixed(2)   }</span>}
           </div>
         </div>
       </div>

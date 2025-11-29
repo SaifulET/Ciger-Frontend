@@ -18,6 +18,7 @@ interface LocalFilters {
   feature: string[];
   priceRange: [number, number];
   product: string[];
+  allProducts: boolean; // New filter field
 }
 
 export default function ProductsPage() {
@@ -31,6 +32,7 @@ export default function ProductsPage() {
     feature: [],
     priceRange: [0, 100],
     product: [],
+    allProducts: false, // Default to false
   });
   
   const [currentPage, setCurrentPage] = useState(1);
@@ -52,12 +54,14 @@ export default function ProductsPage() {
     // Get all URL parameters and pass them directly
     const urlParams = [
       'sub', 'subPro', 'category', 'brand', 'new', 'discount', 'best',
-      'page', 'sort', 'search'
+      'page', 'sort', 'search','keyword'
     ];
 
     urlParams.forEach(param => {
+      console.log(urlParams,"61")
       const value = searchParams.get(param);
       if (value) {
+        
         params[param] = value;
       }
     });
@@ -68,7 +72,9 @@ export default function ProductsPage() {
   // Fetch products when URL parameters change
   useEffect(() => {
     const queryParams = buildQueryParams();
-    console.log("Fetching with query params:", queryParams);
+
+
+    console.log("Fetching with query params:", queryParams,"76");
     fetchProducts(queryParams);
     
     // Reset local filters when URL parameters change
@@ -78,8 +84,25 @@ export default function ProductsPage() {
       feature: [],
       priceRange: [0, 100],
       product: [],
+      allProducts: false,
     });
   }, [searchParams, fetchProducts]);
+
+  // Handle All Products filter
+  useEffect(() => {
+    if (localFilters.allProducts) {
+      // Reset all other filters and fetch all products
+      fetchProducts();
+      setLocalFilters(prev => ({
+        brand: [],
+        availability: [],
+        feature: [],
+        priceRange: [0, 1000],
+        product: [],
+        allProducts: true,
+      }));
+    }
+  }, [localFilters.allProducts, fetchProducts]);
 
   // Reset current page when filters change
   useEffect(() => {
@@ -127,6 +150,7 @@ export default function ProductsPage() {
           feature: [],
           priceRange: [minPrice, maxPrice],
           product: availableCategories,
+          allProducts: prev.allProducts, // Preserve allProducts state
         };
       });
     }
@@ -146,6 +170,11 @@ export default function ProductsPage() {
   // Client-side filtering function
   const filterProducts = (products: ProductType[], filters: LocalFilters): ProductType[] => {
     if (!products || products.length === 0) return [];
+
+    // If All Products is checked, return all products without filtering
+    if (filters.allProducts) {
+      return products;
+    }
 
     return products.filter(product => {
       // Brand filter - if brands are selected, product must match one of them

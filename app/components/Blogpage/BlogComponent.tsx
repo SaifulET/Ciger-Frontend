@@ -61,7 +61,7 @@ export default function BlogPage({ blogs }: BlogPageProps) {
             <div className="w-1/2 flex flex-col justify-between p-6">
             
               <div>
-                <h3 className="text-lg font-semibold mb-2">{blog.title}</h3>
+                <h3 className="text-[16px] leading-[26px] font-normal text-[#0C0C0C] mb-2">{blog.title}</h3>
                 {getFirstNWords(blog.description, 8)}
                 
               </div>

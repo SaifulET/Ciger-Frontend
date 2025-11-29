@@ -48,7 +48,7 @@
         "subItems": [
           { "label": "Lighters & Torch Lighters", "link": "/pages/products?sub=GeneralAccessories&subPro=LightersTorchLighters" },
           { "label": "Ashtrays", "link": "/pages/products?sub=GeneralAccessories&subPro=Ashtrays" },
-          { "label": "Tolling Machines", "link": "/pages/products?sub=GeneralAccessories&subPro=TollingMachines" },
+          { "label": "Rolling Machines", "link": "/pages/products?sub=GeneralAccessories&subPro=RollingMachines" },
           { "label": "Storage & Cases", "link": "/pages/products?sub=GeneralAccessories&subPro=StorageCases" },
           { "label": "Cleaning Tools", "link": "/pages/products?sub=GeneralAccessories&subPro=CleaningTools" }
           

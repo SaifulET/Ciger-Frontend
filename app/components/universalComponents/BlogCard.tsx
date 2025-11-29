@@ -43,7 +43,7 @@ const BlogCard: React.FC<BlogCardProps> = ({ product }) => {
 
       {/* Content */}
       <div className="flex flex-col items-center p-6 gap-3 w-full">
-        <h4 className="text-[18px] leading-[26px] font-semibold text-[#0C0C0C]">
+        <h4 className="text-[16px] leading-[26px] font-normal text-[#0C0C0C]">
           {title}
         </h4>
 

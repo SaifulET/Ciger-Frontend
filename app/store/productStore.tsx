@@ -35,6 +35,7 @@ interface ProductFilters {
   search?: string;
   sub?:string;
   subPro?:string;
+  keyword?:string;
 }
 
 interface ProductState {
@@ -50,6 +51,7 @@ export const useProductStore = create<ProductState>((set) => ({
   error: null,
 
 fetchProducts: async (filters = {}) => {
+  console.log(filters,"54")
   set({ loading: true, error: null });
   
   try {
@@ -58,6 +60,7 @@ fetchProducts: async (filters = {}) => {
     
     // Handle URL query parameters mapping
     // Map 'sub' to 'category' and 'subPro' to 'subCategory'
+    console.log(filters,"62")
     if (filters.sub) params.category = filters.sub;
     if (filters.subPro) params.subCategory = filters.subPro;
     
@@ -73,9 +76,21 @@ fetchProducts: async (filters = {}) => {
     if (filters.page) params.page = filters.page;
     if (filters.sort) params.sort = filters.sort;
     if (filters.search) params.search = filters.search;
+     console.log("Fetching products with params:", params);
+     let response;
+      let keyword;
+    if (filters.keyword) 
+      {
+        keyword = filters.keyword;
+        response = await api.get(`/product/filter/${keyword}`);
+      }
+else{
+response = await api.get('/product/getAllProduct', { params });
+}
+
     
-    console.log("Fetching products with params:", params);
-    const response = await api.get('/product/getAllProduct', { params });
+   
+    
 
     if (response.status < 200 || response.status >= 300) {
       throw new Error(`Failed to fetch products: ${response.status}`);

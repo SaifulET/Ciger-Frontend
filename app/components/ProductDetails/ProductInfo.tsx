@@ -146,7 +146,7 @@ export default function ProductInfo({ product, selectedColor, setSelectedColor }
       </div>
 
       <h1 className="text-[40px] font-semibold leading-[48px]">{product.title}</h1>
-      <p className="text-base font-semibold leading-6">{product.name}</p>
+      <p className="text-[40px] font-semibold leading-[48px]">{product.name}</p>
 
       {/* Color Variants */}
       {product.colors && product.colors.length > 0 && (
@@ -196,8 +196,8 @@ export default function ProductInfo({ product, selectedColor, setSelectedColor }
       </div>
 
       {/* Price */}
-      <div className="flex items-baseline justify-start gap-4">
-        <span className="text-[24px] font-bold text-gray-900">
+      <div className="flex items-baseline justify-start gap-1">
+        <span className="text-[28px] font-bold text-gray-900">
           ${(product.currentPrice || product.price).toFixed(2) }
         </span>
         {/* {product.originalPrice && product.originalPrice > product.price && (
@@ -206,7 +206,7 @@ export default function ProductInfo({ product, selectedColor, setSelectedColor }
           </span>
         )} */}
         {product.discount && product.discount > 0 && (
-          <span className="text-[24px] font-semibold text-gray-600 line-through">
+          <span className="text-[18px] font-semibold text-gray-600 line-through">
              ${(product.price *100/product.discount).toFixed(2)}
           </span>
         )}
@@ -216,7 +216,7 @@ export default function ProductInfo({ product, selectedColor, setSelectedColor }
      
         <button 
           onClick={handleAddToCart} 
-          disabled={!product.inStock || isSyncing}
+          // disabled={!product.inStock || isSyncing}
           className="w-full bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 rounded-lg transition-colors"
         >
           {isSyncing ? "Adding..." : product.inStock ? "Add To Cart" : "Out of Stock"}

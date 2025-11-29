@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DualRangeBar from "./Pricerange";
 import FilterSection from "./FilterSection";
 import { ProductType } from "./ProductType";
@@ -13,6 +13,7 @@ interface FiltersSidebarProps {
     feature: string[];
     priceRange: [number, number];
     product: string[];
+    allProducts: boolean; // New filter field
   };
   setFilters: (
     fn: (prev: {
@@ -21,12 +22,14 @@ interface FiltersSidebarProps {
       feature: string[];
       priceRange: [number, number];
       product: string[];
+      allProducts: boolean;
     }) => {
       brand: string[];
       availability: string[];
       feature: string[];
       priceRange: [number, number];
       product: string[];
+      allProducts: boolean;
     }
   ) => void;
   products: ProductType[];
@@ -39,6 +42,16 @@ export default function FiltersSidebar({
 }: FiltersSidebarProps) {
   const [openSection, setOpenSection] = useState<string | null>(null);
   const [openSubcategories, setOpenSubcategories] = useState<{[key: string]: boolean}>({});
+  const [showAllBrands, setShowAllBrands] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Reset brand filters to empty array on initial load only
+  useEffect(() => {
+    if (!isInitialized) {
+      setFilters(prev => ({ ...prev, brand: [] }));
+      setIsInitialized(true);
+    }
+  }, [isInitialized, setFilters]);
 
   const toggleSection = (title: string) =>
     setOpenSection(openSection === title ? null : title);
@@ -112,37 +125,83 @@ export default function FiltersSidebar({
     return counts;
   };
 
-  const toggleValue = (type: "brand" | "availability" | "feature" | "product", value: string) => {
+  const toggleValue = (type: "brand" | "availability" | "feature" | "product" | "allProducts", value: string | boolean) => {
     setFilters((prev) => {
+      if (type === "allProducts") {
+        // When All Products is checked, reset all other filters
+        if (value === true) {
+          return {
+            brand: [],
+            availability: [],
+            feature: [],
+            priceRange: [0, 100],
+            product: [],
+            allProducts: true,
+          };
+        } else {
+          return { ...prev, allProducts: false };
+        }
+      }
+      
       // For product filters (radio buttons), replace the entire array with the new selection
       if (type === "product") {
         // Extract category from the value to handle radio button group behavior
-        const category = value.split('|')[0];
+        const category = (value as string).split('|')[0];
         
         // Remove any existing selections for the same category
         const filtered = prev[type].filter(item => !item.startsWith(category + '|') && item !== category);
         
         // Add the new selection
-        return { ...prev, [type]: [...filtered, value] };
+        return { ...prev, [type]: [...filtered, value as string], allProducts: false };
       } else {
         // For other filter types (checkboxes), use the existing toggle logic
-        const list = prev[type].includes(value)
+        const list = prev[type].includes(value as string)
           ? prev[type].filter((v) => v !== value)
-          : [...prev[type], value];
-        return { ...prev, [type]: list };
+          : [...prev[type], value as string];
+        return { ...prev, [type]: list, allProducts: false };
       }
     });
   };
 
   const handlePriceChange = (val: [number, number]) => {
-    setFilters((prev) => ({ ...prev, priceRange: val }));
+    setFilters((prev) => ({ ...prev, priceRange: val, allProducts: false }));
   };
 
   const productCounts = countItems("product");
 
   return (
     <div className="space-y-3 w-full">
-      {/* New Product Filter Section */}
+      {/* All Products Filter Section */}
+      <div className="pb-2">
+        <button
+          onClick={() => toggleSection("All Products")}
+          className="w-full flex justify-between items-center bg-gray-50 hover:bg-gray-200 px-4 py-3 rounded-md font-medium text-gray-800 transition"
+        >
+          <span className="font-sans text-base font-semibold leading-6">All Products</span>
+          {openSection === "All Products" ? <HugeiconsIcon icon={MinusSignIcon} />: <HugeiconsIcon icon={PlusSignIcon} />}
+        </button>
+
+        {openSection === "All Products" && (
+          <div className="mt-4 space-y-1 py-2">
+            <label className="flex justify-between text-sm items-center cursor-pointer">
+              <div className="flex items-center gap-2 font-sans text-base font-normal leading-6 pl-[12px]">
+                <input
+                  type="checkbox"
+                  checked={filters.allProducts}
+                  onChange={(e) => toggleValue("allProducts", e.target.checked)}
+                  className="w-4 h-4 accent-[#C9A040]"
+                />
+                Show All Products
+              </div>
+              <span className="text-gray-500 font-sans text-base font-normal leading-6 pr-4">
+                ({products.length})
+              </span>
+            </label>
+          </div>
+        )}
+      </div>
+
+      {/* Existing Product Filter Section */}
       <div className="pb-2">
         <button
           onClick={() => toggleSection("Product")}
@@ -214,12 +273,15 @@ export default function FiltersSidebar({
 
       <FilterSection
         title="Brand"
-        items={brands}
+        items={showAllBrands ? brands : brands.slice(0, 10)}
         selectedItems={filters.brand}
         onToggleItem={(v) => toggleValue("brand", v)}
         open={openSection === "Brand"}
         onToggleOpen={() => toggleSection("Brand")}
         counts={countItems("brand")}
+        showAllBrands={showAllBrands}
+        onShowAllBrands={() => setShowAllBrands(true)}
+        hasMoreBrands={brands.length > 10}
       />
 
       <FilterSection
