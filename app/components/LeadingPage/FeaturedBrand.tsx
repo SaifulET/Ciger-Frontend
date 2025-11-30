@@ -13,7 +13,7 @@ interface Brand {
   image: string;
   createdAt?: string;
   updatedAt?: string;
-  feature?:boolean;
+  feature?: boolean;
   __v?: number;
 }
 
@@ -48,16 +48,15 @@ export default function ProductCarousel() {
       try {
         setLoading(true);
         const response = await api.get("/brand/getAllBrands");
-        
+
         if (!response.data) {
           throw new Error(`Failed to fetch brands: ${response.status}`);
         }
-        
+
         const data: ApiResponse = await response.data;
-        
-        
+
         if (data.success) {
-          setBrands(data.data.filter(item => item.feature === true));
+          setBrands(data.data.filter((item) => item.feature === true));
         } else {
           throw new Error("API returned unsuccessful response");
         }
@@ -131,7 +130,9 @@ export default function ProductCarousel() {
 
   // ✅ Updated onThumbDrag with touch support
   const onThumbDrag = useCallback(
-    (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    (
+      e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
+    ) => {
       if (!scrollbarRef.current || !emblaApi) return;
 
       e.preventDefault();
@@ -182,7 +183,9 @@ export default function ProductCarousel() {
 
   // ✅ Updated onTrackClick with touch support
   const onTrackClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    (
+      e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
+    ) => {
       if (!scrollbarRef.current || !emblaApi) return;
 
       const scrollbarRect = scrollbarRef.current.getBoundingClientRect();
@@ -219,7 +222,7 @@ export default function ProductCarousel() {
 
     const onSettle = () => setIsUsingButtons(false);
     emblaApi.on("settle", onSettle);
-    
+
     return () => {
       emblaApi.off("settle", onSettle);
     };
@@ -313,7 +316,7 @@ export default function ProductCarousel() {
             </button>
           </Link>
         </div>
-        
+
         <div className="relative md:px-[64px]">
           {/* Carousel container */}
           <div
@@ -329,7 +332,7 @@ export default function ProductCarousel() {
               {brands.map((brand) => (
                 <div
                   key={brand._id}
-                  className="flex-shrink-0 w-[calc(50%-16px)] sm:w-[calc(50%-16px)] md:w-[calc(33.333%-16px)] lg:w-[calc(25%-16px)] px-2 flex justify-center"
+                  className="flex-shrink-0 w-[calc(50%-16px)] sm:w-[calc(50%-16px)] md:w-[calc(25%-16px)] lg:w-[calc(20%-16px)] px-2 flex justify-center"
                 >
                   <Link
                     href={{
@@ -338,16 +341,20 @@ export default function ProductCarousel() {
                     }}
                     className="block bg-white duration-300"
                   >
-                    <div className="mb-[16px] ">
-                     {
-                      brand.image && ( <Image
-                        src={brand.image}
-                        alt={brand.name}
-                        width={256}
-                        height={180}
-                        className="object-contain"
-                      />)
-                     }
+                    <div className="mb-[16px] w-[150px] h-[120px] flex items-center justify-center bg-gray-50 ">
+                      {brand.image && (
+                        <Image
+                          src={brand.image}
+                          alt={brand.name}
+                          width={150}
+                          height={120}
+                          className="object-fit w-full h-full rounded"
+                          style={{
+                            maxWidth: "150px",
+                            maxHeight: "120px",
+                          }}
+                        />
+                      )}
                     </div>
                     <div className="flex justify-center text-center font-montserrat text-[18px] font-semibold leading-[28px] md:leading-[36px]">
                       {brand.name}

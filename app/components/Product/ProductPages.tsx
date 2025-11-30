@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { SlidersHorizontal, X } from "lucide-react";
+import { SlidersHorizontal, X, ChevronDown, ChevronUp } from "lucide-react";
 import FiltersSidebar from "./FiltersSidebar";
 import ProductGrid from "./ProductGrid";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -11,6 +11,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useProductStore } from "@/app/store/productStore";
 import { ProductType } from "./ProductType";
+
 
 interface LocalFilters {
   brand: string[];
@@ -34,17 +35,6 @@ type URLParams = {
   search?: string;
 };
 
-// Extended product type for filtering with safe category access
-// interface FilterProductType extends ProductType {
-//   category: string;
-//   subcategory?: string;
-//   brand: string;
-//   inStock: boolean;
-//   currentPrice: number;
-//   newBestSeller?: boolean;
-//   newSeller?: boolean;
-// }
-
 export default function ProductsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -62,6 +52,7 @@ export default function ProductsPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isList, setIsList] = useState(false);
   const [pageSize, setPageSize] = useState(6);
+  const [isActiveFiltersOpen, setIsActiveFiltersOpen] = useState(false);
 
   const { 
     products, 
@@ -341,6 +332,11 @@ export default function ProductsPage() {
     });
   }, []);
 
+  // Toggle active filters section
+  const toggleActiveFilters = useCallback(() => {
+    setIsActiveFiltersOpen(prev => !prev);
+  }, []);
+
   // Check if we're in keyword search mode
   const isKeywordSearch = !!urlParams.keyword;
 
@@ -383,17 +379,21 @@ export default function ProductsPage() {
   return (
     <div className="flex relative py-[16px] md:py-0 mx-[16px] md:mx-[32px]">
       <aside className="hidden lg:block w-[320px] p-4 border-r border-gray-200 flex-shrink-0">
-        <FiltersSidebar
-          filters={localFilters}
-          setFilters={setLocalFilters}
-          products={isKeywordSearch ? products : fullProducts}
-        />
-        
         {/* Selected Filters Display */}
         {hasActiveFilters && (
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
             <div className="flex justify-between items-center mb-3">
-              <h3 className="font-semibold text-lg">Active Filters</h3>
+              <button 
+                onClick={toggleActiveFilters}
+                className="flex items-center gap-2 font-semibold text-lg hover:text-gray-700 transition-colors"
+              >
+                Active Filters
+                {isActiveFiltersOpen ? (
+                  <ChevronUp size={18} className="text-gray-600" />
+                ) : (
+                  <ChevronDown size={18} className="text-gray-600" />
+                )}
+              </button>
               <button 
                 onClick={clearAllFilters}
                 className="text-sm text-gray-800 hover:text-gray-900 font-medium"
@@ -401,103 +401,111 @@ export default function ProductsPage() {
                 Clear All
               </button>
             </div>
-            <div className="space-y-2">
-              {localFilters.brand.map(brand => (
-                <div key={brand} className="flex justify-between items-center bg-white px-3 py-2 rounded border">
-                  <span className="text-sm">Brand: {brand}</span>
-                  <button 
-                    onClick={() => setLocalFilters(prev => ({
-                      ...prev,
-                      brand: prev.brand.filter(b => b !== brand)
-                    }))}
-                    className="text-red-500 hover:text-red-700 text-lg"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-              {localFilters.product.map(product => {
-                const [category, subcategory] = product.split("|");
-                const displayName = subcategory ? `${category} - ${subcategory}` : category;
-                return (
-                  <div key={product} className="flex justify-between items-center bg-white px-3 py-2 rounded border">
-                    <span className="text-sm">Category: {displayName}</span>
+            
+            {isActiveFiltersOpen && (
+              <div className="space-y-2 animate-fadeIn">
+                {localFilters.brand.map(brand => (
+                  <div key={brand} className="flex justify-between items-center bg-white px-3 py-2 rounded border">
+                    <span className="text-sm">Brand: {brand}</span>
                     <button 
                       onClick={() => setLocalFilters(prev => ({
                         ...prev,
-                        product: prev.product.filter(p => p !== product)
+                        brand: prev.brand.filter(b => b !== brand)
                       }))}
                       className="text-red-500 hover:text-red-700 text-lg"
                     >
                       ×
                     </button>
                   </div>
-                );
-              })}
-              {localFilters.availability.map(availability => (
-                <div key={availability} className="flex justify-between items-center bg-white px-3 py-2 rounded border">
-                  <span className="text-sm">Availability: {availability}</span>
-                  <button 
-                    onClick={() => setLocalFilters(prev => ({
-                      ...prev,
-                      availability: prev.availability.filter(a => a !== availability)
-                    }))}
-                    className="text-red-500 hover:text-red-700 text-lg"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-              {localFilters.feature.map(feature => (
-                <div key={feature} className="flex justify-between items-center bg-white px-3 py-2 rounded border">
-                  <span className="text-sm">Feature: {feature}</span>
-                  <button 
-                    onClick={() => setLocalFilters(prev => ({
-                      ...prev,
-                      feature: prev.feature.filter(f => f !== feature)
-                    }))}
-                    className="text-red-500 hover:text-red-700 text-lg"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-              {(localFilters.priceRange[0] > 0 || localFilters.priceRange[1] < 1000) && (
-                <div className="flex justify-between items-center bg-white px-3 py-2 rounded border">
-                  <span className="text-sm">
-                    Price: ${localFilters.priceRange[0]} - ${localFilters.priceRange[1]}
-                  </span>
-                  <button 
-                    onClick={() => setLocalFilters(prev => ({
-                      ...prev,
-                      priceRange: [0, 1000]
-                    }))}
-                    className="text-red-500 hover:text-red-700 text-lg"
-                  >
-                    ×
-                  </button>
-                </div>
-              )}
-              {isKeywordSearch && urlParams.keyword && (
-                <div className="flex justify-between items-center bg-blue-50 px-3 py-2 rounded border">
-                  <span className="text-sm text-blue-700">
-                    Search: &ldquo;{urlParams.keyword}&rdquo;
-                  </span>
-                  <button 
-                    onClick={() => {
-                      const newSearchParams = new URLSearchParams(searchParams);
-                      newSearchParams.delete('keyword');
-                      router.push(`?${newSearchParams.toString()}`);
-                    }}
-                    className="text-red-500 hover:text-red-700 text-lg"
-                  >
-                    ×
-                  </button>
-                </div>
-              )}
-            </div>
+                ))}
+                {localFilters.product.map(product => {
+                  const [category, subcategory] = product.split("|");
+                  const displayName = subcategory ? `${category} - ${subcategory}` : category;
+                  return (
+                    <div key={product} className="flex justify-between items-center bg-white px-3 py-2 rounded border">
+                      <span className="text-sm">Category: {displayName}</span>
+                      <button 
+                        onClick={() => setLocalFilters(prev => ({
+                          ...prev,
+                          product: prev.product.filter(p => p !== product)
+                        }))}
+                        className="text-red-500 hover:text-red-700 text-lg"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
+                {localFilters.availability.map(availability => (
+                  <div key={availability} className="flex justify-between items-center bg-white px-3 py-2 rounded border">
+                    <span className="text-sm">Availability: {availability}</span>
+                    <button 
+                      onClick={() => setLocalFilters(prev => ({
+                        ...prev,
+                        availability: prev.availability.filter(a => a !== availability)
+                      }))}
+                      className="text-red-500 hover:text-red-700 text-lg"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                {localFilters.feature.map(feature => (
+                  <div key={feature} className="flex justify-between items-center bg-white px-3 py-2 rounded border">
+                    <span className="text-sm">Feature: {feature}</span>
+                    <button 
+                      onClick={() => setLocalFilters(prev => ({
+                        ...prev,
+                        feature: prev.feature.filter(f => f !== feature)
+                      }))}
+                      className="text-red-500 hover:text-red-700 text-lg"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                {(localFilters.priceRange[0] > 0 || localFilters.priceRange[1] < 1000) && (
+                  <div className="flex justify-between items-center bg-white px-3 py-2 rounded border">
+                    <span className="text-sm">
+                      Price: ${localFilters.priceRange[0]} - ${localFilters.priceRange[1]}
+                    </span>
+                    <button 
+                      onClick={() => setLocalFilters(prev => ({
+                        ...prev,
+                        priceRange: [0, 1000]
+                      }))}
+                      className="text-red-500 hover:text-red-700 text-lg"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+                {isKeywordSearch && urlParams.keyword && (
+                  <div className="flex justify-between items-center bg-blue-50 px-3 py-2 rounded border">
+                    <span className="text-sm text-blue-700">
+                      Search: &ldquo;{urlParams.keyword}&rdquo;
+                    </span>
+                    <button 
+                      onClick={() => {
+                        const newSearchParams = new URLSearchParams(searchParams);
+                        newSearchParams.delete('keyword');
+                        router.push(`?${newSearchParams.toString()}`);
+                      }}
+                      className="text-red-500 hover:text-red-700 text-lg"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
+        <FiltersSidebar
+          filters={localFilters}
+          setFilters={setLocalFilters}
+          products={isKeywordSearch ? products : fullProducts}
+        />
       </aside>
 
       {/* Mobile sidebar overlay */}
@@ -552,91 +560,104 @@ export default function ProductsPage() {
         {hasActiveFilters && (
           <div className="lg:hidden mb-4 p-3 bg-gray-50 rounded-lg">
             <div className="flex justify-between items-center mb-2">
-              <h3 className="font-semibold">Active Filters</h3>
+              <button 
+                onClick={toggleActiveFilters}
+                className="flex items-center gap-2 font-semibold hover:text-gray-700 transition-colors"
+              >
+                Active Filters
+                {isActiveFiltersOpen ? (
+                  <ChevronUp size={16} className="text-gray-600" />
+                ) : (
+                  <ChevronDown size={16} className="text-gray-600" />
+                )}
+              </button>
               <button 
                 onClick={clearAllFilters}
-                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                className="text-sm text-gray-600 hover:text-gray-800 font-medium"
               >
                 Clear All
               </button>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {localFilters.brand.map(brand => (
-                <span key={brand} className="inline-flex items-center bg-white px-2 py-1 rounded border text-sm">
-                  {brand}
-                  <button 
-                    onClick={() => setLocalFilters(prev => ({
-                      ...prev,
-                      brand: prev.brand.filter(b => b !== brand)
-                    }))}
-                    className="ml-1 text-red-500"
-                  >
-                    ×
-                  </button>
-                </span>
-              ))}
-              {localFilters.product.map(product => {
-                const [category, subcategory] = product.split("|");
-                const displayName = subcategory ? `${category} - ${subcategory}` : category;
-                return (
-                  <span key={product} className="inline-flex items-center bg-white px-2 py-1 rounded border text-sm">
-                    {displayName}
+            
+            {isActiveFiltersOpen && (
+              <div className="flex flex-wrap gap-2 animate-fadeIn">
+                {localFilters.brand.map(brand => (
+                  <span key={brand} className="inline-flex items-center bg-white px-2 py-1 rounded border text-sm">
+                    {brand}
                     <button 
                       onClick={() => setLocalFilters(prev => ({
                         ...prev,
-                        product: prev.product.filter(p => p !== product)
+                        brand: prev.brand.filter(b => b !== brand)
                       }))}
                       className="ml-1 text-red-500"
                     >
                       ×
                     </button>
                   </span>
-                );
-              })}
-              {localFilters.availability.map(availability => (
-                <span key={availability} className="inline-flex items-center bg-white px-2 py-1 rounded border text-sm">
-                  {availability}
-                  <button 
-                    onClick={() => setLocalFilters(prev => ({
-                      ...prev,
-                      availability: prev.availability.filter(a => a !== availability)
-                    }))}
-                    className="ml-1 text-red-500"
-                  >
-                    ×
-                  </button>
-                </span>
-              ))}
-              {localFilters.feature.map(feature => (
-                <span key={feature} className="inline-flex items-center bg-white px-2 py-1 rounded border text-sm">
-                  {feature}
-                  <button 
-                    onClick={() => setLocalFilters(prev => ({
-                      ...prev,
-                      feature: prev.feature.filter(f => f !== feature)
-                    }))}
-                    className="ml-1 text-red-500"
-                  >
-                    ×
-                  </button>
-                </span>
-              ))}
-              {isKeywordSearch && urlParams.keyword && (
-                <span className="inline-flex items-center bg-blue-50 px-2 py-1 rounded border text-sm text-blue-700">
-                  Search: {urlParams.keyword}
-                  <button 
-                    onClick={() => {
-                      const newSearchParams = new URLSearchParams(searchParams);
-                      newSearchParams.delete('keyword');
-                      router.push(`?${newSearchParams.toString()}`);
-                    }}
-                    className="ml-1 text-red-500"
-                  >
-                    ×
-                  </button>
-                </span>
-              )}
-            </div>
+                ))}
+                {localFilters.product.map(product => {
+                  const [category, subcategory] = product.split("|");
+                  const displayName = subcategory ? `${category} - ${subcategory}` : category;
+                  return (
+                    <span key={product} className="inline-flex items-center bg-white px-2 py-1 rounded border text-sm">
+                      {displayName}
+                      <button 
+                        onClick={() => setLocalFilters(prev => ({
+                          ...prev,
+                          product: prev.product.filter(p => p !== product)
+                        }))}
+                        className="ml-1 text-red-500"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  );
+                })}
+                {localFilters.availability.map(availability => (
+                  <span key={availability} className="inline-flex items-center bg-white px-2 py-1 rounded border text-sm">
+                    {availability}
+                    <button 
+                      onClick={() => setLocalFilters(prev => ({
+                        ...prev,
+                        availability: prev.availability.filter(a => a !== availability)
+                      }))}
+                      className="ml-1 text-red-500"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+                {localFilters.feature.map(feature => (
+                  <span key={feature} className="inline-flex items-center bg-white px-2 py-1 rounded border text-sm">
+                    {feature}
+                    <button 
+                      onClick={() => setLocalFilters(prev => ({
+                        ...prev,
+                        feature: prev.feature.filter(f => f !== feature)
+                      }))}
+                      className="ml-1 text-red-500"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+                {isKeywordSearch && urlParams.keyword && (
+                  <span className="inline-flex items-center bg-blue-50 px-2 py-1 rounded border text-sm text-blue-700">
+                    Search: {urlParams.keyword}
+                    <button 
+                      onClick={() => {
+                        const newSearchParams = new URLSearchParams(searchParams);
+                        newSearchParams.delete('keyword');
+                        router.push(`?${newSearchParams.toString()}`);
+                      }}
+                      className="ml-1 text-red-500"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -652,6 +673,34 @@ export default function ProductsPage() {
           isList={isList}
         />
       </main>
+      <style jsx>
+        {
+          `
+         
+  
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out  forwards;
+}
+
+          `
+        
+        }
+
+      </style>
     </div>
   );
 }
+`
+
+`
