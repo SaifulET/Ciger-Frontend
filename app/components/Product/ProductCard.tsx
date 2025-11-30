@@ -39,7 +39,6 @@ const handleAddToCart = () => {
 
   const router = useRouter();
   const newbestSeller= product?.newBestSeller;
-console.log(product,"42")
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col h-full shadow-sm hover:shadow-md transition">

@@ -74,7 +74,6 @@ export const useCartStore = create<CartState>()(
           if (userId) {
             const response = await api.get(`/cart/getUserCart/${userId}`);
             const result = await response.data;
-            console.log(result.data,"74")
             if (result.success) {
               const backendItems: CartItem[] = result.data.map((item: CartItem) => {
                 const price = (item.productId?.price);
@@ -171,7 +170,7 @@ export const useCartStore = create<CartState>()(
 
       // Update item quantity - FIXED THIS FUNCTION
       updateQuantity: async (cartItemId: string, newQuantity: number, userId: string | null) => {
-        console.log('updateQuantity called:', { cartItemId, newQuantity, userId });
+       
         
         const { items } = get();
         
@@ -304,7 +303,6 @@ export const useCartStore = create<CartState>()(
 
       getItemQuantity: (productId: string) => {
         const { items } = get();
-        console.log(productId,'306')
         const item = items.find(item => item.productId._id === productId);
         return item ? (item.quantity || 0) : 0;
       }

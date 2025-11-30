@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Image from "next/image";
 import rightArrow from "@/public/rightArrow.svg";
@@ -25,7 +25,6 @@ type ProductApiItem = {
   brandId: {
     _id: string;
     name: string;
-    // Add other brand properties if they exist in the API response
   };
   available: number;
   inStock: boolean;
@@ -61,10 +60,12 @@ type Product = {
   currentPrice: number;
   newBestSeller: boolean;
   newSeller: boolean;
-   inStock?: boolean;
+  inStock?: boolean;
   feature?: string;
   category?: string;
   subcategory?: string;
+  available?: number;
+  rating?: number;
 };
 
 type NestedApiResponse = {
@@ -86,6 +87,15 @@ const validateImageUrl = (url: string | null | undefined): string => {
   return `/${url}`;
 };
 
+// Memoized Product Card Wrapper
+const MemoizedProductCard = React.memo(({ product }: { product: Product }) => (
+  <div className="flex-shrink-0 w-[calc(50%-8px)] sm:w-[calc(50%-8px)] md:w-[calc(33.333%-11px)] lg:w-[calc(25%-12px)]">
+    <ProductCard product={product as ProductType} />
+  </div>
+));
+
+MemoizedProductCard.displayName = 'MemoizedProductCard';
+
 export default function BestSeller() {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
@@ -105,13 +115,19 @@ export default function BestSeller() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Optimized fetch with useCallback and proper dependencies
   const fetchProducts = useCallback(async () => {
+    // Prevent re-fetching if we already have products
+    if (products.length > 0) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
       
       const response: ApiResponseWrapper = await api.get("/product/getAllProduct?best=true");
-      console.log("Full API Response:", response);
       
       if (response.status !== 200) {
         throw new Error(`Failed to fetch products: HTTP ${response.status}`);
@@ -130,58 +146,42 @@ export default function BestSeller() {
       } else if (responseData.data && Array.isArray((responseData.data as NestedApiResponse).data)) {
         productsArray = (responseData.data as NestedApiResponse).data;
       } else {
-        console.warn("Unexpected API response structure:", responseData);
         throw new Error("Unexpected API response format");
       }
       
       if (productsArray.length === 0) {
-        console.warn("No products found in response");
         setProducts([]);
         return;
       }
 
-
-      console.log(productsArray,"144")
-      
       const formattedProducts: Product[] = productsArray.map((item: ProductApiItem) => {
-  const imageUrl = item.images && Array.isArray(item.images) && item.images.length > 0 
-    ? validateImageUrl(item.images[0])
-    : "/default-product.png";
+        const imageUrl = item.images && Array.isArray(item.images) && item.images.length > 0 
+          ? validateImageUrl(item.images[0])
+          : "/default-product.png";
 
-  // Keep as numbers for calculations
-  const originalPrice = item.discount > 0 && item.price > 0 
-    ? Math.round(item.price*100/item.discount)
-    : undefined;
+        const originalPrice = item.discount > 0 && item.price > 0 
+          ? Math.round(item.price * 100 / item.discount)
+          : undefined;
 
-  const currentPriceValue = item.currentPrice || item.price || 0;
-  const currentPrice = typeof currentPriceValue === 'number' 
-    ? currentPriceValue 
-    : parseFloat(currentPriceValue) || 0;
+        const currentPriceValue = item.currentPrice || item.price || 0;
+        const currentPrice = typeof currentPriceValue === 'number' 
+          ? currentPriceValue 
+          : parseFloat(currentPriceValue) || 0;
 
-  return {
-    id: item._id || `product-${Math.random().toString(36).substr(2, 9)}`,
-    brand: item.brandId.name || "Unknown Brand",
-    name: item.name || item.title || "Product Name",
-    image: imageUrl,
-    originalPrice:originalPrice, // number | undefined
-    currentPrice,  // number
-    newBestSeller: Boolean(item.newBestSeller || item.isBest),
-    newSeller: Boolean(item.newSeller || item.isNew),
-    available:item.available,
-    rating:item.averageRating
-  };
-});
-
-// Then format for display when needed
-const formatPrice = (price: number): string => {
-  return `$${price.toFixed(2)}`;
-};
-
-// Usage in components:
-// formatPrice(product.currentPrice)
-// product.originalPrice ? formatPrice(product.originalPrice) : undefined
+        return {
+          id: item._id || `product-${Math.random().toString(36).substr(2, 9)}`,
+          brand: item.brandId.name || "Unknown Brand",
+          name: item.name || item.title || "Product Name",
+          image: imageUrl,
+          originalPrice: originalPrice,
+          currentPrice,
+          newBestSeller: Boolean(item.newBestSeller || item.isBest),
+          newSeller: Boolean(item.newSeller || item.isNew),
+          available: item.available,
+          rating: item.averageRating
+        };
+      });
       
-      console.log("Formatted products:", formattedProducts);
       setProducts(formattedProducts);
 
     } catch (err) {
@@ -191,7 +191,7 @@ const formatPrice = (price: number): string => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [products.length]); // Add dependency to prevent infinite loops
 
   const scrollToProgress = useCallback(
     (progress: number) => {
@@ -231,32 +231,43 @@ const formatPrice = (price: number): string => {
     return 0;
   };
 
+  // Optimized thumb drag with requestAnimationFrame
   const onThumbDrag = useCallback(
     (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
       if (!scrollbarRef.current || !emblaApi) return;
 
-      e.preventDefault();
+      if (!('touches' in e)) {
+        e.preventDefault();
+      }
       e.stopPropagation();
       setIsDraggingThumb(true);
 
       const scrollbarRect = scrollbarRef.current.getBoundingClientRect();
       const thumbWidth = scrollbarRect.width * 0.25;
 
-      const updateProgress = (clientX: number) => {
-        const offsetX = clientX - scrollbarRect.left - thumbWidth / 2;
-        const maxOffset = scrollbarRect.width - thumbWidth;
-        const newProgress = Math.max(0, Math.min(1, offsetX / maxOffset));
+      let rafId: number;
 
-        setScrollProgress(newProgress);
-        scrollToProgress(newProgress);
+      const updateProgress = (clientX: number) => {
+        cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(() => {
+          const offsetX = clientX - scrollbarRect.left - thumbWidth / 2;
+          const maxOffset = scrollbarRect.width - thumbWidth;
+          const newProgress = Math.max(0, Math.min(1, offsetX / maxOffset));
+
+          setScrollProgress(newProgress);
+          scrollToProgress(newProgress);
+        });
       };
 
       const onMove = (moveEvent: MouseEvent | TouchEvent) => {
-        moveEvent.preventDefault();
+        if (moveEvent.cancelable && 'touches' in moveEvent) {
+          moveEvent.preventDefault();
+        }
         updateProgress(getClientX(moveEvent));
       };
 
       const onUp = () => {
+        cancelAnimationFrame(rafId);
         setIsDraggingThumb(false);
 
         if (emblaApi) {
@@ -284,6 +295,10 @@ const formatPrice = (price: number): string => {
   const onTrackClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
       if (!scrollbarRef.current || !emblaApi) return;
+
+      if (!('touches' in e)) {
+        e.preventDefault();
+      }
 
       const scrollbarRect = scrollbarRef.current.getBoundingClientRect();
       const thumbWidth = scrollbarRect.width * 0.25;
@@ -318,6 +333,15 @@ const formatPrice = (price: number): string => {
     setScrollProgress(progress);
   }, [emblaApi, isDraggingThumb]);
 
+  // Memoized product cards for better performance
+  const productCards = useMemo(() => 
+    products.map((product) => (
+      <MemoizedProductCard key={product.id} product={product} />
+    )),
+    [products]
+  );
+
+  // Optimized useEffect hooks
   useEffect(() => {
     if (!emblaApi) return;
 
@@ -359,15 +383,28 @@ const formatPrice = (price: number): string => {
     };
   }, [emblaApi, onScroll]);
 
+  // Fetch products only once
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    let isMounted = true;
+    
+    if (isMounted && products.length === 0) {
+      fetchProducts();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const formatPrice = (price: number): string => {
+    return `$${price.toFixed(2)}`;
+  };
 
   if (loading) {
     return (
       <section className="bg-white p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg">
         <div className="flex pb-[32px] items-center">
-          <h2 className="text-[28px] flex-1 font-bold text-gray-900 flex justify-center pl-[50px]">
+          <h2 className="text-[28px] flex-1 font-bold text-gray-900 flex justify-center ">
             <span>Best Seller</span>
           </h2>
         </div>
@@ -382,7 +419,7 @@ const formatPrice = (price: number): string => {
     return (
       <section className="bg-white p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg">
         <div className="flex pb-[32px] items-center">
-          <h2 className="text-[28px] flex-1 font-bold text-gray-900 flex justify-center pl-[50px]">
+          <h2 className="text-[28px] flex-1 font-bold text-gray-900 flex justify-center ">
             <span>Best Seller</span>
           </h2>
         </div>
@@ -397,7 +434,7 @@ const formatPrice = (price: number): string => {
     return (
       <section className="bg-white p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg">
         <div className="flex pb-[32px] items-center">
-          <h2 className="text-[28px] flex-1 font-bold text-gray-900 flex justify-center pl-[50px]">
+          <h2 className="text-[28px] flex-1 font-bold text-gray-900 flex justify-center ">
             <span>Best Seller</span>
           </h2>
         </div>
@@ -411,7 +448,7 @@ const formatPrice = (price: number): string => {
   return (
     <section className="bg-white p-[16px] md:p-[32px] mx-[16px] md:mx-[32px] mt-[16px] md:mt-[32px] rounded-lg">
       <div className="flex pb-[32px] items-center">
-        <h2 className="text-[28px] flex-1  font-bold text-gray-900 flex justify-center pl-[50px]">
+        <h2 className="text-[28px] flex-1  font-bold text-gray-900 flex justify-center">
           <span>Best Seller</span>
         </h2>
         <Link
@@ -433,16 +470,12 @@ const formatPrice = (price: number): string => {
         >
           <div
             className="flex gap-4"
-            style={{ touchAction: "pan-y pinch-zoom" }}
+            style={{ 
+              touchAction: "pan-y pinch-zoom",
+              willChange: "transform" // Performance hint
+            }}
           >
-            {products.map((product) => (
-              <div
-                key={product.id}
-                className="flex-shrink-0 w-[calc(50%-8px)] sm:w-[calc(50%-8px)] md:w-[calc(33.333%-11px)] lg:w-[calc(25%-12px)]"
-              >
-               <ProductCard product={product as ProductType} />
-              </div>
-            ))}
+            {productCards}
           </div>
         </div>
 

@@ -38,7 +38,6 @@ export default function CartDrawer() {
     clearCart,
     initializeCart
   } = useCartStore();
-  console.log(cartItems,"40")
   // Get user state
   const { user } = useUserStore();
 
@@ -46,7 +45,6 @@ export default function CartDrawer() {
 
   const cartCount = getCartCount();
   const subtotal = getFormattedSubtotal();
-console.log(user)
 
   // Initialize cart when component mounts or user changes
   useEffect(() => {
