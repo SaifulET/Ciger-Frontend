@@ -295,7 +295,7 @@ export default function BlogCarousal() {
               {blogs.map((blog) => (
                 <div
                   key={blog._id}
-                  className="flex-shrink-0 w-full sm:w-full md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] xl:w-[calc(33.333%-16px)]"
+                  className="flex-shrink-0 w-full sm:w-full md:w-[calc(50%-12px)] lg:w-[calc(25%-16px)] xl:w-[calc(25%-16px)]"
                 >
                   <BlogCard 
                     product={{

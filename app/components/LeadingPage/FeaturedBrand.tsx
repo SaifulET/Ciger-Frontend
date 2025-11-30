@@ -338,8 +338,8 @@ export default function ProductCarousel() {
                     }}
                     className="block bg-white duration-300"
                   >
-                    <div className="mb-16">
-                     {/* {
+                    <div className="mb-[16px] ">
+                     {
                       brand.image && ( <Image
                         src={brand.image}
                         alt={brand.name}
@@ -347,7 +347,7 @@ export default function ProductCarousel() {
                         height={180}
                         className="object-contain"
                       />)
-                     } */}
+                     }
                     </div>
                     <div className="flex justify-center text-center font-montserrat text-[18px] font-semibold leading-[28px] md:leading-[36px]">
                       {brand.name}

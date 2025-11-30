@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
 import FiltersSidebar from "./FiltersSidebar";
 import ProductGrid from "./ProductGrid";
@@ -7,7 +7,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   DashboardSquare01Icon,
   LeftToRightListBulletIcon,
-  PlusSignIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useProductStore } from "@/app/store/productStore";
@@ -19,21 +18,44 @@ interface LocalFilters {
   feature: string[];
   priceRange: [number, number];
   product: string[];
-  allProducts: boolean; // New filter field
+  allProducts: boolean;
 }
+
+// Define type for URL parameters
+type URLParams = {
+  keyword?: string;
+  sub?: string;
+  subPro?: string;
+  category?: string;
+  brand?: string;
+  new?: string;
+  best?: string;
+  discount?: string;
+  search?: string;
+};
+
+// Extended product type for filtering with safe category access
+// interface FilterProductType extends ProductType {
+//   category: string;
+//   subcategory?: string;
+//   brand: string;
+//   inStock: boolean;
+//   currentPrice: number;
+//   newBestSeller?: boolean;
+//   newSeller?: boolean;
+// }
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
-  // Initialize localFilters with proper default values
   const [localFilters, setLocalFilters] = useState<LocalFilters>({
     brand: [],
     availability: [],
     feature: [],
-    priceRange: [0, 100],
+    priceRange: [0, 1000],
     product: [],
-    allProducts: false, // Default to false
+    allProducts: true,
   });
   
   const [currentPage, setCurrentPage] = useState(1);
@@ -43,120 +65,245 @@ export default function ProductsPage() {
 
   const { 
     products, 
+    fullProducts,
     loading, 
     error, 
-    fetchProducts 
+    fetchAllProducts,
+    fetchProductsByKeyword
   } = useProductStore();
 
-  // Build query parameters for fetchProducts
-  const buildQueryParams = () => {
-    const params: Record<string, string> = {};
+  // Fetch all products on initial load
+  useEffect(() => {
+    fetchAllProducts();
+  }, [fetchAllProducts]);
 
-    // Get all URL parameters and pass them directly
-    const urlParams = [
-      'sub', 'subPro', 'category', 'brand', 'new', 'discount', 'best',
-      'page', 'sort', 'search','keyword'
+  // Extract URL parameters with proper typing
+  const urlParams = useMemo((): URLParams => {
+    const params: URLParams = {};
+    const paramKeys: (keyof URLParams)[] = [
+      'keyword', 'sub', 'subPro', 'category', 'brand', 'new', 'discount', 'best', 'search'
     ];
-
-    urlParams.forEach(param => {
-      console.log(urlParams,"61")
-      const value = searchParams.get(param);
+    
+    paramKeys.forEach(key => {
+      const value = searchParams.get(key);
       if (value) {
-        
-        params[param] = value;
+        params[key] = value;
       }
     });
 
     return params;
-  };
+  }, [searchParams]);
 
-  // Fetch products when URL parameters change
+  // Handle URL params - keyword uses API, others use client-side filtering
   useEffect(() => {
-    const queryParams = buildQueryParams();
+    const { keyword, ...otherParams } = urlParams;
 
-
-    console.log("Fetching with query params:", queryParams,"76");
-    fetchProducts(queryParams);
-    
-    // Reset local filters when URL parameters change
-    setLocalFilters({
-      brand: [],
-      availability: [],
-      feature: [],
-      priceRange: [0, 100],
-      product: [],
-      allProducts: false,
-    });
-  }, [searchParams, fetchProducts]);
-
-  // Handle All Products filter
-  useEffect(() => {
-    if (localFilters.allProducts) {
-      // Reset all other filters and fetch all products
-      fetchProducts();
-      setLocalFilters(prev => ({
+    // If keyword exists, use API call
+    if (keyword) {
+      fetchProductsByKeyword(keyword);
+      
+      // Convert URL params to local filters for keyword search results
+      const newFilters: LocalFilters = {
         brand: [],
         availability: [],
         feature: [],
         priceRange: [0, 1000],
         product: [],
-        allProducts: true,
-      }));
+        allProducts: false, // Don't show all products when keyword searching
+      };
+
+      // Handle category/subcategory from URL
+      if (otherParams.sub || otherParams.category) {
+        const category = otherParams.sub || otherParams.category;
+        if (otherParams.subPro) {
+          newFilters.product.push(`${category}|${otherParams.subPro}`);
+        } else {
+          newFilters.product.push(category || '');
+        }
+      }
+
+      // Handle brand from URL
+      if (otherParams.brand) {
+        newFilters.brand.push(otherParams.brand);
+      }
+
+      // Handle feature filters from URL
+      if (otherParams.best === 'true') {
+        newFilters.feature.push('Best Seller');
+      }
+      if (otherParams.new === 'true') {
+        newFilters.feature.push('New Arrival');
+      }
+
+      setLocalFilters(newFilters);
+    } else {
+      // No keyword - use client-side filtering with full products
+      const { fullProducts } = useProductStore.getState();
+      useProductStore.setState({ products: fullProducts });
+
+      // Convert URL params to local filters
+      const newFilters: LocalFilters = {
+        brand: [],
+        availability: [],
+        feature: [],
+        priceRange: [0, 1000],
+        product: [],
+        allProducts: Object.keys(otherParams).length === 0,
+      };
+
+      // Handle category/subcategory from URL
+      if (otherParams.sub || otherParams.category) {
+        const category = otherParams.sub || otherParams.category;
+        if (otherParams.subPro) {
+          newFilters.product.push(`${category}|${otherParams.subPro}`);
+        } else {
+          newFilters.product.push(category || '');
+        }
+      }
+
+      // Handle brand from URL
+      if (otherParams.brand) {
+        newFilters.brand.push(otherParams.brand);
+      }
+
+      // Handle feature filters from URL
+      if (otherParams.best === 'true') {
+        newFilters.feature.push('Best Seller');
+      }
+      if (otherParams.new === 'true') {
+        newFilters.feature.push('New Arrival');
+      }
+
+      setLocalFilters(newFilters);
     }
-  }, [localFilters.allProducts, fetchProducts]);
+  }, [urlParams, fetchProductsByKeyword]);
+
+  // Safe category comparison function
+  const compareCategory = useCallback((productCategory: string | undefined, filterCategory: string): boolean => {
+    if (!productCategory) return false;
+    return productCategory.toLowerCase() === filterCategory.toLowerCase();
+  }, []);
+
+  // Safe subcategory comparison function
+  const compareSubcategory = useCallback((productSubcategory: string | undefined, filterSubcategory: string): boolean => {
+    if (!productSubcategory) return false;
+    return productSubcategory.toLowerCase() === filterSubcategory.toLowerCase();
+  }, []);
+
+  // Client-side filtering function
+  const filterProducts = useCallback((products: ProductType[], filters: LocalFilters): ProductType[] => {
+    if (!products || products.length === 0) return [];
+    if (filters.allProducts) return products;
+
+    return products.filter(product => {
+      // Type-safe product access
+      const productBrand = product.brand || '';
+      const productCategory = product.category || '';
+      const productSubcategory = product.subcategory || '';
+      const productPrice = product.currentPrice || 0;
+      const productInStock = Boolean(product.inStock);
+      const productNewBestSeller = Boolean(product.newBestSeller);
+      const productNewSeller = Boolean(product.newSeller);
+
+      // Brand filter
+      if (filters.brand.length > 0 && !filters.brand.includes(productBrand)) {
+        return false;
+      }
+
+      // Feature filter
+      if (filters.feature.length > 0) {
+        const hasMatchingFeature = filters.feature.some(feature => {
+          if (feature === "Best Seller" && productNewBestSeller) return true;
+          if (feature === "New Arrival" && productNewSeller) return true;
+          return false;
+        });
+        if (!hasMatchingFeature) return false;
+      }
+
+      // Category/Subcategory filter - allow multiple selections
+      if (filters.product.length > 0) {
+        const hasMatchingCategory = filters.product.some(filter => {
+          const [category, subcategory] = filter.split("|");
+          
+          if (subcategory) {
+            // If filter has both category and subcategory
+            return compareCategory(productCategory, category) && 
+                   compareSubcategory(productSubcategory, subcategory);
+          } else {
+            // If filter has only category
+            return compareCategory(productCategory, category);
+          }
+        });
+        if (!hasMatchingCategory) return false;
+      }
+
+      // Availability filter
+      if (filters.availability.length > 0) {
+        const hasMatchingAvailability = filters.availability.some(availability => {
+          if (availability === "In Stock" && productInStock) return true;
+          if (availability === "Out of Stock" && !productInStock) return true;
+          return false;
+        });
+        if (!hasMatchingAvailability) return false;
+      }
+
+      // Price range filter
+      if (productPrice < filters.priceRange[0] || productPrice > filters.priceRange[1]) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [compareCategory, compareSubcategory]);
+
+  // Determine which products to use for filtering
+  const productsToFilter = useMemo(() => {
+    const { keyword } = urlParams;
+    if (keyword) {
+      // When keyword search is active, filter the API results
+      return products;
+    } else {
+      // When no keyword, use full products for client-side filtering
+      return fullProducts;
+    }
+  }, [urlParams, products, fullProducts]);
+
+  // Apply client-side filters
+  const filteredProducts = useMemo(() => 
+    filterProducts(productsToFilter, localFilters),
+    [productsToFilter, localFilters, filterProducts]
+  );
+
+  const totalPages = Math.ceil(filteredProducts.length / pageSize);
+  const paginated = useMemo(() => 
+    filteredProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+    [filteredProducts, currentPage, pageSize]
+  );
 
   // Reset current page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [localFilters, searchParams]);
+  }, [localFilters, urlParams]);
 
-  // Initialize localFilters with available values from products
+  // Update price range based on available products
   useEffect(() => {
-    if (products.length > 0) {
-      // Get unique brands from products
-      const availableBrands = [...new Set(products.map(product => product.brand).filter(Boolean))] as string[];
-      
-      // Get unique categories and subcategories
-      const availableCategories = [...new Set(products.flatMap(product => {
-        const categories = [];
-        if (product.category) {
-          categories.push(product.category);
-          if (product.subcategory) {
-            categories.push(`${product.category}|${product.subcategory}`);
-          }
-        }
-        return categories;
-      }).filter(Boolean))] as string[];
-
-      // Get price range from products
-      const prices = products.map(product => product.currentPrice || 0).filter(price => price > 0);
+    const { keyword } = urlParams;
+    const productsForPriceRange = keyword ? products : fullProducts;
+    if (productsForPriceRange.length > 0) {
+      const prices = productsForPriceRange
+        .map(product => product.currentPrice || 0)
+        .filter(price => price > 0);
       const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
       const maxPrice = prices.length > 0 ? Math.max(...prices) : 1000;
 
-      // Update localFilters with available values
-      setLocalFilters(prev => {
-        // Only update if the available values are different from current state
-        // This prevents unnecessary re-renders
-        const shouldUpdate = 
-          JSON.stringify(prev.brand) !== JSON.stringify(availableBrands) ||
-          JSON.stringify(prev.product) !== JSON.stringify(availableCategories) ||
-          prev.priceRange[0] !== minPrice ||
-          prev.priceRange[1] !== maxPrice;
-
-        if (!shouldUpdate) return prev;
-
-        return {
-          brand: availableBrands,
-          availability: [],
-          feature: [],
-          priceRange: [minPrice, maxPrice],
-          product: availableCategories,
-          allProducts: prev.allProducts, // Preserve allProducts state
-        };
-      });
+      setLocalFilters(prev => ({
+        ...prev,
+        priceRange: [minPrice, maxPrice]
+      }));
     }
-  }, [products]);
+  }, [fullProducts, products, urlParams]);
 
+  // Page size responsive handler
   useEffect(() => {
     const updatePageSize = () => {
       const width = window.innerWidth;
@@ -168,135 +315,63 @@ export default function ProductsPage() {
     return () => window.removeEventListener('resize', updatePageSize);
   }, []);
 
-  // Client-side filtering function
-  const filterProducts = (products: ProductType[], filters: LocalFilters): ProductType[] => {
-    if (!products || products.length === 0) return [];
-
-    // If All Products is checked, return all products without filtering
-    if (filters.allProducts) {
-      return products;
-    }
-
-    return products.filter(product => {
-      // Brand filter - if brands are selected, product must match one of them
-      if (filters.brand.length > 0 && !filters.brand.includes(product.brand)) {
-        return false;
-      }
-
-      // Feature filter
-      if (filters.feature.length > 0) {
-        const hasMatchingFeature = filters.feature.some(feature => {
-          if (feature === "Best Seller" && product.newBestSeller) return true;
-          if (feature === "New Arrival" && product.newSeller) return true;
-          return false;
-        });
-        if (!hasMatchingFeature) return false;
-      }
-
-      // Category/Subcategory filter
-      if (filters.product.length > 0) {
-        const hasMatchingCategory = filters.product.some(filter => {
-          const [category, subcategory] = filter.split("|");
-          const matchesCategory = category ? product.category === category : true;
-          const matchesSubcategory = subcategory ? product.subcategory === subcategory : true;
-          return matchesCategory && matchesSubcategory;
-        });
-        if (!hasMatchingCategory) return false;
-      }
-
-      // Availability filter
-      if (filters.availability.length > 0) {
-        const hasMatchingAvailability = filters.availability.some(availability => {
-          if (availability === "In Stock" && product.inStock) return true;
-          if (availability === "Out of Stock" && !product.inStock) return true;
-          return false;
-        });
-        if (!hasMatchingAvailability) return false;
-      }
-
-      // Price range filter
-      const productPrice = product.currentPrice || 0;
-      if (productPrice < filters.priceRange[0] || productPrice > filters.priceRange[1]) {
-        return false;
-      }
-
-      return true;
-    });
-  };
-
-  const filteredProducts = filterProducts(products, localFilters);
-  const totalPages = Math.ceil(filteredProducts.length / pageSize);
-  
-  const paginated = filteredProducts.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-
   const handleAddCart = (id: number) => alert(`Add product ${id} to cart`);
   const handleView = (id: number) => router.push(`/pages/product/${id}`);
 
-  if (loading) {
+  // Check if any filters are active
+  const hasActiveFilters = useMemo(() => {
+    return localFilters.brand.length > 0 ||
+           localFilters.availability.length > 0 ||
+           localFilters.feature.length > 0 ||
+           localFilters.product.length > 0 ||
+           !localFilters.allProducts ||
+           localFilters.priceRange[0] > 0 || 
+           localFilters.priceRange[1] < 1000;
+  }, [localFilters]);
+
+  // Clear all filters
+  const clearAllFilters = useCallback(() => {
+    setLocalFilters({
+      brand: [],
+      availability: [],
+      feature: [],
+      priceRange: [0, 1000],
+      product: [],
+      allProducts: true,
+    });
+  }, []);
+
+  // Check if we're in keyword search mode
+  const isKeywordSearch = !!urlParams.keyword;
+
+  if (loading && fullProducts.length === 0) {
     return (
       <div className="flex relative py-[16px] md:py-0 mx-[16px] md:mx-[32px]">
-
-      <aside className="hidden lg:block w-[320px] p-4 border-r border-gray-200 flex-shrink-0">
-         <div className="space-y-3 w-full">
-          <div className="pb-2">
-              <button
-            className="w-full flex justify-between items-center bg-gray-50 hover:bg-gray-200 px-4 py-3 rounded-md font-medium text-gray-800 transition"
-          >
-             <span className="font-sans text-base font-semibold leading-6">All Products</span><HugeiconsIcon icon={PlusSignIcon} />
-        </button>
+        <aside className="hidden lg:block w-[320px] p-4 border-r border-gray-200 flex-shrink-0">
+          <div className="space-y-3 w-full">
+            {[1, 2, 3, 4, 5].map((item) => (
+              <div key={item} className="pb-2">
+                <div className="w-full flex justify-between items-center bg-gray-50 px-4 py-3 rounded-md animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded w-24"></div>
+                  <div className="h-4 bg-gray-200 rounded w-4"></div>
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="pb-2">
-              <button
-            className="w-full flex justify-between items-center bg-gray-50 hover:bg-gray-200 px-4 py-3 rounded-md font-medium text-gray-800 transition"
-          >
-             <span className="font-sans text-base font-semibold leading-6">Product</span><HugeiconsIcon icon={PlusSignIcon} />
-        </button>
-          </div>
-          <div className="pb-2">
-              <button
-            className="w-full flex justify-between items-center bg-gray-50 hover:bg-gray-200 px-4 py-3 rounded-md font-medium text-gray-800 transition"
-          >
-             <span className="font-sans text-base font-semibold leading-6">Brand</span><HugeiconsIcon icon={PlusSignIcon} />
-        </button>
-          </div>
-          <div className="pb-2">
-              <button
-            className="w-full flex justify-between items-center bg-gray-50 hover:bg-gray-200 px-4 py-3 rounded-md font-medium text-gray-800 transition"
-          >
-             <span className="font-sans text-base font-semibold leading-6">Availability</span><HugeiconsIcon icon={PlusSignIcon} />
-        </button>
-          </div>
-          <div className="pb-2">
-              <button
-            className="w-full flex justify-between items-center bg-gray-50 hover:bg-gray-200 px-4 py-3 rounded-md font-medium text-gray-800 transition"
-          >
-             <span className="font-sans text-base font-semibold leading-6">Feature</span><HugeiconsIcon icon={PlusSignIcon} />
-        </button>
-          </div>
-          <div className="pb-2">
-              <button
-            className="w-full flex justify-between items-center bg-gray-50 hover:bg-gray-200 px-4 py-3 rounded-md font-medium text-gray-800 transition"
-          >
-             <span className="font-sans text-base font-semibold leading-6">Price</span><HugeiconsIcon icon={PlusSignIcon} />
-        </button>
-          </div>
-
-         </div>
-      </aside>
-        <div className="text-lg">Loading products...</div>
+        </aside>
+        <div className="flex-1 flex justify-center items-center min-h-64">
+          <div className="text-lg">Loading products...</div>
+        </div>
       </div>
     );
   }
 
-  if (error) {
+  if (error && fullProducts.length === 0) {
     return (
       <div className="flex justify-center items-center min-h-64">
         <div className="text-red-500 text-lg">Error: {error}</div>
         <button 
-          onClick={() => fetchProducts(buildQueryParams())}
+          onClick={() => fetchAllProducts()}
           className="ml-4 px-4 py-2 bg-blue-500 text-white rounded"
         >
           Retry
@@ -311,10 +386,121 @@ export default function ProductsPage() {
         <FiltersSidebar
           filters={localFilters}
           setFilters={setLocalFilters}
-          products={products}
+          products={isKeywordSearch ? products : fullProducts}
         />
+        
+        {/* Selected Filters Display */}
+        {hasActiveFilters && (
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="font-semibold text-lg">Active Filters</h3>
+              <button 
+                onClick={clearAllFilters}
+                className="text-sm text-gray-800 hover:text-gray-900 font-medium"
+              >
+                Clear All
+              </button>
+            </div>
+            <div className="space-y-2">
+              {localFilters.brand.map(brand => (
+                <div key={brand} className="flex justify-between items-center bg-white px-3 py-2 rounded border">
+                  <span className="text-sm">Brand: {brand}</span>
+                  <button 
+                    onClick={() => setLocalFilters(prev => ({
+                      ...prev,
+                      brand: prev.brand.filter(b => b !== brand)
+                    }))}
+                    className="text-red-500 hover:text-red-700 text-lg"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+              {localFilters.product.map(product => {
+                const [category, subcategory] = product.split("|");
+                const displayName = subcategory ? `${category} - ${subcategory}` : category;
+                return (
+                  <div key={product} className="flex justify-between items-center bg-white px-3 py-2 rounded border">
+                    <span className="text-sm">Category: {displayName}</span>
+                    <button 
+                      onClick={() => setLocalFilters(prev => ({
+                        ...prev,
+                        product: prev.product.filter(p => p !== product)
+                      }))}
+                      className="text-red-500 hover:text-red-700 text-lg"
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              })}
+              {localFilters.availability.map(availability => (
+                <div key={availability} className="flex justify-between items-center bg-white px-3 py-2 rounded border">
+                  <span className="text-sm">Availability: {availability}</span>
+                  <button 
+                    onClick={() => setLocalFilters(prev => ({
+                      ...prev,
+                      availability: prev.availability.filter(a => a !== availability)
+                    }))}
+                    className="text-red-500 hover:text-red-700 text-lg"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+              {localFilters.feature.map(feature => (
+                <div key={feature} className="flex justify-between items-center bg-white px-3 py-2 rounded border">
+                  <span className="text-sm">Feature: {feature}</span>
+                  <button 
+                    onClick={() => setLocalFilters(prev => ({
+                      ...prev,
+                      feature: prev.feature.filter(f => f !== feature)
+                    }))}
+                    className="text-red-500 hover:text-red-700 text-lg"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+              {(localFilters.priceRange[0] > 0 || localFilters.priceRange[1] < 1000) && (
+                <div className="flex justify-between items-center bg-white px-3 py-2 rounded border">
+                  <span className="text-sm">
+                    Price: ${localFilters.priceRange[0]} - ${localFilters.priceRange[1]}
+                  </span>
+                  <button 
+                    onClick={() => setLocalFilters(prev => ({
+                      ...prev,
+                      priceRange: [0, 1000]
+                    }))}
+                    className="text-red-500 hover:text-red-700 text-lg"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+              {isKeywordSearch && urlParams.keyword && (
+                <div className="flex justify-between items-center bg-blue-50 px-3 py-2 rounded border">
+                  <span className="text-sm text-blue-700">
+                    Search: &ldquo;{urlParams.keyword}&rdquo;
+                  </span>
+                  <button 
+                    onClick={() => {
+                      const newSearchParams = new URLSearchParams(searchParams);
+                      newSearchParams.delete('keyword');
+                      router.push(`?${newSearchParams.toString()}`);
+                    }}
+                    className="text-red-500 hover:text-red-700 text-lg"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </aside>
 
+      {/* Mobile sidebar overlay */}
       {isSidebarOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
           <div className="w-4/5 md:w-1/2 bg-white shadow-lg p-4 overflow-y-auto">
@@ -327,7 +513,7 @@ export default function ProductsPage() {
             <FiltersSidebar
               filters={localFilters}
               setFilters={setLocalFilters}
-              products={products}
+              products={isKeywordSearch ? products : fullProducts}
             />
           </div>
           <div
@@ -337,30 +523,122 @@ export default function ProductsPage() {
         </div>
       )}
 
-      <main className="w-full">
-        <div className="flex justify-between items-center lg:hidden w-full">
+      <main className="flex-1 lg:pl-6">
+        <div className="flex justify-between items-center lg:hidden w-full mb-4">
           <button
             onClick={() => setIsSidebarOpen(true)}
-            className="flex items-center gap-2 bg-white px-4 py-2 rounded-md shadow-sm"
+            className="flex items-center gap-2 bg-white px-4 py-2 rounded-md shadow-sm border"
           >
             Filter & Sort
             <SlidersHorizontal size={18} />
           </button>
           <div className="flex gap-3">
             <button
-              className={isList ? "text-gray-500" : "text-gray-900"}
+              className={isList ? "text-gray-900" : "text-gray-500"}
               onClick={() => setIsList(true)}
             >
               <HugeiconsIcon icon={LeftToRightListBulletIcon} />
             </button>
             <button
-              className={!isList ? "text-gray-500" : "text-gray-900"}
+              className={!isList ? "text-gray-900" : "text-gray-500"}
               onClick={() => setIsList(false)}
             >
               <HugeiconsIcon icon={DashboardSquare01Icon} />
             </button>
           </div>
         </div>
+
+        {/* Mobile Active Filters */}
+        {hasActiveFilters && (
+          <div className="lg:hidden mb-4 p-3 bg-gray-50 rounded-lg">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="font-semibold">Active Filters</h3>
+              <button 
+                onClick={clearAllFilters}
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              >
+                Clear All
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {localFilters.brand.map(brand => (
+                <span key={brand} className="inline-flex items-center bg-white px-2 py-1 rounded border text-sm">
+                  {brand}
+                  <button 
+                    onClick={() => setLocalFilters(prev => ({
+                      ...prev,
+                      brand: prev.brand.filter(b => b !== brand)
+                    }))}
+                    className="ml-1 text-red-500"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+              {localFilters.product.map(product => {
+                const [category, subcategory] = product.split("|");
+                const displayName = subcategory ? `${category} - ${subcategory}` : category;
+                return (
+                  <span key={product} className="inline-flex items-center bg-white px-2 py-1 rounded border text-sm">
+                    {displayName}
+                    <button 
+                      onClick={() => setLocalFilters(prev => ({
+                        ...prev,
+                        product: prev.product.filter(p => p !== product)
+                      }))}
+                      className="ml-1 text-red-500"
+                    >
+                      ×
+                    </button>
+                  </span>
+                );
+              })}
+              {localFilters.availability.map(availability => (
+                <span key={availability} className="inline-flex items-center bg-white px-2 py-1 rounded border text-sm">
+                  {availability}
+                  <button 
+                    onClick={() => setLocalFilters(prev => ({
+                      ...prev,
+                      availability: prev.availability.filter(a => a !== availability)
+                    }))}
+                    className="ml-1 text-red-500"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+              {localFilters.feature.map(feature => (
+                <span key={feature} className="inline-flex items-center bg-white px-2 py-1 rounded border text-sm">
+                  {feature}
+                  <button 
+                    onClick={() => setLocalFilters(prev => ({
+                      ...prev,
+                      feature: prev.feature.filter(f => f !== feature)
+                    }))}
+                    className="ml-1 text-red-500"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+              {isKeywordSearch && urlParams.keyword && (
+                <span className="inline-flex items-center bg-blue-50 px-2 py-1 rounded border text-sm text-blue-700">
+                  Search: {urlParams.keyword}
+                  <button 
+                    onClick={() => {
+                      const newSearchParams = new URLSearchParams(searchParams);
+                      newSearchParams.delete('keyword');
+                      router.push(`?${newSearchParams.toString()}`);
+                    }}
+                    className="ml-1 text-red-500"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         <ProductGrid
           products={paginated}

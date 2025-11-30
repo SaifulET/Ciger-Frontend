@@ -8,6 +8,7 @@ import ReviewsSection from "./ReviewSection";
 import RelatedProducts from "./RelatedProduct";
 import { useProductsStore } from "../../store/productDetailsStore";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -100,6 +101,14 @@ export default function ProductDetailPage() {
   return (
     <div className="min-h-screen mx-[16px] md:mx-[32px]">
       <main className="">
+
+      <div className="flex items-center gap-2 pt-[16px] md:pt-[32px]">
+  <Link href="/pages/products">Products</Link>
+  <span>&gt;</span>
+  <Link href={`/pages/products?sub=${currentProduct.category?.replace(/\s+/g, "")}`}>{currentProduct.category}</Link>
+  <span>&gt;</span>
+  <Link href={`/pages/products?sub=${currentProduct.category?.replace(/\s+/g, "")}&subPro=${currentProduct.subCategory?.replace(/\s+/g, "")}`}>{currentProduct.subCategory}</Link>
+</div>
         {/* Product Section */}
         <div className="pt-[16px] md:pt-[32px] grid grid-cols-1 lg:grid-cols-2 gap-[16px] md:gap-[32px]">
           <ProductImages 

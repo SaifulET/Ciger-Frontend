@@ -23,6 +23,15 @@ interface Product {
 interface BlogCardProps {
   product: Product;
 }
+const getFirstNWords = (html: string, wordCount: number = 40): string => {
+  // Remove HTML tags and get plain text
+  const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  
+  // Split into words and take first N words
+  const words = text.split(' ').slice(0, wordCount);
+  
+  return words.join(' ') + (words.length >= wordCount ? '...' : '');
+};
 
 const BlogCard: React.FC<BlogCardProps> = ({ product }) => {
   const { image, title, description, link, _id } = product;
@@ -30,11 +39,11 @@ const BlogCard: React.FC<BlogCardProps> = ({ product }) => {
   return (
     <div className="flex flex-col items-start border border-[#B0B0B0] rounded-[14px] overflow-hidden bg-white">
       {/* Image */}
-      <div className="relative w-full">
+      <div className="relative w-full pt-[12px]">
         <Image
           src={image}
           alt={title}
-          className="object-fit h-100 w-full"
+          className="object-fill h-[220px] w-[255px] m-auto"
           width={362}
           height={200}
           sizes="(max-width: 362px) 100vw, 362px"
@@ -42,11 +51,11 @@ const BlogCard: React.FC<BlogCardProps> = ({ product }) => {
       </div>
 
       {/* Content */}
-      <div className="flex flex-col items-center p-6 gap-3 w-full">
-        <h4 className="text-[16px] leading-[26px] font-normal text-[#0C0C0C]">
+      <div className="flex flex-col font-normal text-[16px] items-center p-6 gap-3 w-full">
+        <h4 className="text-[18px]  font-medium text-[#0C0C0C] align-left">
           {title}
         </h4>
-
+ {getFirstNWords(description, 20)}
         {/* <p className="text-[16px] leading-[24px] font-normal font-[Open_Sans] text-[#0C0C0C]">
            <div 
           className="text-[16px] leading-[24px] font-normal font-[Open_Sans] text-[#0C0C0C] w-full"

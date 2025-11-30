@@ -749,7 +749,7 @@ const Navbar: React.FC = () => {
                     <div
                       className={`grid gap-4 ${
                         item.subItems.length >= 3
-                          ? "md:grid-cols-3"
+                          ? "md:grid-cols-4"
                           : "md:grid-cols-1"
                       }`}
                     >

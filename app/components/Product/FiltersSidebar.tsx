@@ -13,7 +13,7 @@ interface FiltersSidebarProps {
     feature: string[];
     priceRange: [number, number];
     product: string[];
-    allProducts: boolean; // New filter field
+    allProducts: boolean;
   };
   setFilters: (
     fn: (prev: {
@@ -43,15 +43,6 @@ export default function FiltersSidebar({
   const [openSection, setOpenSection] = useState<string | null>(null);
   const [openSubcategories, setOpenSubcategories] = useState<{[key: string]: boolean}>({});
   const [showAllBrands, setShowAllBrands] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
-
-  // Reset brand filters to empty array on initial load only
-  useEffect(() => {
-    if (!isInitialized) {
-      setFilters(prev => ({ ...prev, brand: [] }));
-      setIsInitialized(true);
-    }
-  }, [isInitialized, setFilters]);
 
   const toggleSection = (title: string) =>
     setOpenSection(openSection === title ? null : title);
@@ -63,21 +54,24 @@ export default function FiltersSidebar({
     }));
   };
 
-  // dynamic data
-  const brands = Array.from(new Set(products.map((p) => p.brand)));
+  // Get all unique brands from ALL products
+  const brands = Array.from(new Set(products.map((p) => p.brand).filter(brand => brand && brand.trim() !== '')));
   const availability = ["In Stock", "Out of Stock"];
   const features = ["Best Seller", "New Arrival"];
-  const prices = products.map((p) => (p.currentPrice));
-  const minPrice = 0;
-  const maxPrice = 100;
+  
+  // Calculate price range from ALL products
+  const prices = products.map((p) => p.currentPrice || 0).filter(price => price > 0);
+  const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+  const maxPrice = prices.length > 0 ? Math.max(...prices) : 1000;
 
-  // New: Get categories and subcategories (filter out undefined values)
+  // Get all unique categories from ALL products
   const categories = Array.from(new Set(
     products
       .map(p => p.category)
-      .filter((category): category is string => category !== undefined)
+      .filter((category): category is string => category !== undefined && category !== '')
   ));
   
+  // Organize subcategories by category
   const subcategoriesByCategory: {[key: string]: string[]} = {};
   
   categories.forEach(category => {
@@ -86,20 +80,19 @@ export default function FiltersSidebar({
         products
           .filter(p => p.category === category)
           .map(p => p.subcategory)
-          .filter((subcategory): subcategory is string => subcategory !== undefined)
+          .filter((subcategory): subcategory is string => subcategory !== undefined && subcategory !== '')
       )
     );
   });
 
+  // Count items for each filter type from ALL products
   const countItems = (type: "brand" | "availability" | "feature" | "product") => {
     const counts: Record<string, number> = {};
     
     if (type === "product") {
-      // Count for categories
       categories.forEach(category => {
         counts[category] = products.filter(p => p.category === category).length;
         
-        // Count for subcategories
         subcategoriesByCategory[category]?.forEach(subcategory => {
           const key = `${category}|${subcategory}`;
           counts[key] = products.filter(p => 
@@ -128,13 +121,12 @@ export default function FiltersSidebar({
   const toggleValue = (type: "brand" | "availability" | "feature" | "product" | "allProducts", value: string | boolean) => {
     setFilters((prev) => {
       if (type === "allProducts") {
-        // When All Products is checked, reset all other filters
         if (value === true) {
           return {
             brand: [],
             availability: [],
             feature: [],
-            priceRange: [0, 100],
+            priceRange: [minPrice, maxPrice],
             product: [],
             allProducts: true,
           };
@@ -143,18 +135,26 @@ export default function FiltersSidebar({
         }
       }
       
-      // For product filters (radio buttons), replace the entire array with the new selection
       if (type === "product") {
-        // Extract category from the value to handle radio button group behavior
-        const category = (value as string).split('|')[0];
+        const currentValue = value as string;
+        const isCurrentlySelected = prev[type].includes(currentValue);
         
-        // Remove any existing selections for the same category
-        const filtered = prev[type].filter(item => !item.startsWith(category + '|') && item !== category);
-        
-        // Add the new selection
-        return { ...prev, [type]: [...filtered, value as string], allProducts: false };
+        if (isCurrentlySelected) {
+          // Remove the value
+          return { 
+            ...prev, 
+            [type]: prev[type].filter(item => item !== currentValue),
+            allProducts: false 
+          };
+        } else {
+          // Add the value - allow multiple selections
+          return { 
+            ...prev, 
+            [type]: [...prev[type], currentValue],
+            allProducts: false 
+          };
+        }
       } else {
-        // For other filter types (checkboxes), use the existing toggle logic
         const list = prev[type].includes(value as string)
           ? prev[type].filter((v) => v !== value)
           : [...prev[type], value as string];
@@ -201,7 +201,7 @@ export default function FiltersSidebar({
         )}
       </div>
 
-      {/* Existing Product Filter Section */}
+      {/* Product Filter Section */}
       <div className="pb-2">
         <button
           onClick={() => toggleSection("Product")}
@@ -212,45 +212,46 @@ export default function FiltersSidebar({
         </button>
 
         {openSection === "Product" && (
-          <div className="mt-4 space-y-2  py-2 ">
+          <div className="mt-4 space-y-2 py-2">
             {categories.map(category => (
               <div key={category} className="border rounded-lg">
                 <button
                   onClick={() => toggleSubcategory(category)}
-                  className="w-full flex justify-between items-center bg-gray-50 hover:bg-gray-200 px-3 py-3 rounded-md font-medium text-gray-800 transition "
+                  className="w-full flex justify-between items-center bg-gray-50 hover:bg-gray-200 px-3 py-3 rounded-md font-medium text-gray-800 transition"
                 >
                   <span>{category}</span>
-                  <span className="flex items-center gap-2">
+                  <span className="flex items-center">
                     ({productCounts[category] || 0})
                     {openSubcategories[category] ? <HugeiconsIcon icon={MinusSignIcon} /> : <HugeiconsIcon icon={PlusSignIcon} />}
                   </span>
                 </button>
                 
                 {openSubcategories[category] && (
-                  <div className=" pb-2 space-y-1">
-                    {/* Category level radio option */}
-                    <label className="flex justify-center text-sm items-center cursor-pointer py-1">
+                  <div className="pb-2 space-y-1">
+                    {/* Category checkbox */}
+                    <label className="flex justify-between text-sm items-center cursor-pointer py-1 px-3">
                       <div className="flex items-center gap-2 font-sans text-base font-normal leading-6">
                         <input
                           type="checkbox"
-                          name={`category-${category}`}
                           checked={filters.product.includes(category)}
                           onChange={() => toggleValue("product", category)}
                           className="w-4 h-4 accent-[#C9A040]"
                         />
                         All {category}
                       </div>
+                      <span className="text-gray-500 font-sans text-base font-normal leading-6">
+                        ({productCounts[category] || 0})
+                      </span>
                     </label>
 
-                    {/* Subcategory radio options */}
+                    {/* Subcategory checkboxes */}
                     {subcategoriesByCategory[category]?.map(subcategory => {
                       const key = `${category}|${subcategory}`;
                       return (
-                        <label key={key} className="flex justify-between text-sm items-center cursor-pointer py-1">
-                          <div className="flex items-center gap-2 font-sans text-base font-normal leading-6">
+                        <label key={key} className="flex justify-between text-sm items-center cursor-pointer py-1 px-3">
+                          <div className="flex items-center gap-2 font-sans text-base font-normal leading-6 ">
                             <input
                               type="checkbox"
-                              name={`category-${category}`}
                               checked={filters.product.includes(key)}
                               onChange={() => toggleValue("product", key)}
                               className="w-4 h-4 accent-[#C9A040]"
@@ -304,7 +305,6 @@ export default function FiltersSidebar({
         counts={countItems("feature")}
       />
 
-      {/* Price Range */}
       <FilterSection
         title="Price"
         open={openSection === "Price"}

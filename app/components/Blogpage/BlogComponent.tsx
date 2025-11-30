@@ -9,7 +9,7 @@ interface BlogItem {
   description: string;
   image: string|StaticImageData;
 }
-const getFirstNWords = (html: string, wordCount: number = 8): string => {
+const getFirstNWords = (html: string, wordCount: number = 40): string => {
   // Remove HTML tags and get plain text
   const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   
@@ -35,39 +35,39 @@ export default function BlogPage({ blogs }: BlogPageProps) {
   return (
     <div className=" mx-[16px] md:mx-[32px] py-[16px] md:py-[32px]">
         <div className="flex flex-col items-center gap-2  bg-white rounded-xl  p-[16px] md:p-[32px]  ">
-      <h2 className="bg-white rounded-lg  text-[28px] font-semibold leading-[48px] text-gray-900 text-center      ">
+      <h2 className="pb-[16px] md:pb-[32px] bg-white rounded-lg  text-[28px] font-semibold leading-[48px] text-gray-900 text-center      ">
         Blogs
       </h2>
 
       {/* Blog List */}
-      <div className="flex flex-col w-full gap-6">
+      <div className="grid grid-cols-1 w-full gap-6">
         {paginatedBlogs.map((blog) => (
           <div
             key={blog.id}
-            className="flex flex-row bg-white rounded-lg border overflow-hidden"
+            className="flex flex-col flex-1 md:flex-row md:gap-4 bg-white rounded-lg border overflow-hidden"
           >
             {/* Image */}
-            <div className="w-1/2 h-[200px] md:h-[300px] relative">
+            <div className=" relative w-[220px] md:w-[320px] h-[120px] md:h-[220px] m-auto md:m-0  ">
               <Image
                 src={blog.image}
                 alt={blog.title}
-               fill
-                className="object-fit"
+              fill
+                className="object-fill md:object-fit"
                
               />
             </div>
 
             {/* Content */}
-            <div className="w-1/2 flex flex-col justify-between p-6">
+            <div className="md:w-1/2 flex flex-col justify-between p-6">
             
-              <div>
-                <h3 className="text-[16px] leading-[26px] font-normal text-[#0C0C0C] mb-2">{blog.title}</h3>
-                {getFirstNWords(blog.description, 8)}
+              <div className="text-[16px]">
+                <h3 className="text-[24px]  font-medium text-[#0C0C0C] mb-2">{blog.title}</h3>
+                {getFirstNWords(blog.description, 20)}
                 
               </div>
 
               <Link href={`/pages/blog/${blog.id}`}>
-                <button className="bg-[#D5A23E] mt-4 py-2 px-4 rounded-md text-white text-sm hover:opacity-90 ">
+                <button className="bg-[#D5A23E] mt-4 w-full md:w-auto py-2 px-4 rounded-md text-white text-sm hover:opacity-90 ">
                   View
                 </button>
               </Link>

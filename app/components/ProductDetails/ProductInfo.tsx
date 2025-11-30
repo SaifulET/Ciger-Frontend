@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Product } from "./product";
 import Link from "next/link";
 import { useCartStore } from "@/app/store/cartStore"; // Import from cartStore
@@ -15,6 +15,8 @@ interface Props {
 
 export default function ProductInfo({ product, selectedColor, setSelectedColor }: Props) {
   const { user } = useUserStore();
+  const [count,setCount] = useState(1)
+  const [msg,setMsg] = useState("")
   const userId = user || null;
   
   // Get cart state and actions from cartStore
@@ -48,9 +50,11 @@ export default function ProductInfo({ product, selectedColor, setSelectedColor }
 
   // Handle add to cart
   const handleAddToCart = async () => {
-    if (!product.inStock) return;
-    
-    try {
+    if (!product.available) return;
+    if(product.available>count){
+
+      for(let i=1;i<=count;i++){
+         try {
       await addItem(
         {
           _id: product._id ,
@@ -68,6 +72,11 @@ export default function ProductInfo({ product, selectedColor, setSelectedColor }
     } catch (error) {
       console.error('Failed to add to cart:', error);
     }
+      }
+
+    }
+    
+   
   };
 
   // Handle quantity increase
@@ -112,10 +121,32 @@ export default function ProductInfo({ product, selectedColor, setSelectedColor }
   return (
     <div className="space-y-6 bg-white p-[16px] md:p-[32px] rounded-lg shadow-sm ">
       {/* Badges */}
-      <div className="font-semibold text-[16px] leading-[24px] text-[#0C0C0C] flex-none order-0 flex-grow-0 ">
-        {product.category }{product.subCategory?'/':""}{product.subCategory}
-      </div>
-      <div className="flex gap-2 justify-end">
+      
+      
+
+      <h1 className="text-[40px] font-semibold leading-[48px]">{product.title}</h1>
+      <p className="text-[40px] font-semibold leading-[48px]">{product.name}</p>
+
+      {/* Color Variants */}
+      {product.colors && product.colors.length > 0 && (
+        <div>
+          <label className="block mb-2 font-bold text-gray-800">Color</label>
+          <div className="flex gap-3">
+            {product.colors.map((color) => (
+              <button
+                key={color}
+                onClick={() => setSelectedColor(color)}
+                className={`w-8 h-8 rounded-full border-2 transition ${selectedColor === color ? "border-yellow-600 w-9 h-9" : "border-gray-300"}`}
+              >
+                <div className={`w-full h-full rounded-full ${getColorStyle(color)}`} />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+
+<div className="flex gap-2 justify-start">
         {product.bestSeller && (
           <span className="flex justify-center items-center px-4 py-2 bg-[#cf2626] rounded-full text-white text-xs font-semibold">
             Best Seller
@@ -144,45 +175,23 @@ export default function ProductInfo({ product, selectedColor, setSelectedColor }
           )}
         </span>
       </div>
-
-      <h1 className="text-[40px] font-semibold leading-[48px]">{product.title}</h1>
-      <p className="text-[40px] font-semibold leading-[48px]">{product.name}</p>
-
-      {/* Color Variants */}
-      {product.colors && product.colors.length > 0 && (
-        <div>
-          <label className="block mb-2 font-bold text-gray-800">Color</label>
-          <div className="flex gap-3">
-            {product.colors.map((color) => (
-              <button
-                key={color}
-                onClick={() => setSelectedColor(color)}
-                className={`w-8 h-8 rounded-full border-2 transition ${selectedColor === color ? "border-yellow-600 w-9 h-9" : "border-gray-300"}`}
-              >
-                <div className={`w-full h-full rounded-full ${getColorStyle(color)}`} />
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Quantity */}
       <div>
         <label className="block mb-2 font-bold text-gray-800">Quantity</label>
         <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden w-40">
           <button 
-            onClick={handleDecreaseQuantity}
-            disabled={!isInCart || currentQuantity <= 1 || isSyncing}
+            onClick={()=>{if(count>1 ){setCount(count-1)}}}
+            disabled={!product.available}
             className="px-4 py-2 text-gray-600 bg-[#C9A040] hover:bg-[#b59853] disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
             −
           </button>
           <span className="flex-1 text-center font-bold">
-            {isInCart ? currentQuantity : 0}
+            {count}
           </span>
           <button 
-            onClick={handleIncreaseQuantity}
-            disabled={!product.inStock || isSyncing}
+            onClick={()=>setCount(count+1)}
+            disabled={!product.available}
             className="px-4 py-2 text-gray-600 bg-[#C9A040] hover:bg-[#b59853] disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
             +
@@ -210,13 +219,14 @@ export default function ProductInfo({ product, selectedColor, setSelectedColor }
              ${(product.price *100/product.discount).toFixed(2)}
           </span>
         )}
+        
       </div>
 
       {/* Add to Cart / Cart Actions */}
      
         <button 
           onClick={handleAddToCart} 
-          // disabled={!product.inStock || isSyncing}
+          disabled={!product.inStock || isSyncing}
           className="w-full bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 rounded-lg transition-colors"
         >
           {isSyncing ? "Adding..." : product.inStock ? "Add To Cart" : "Out of Stock"}
