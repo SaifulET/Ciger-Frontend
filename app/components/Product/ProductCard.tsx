@@ -47,14 +47,14 @@ const handleAddToCart = () => {
        <div className="flex-1 flex flex-col">
         {newbestSeller && (
           <div className="relative">
-            <h1 className="px-1 md:px-3 py-1 md:py-1.5 absolute top-[-16px] left-[-16px] bg-[#cf2626] rounded-tl-[12px] rounded-br-[12px] z-[3] text-white text-xs md:text-sm font-normal md:font-semibold text-center">
+            <h1 className="px-1 md:px-3 py-1 md:py-1.5 absolute top-[-16px] left-[-16px] bg-[#cf2626] rounded-tl-[12px] rounded-br-[12px] z-[3] text-gray-100 text-xs md:text-sm font-semibold text-center">
               Best Seller
             </h1>
           </div>
         )}
         {product?.newSeller && (
           <div className="relative">
-            <h1 className="px-1 md:px-3 py-1 md:py-1.5 absolute top-[-16px] right-[-16px] bg-[#6E1E2D] rounded-tr-[12px] rounded-bl-[12px] z-[3] text-white text-xs md:text-sm font-normal md:font-semibold text-center">
+            <h1 className="px-1 md:px-3 py-1 md:py-1.5 absolute top-[-16px] right-[-16px] bg-[#6E1E2D] rounded-tr-[12px] rounded-bl-[12px] z-[3] text-gray-100 text-xs md:text-sm font-semibold text-center">
               New
             </h1>
           </div>
