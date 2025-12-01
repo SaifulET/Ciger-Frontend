@@ -105,9 +105,9 @@ export default function ProductDetailPage() {
       <div className="flex items-center gap-2 pt-[16px] md:pt-[32px]">
   <Link href="/pages/products">Products</Link>
   <span>&gt;</span>
-  <Link href={`/pages/products?sub=${currentProduct.category?.replace(/\s+/g, "")}`}>{currentProduct.category}</Link>
+  <Link href={`/pages/products?sub=${currentProduct.category}`}>{currentProduct.category}</Link>
   <span>&gt;</span>
-  <Link href={`/pages/products?sub=${currentProduct.category?.replace(/\s+/g, "")}&subPro=${currentProduct.subCategory?.replace(/\s+/g, "")}`}>{currentProduct.subCategory}</Link>
+  <Link href={`/pages/products?sub=${currentProduct.category}&subPro=${currentProduct.subCategory}`}>{currentProduct.subCategory}</Link>
 </div>
         {/* Product Section */}
         <div className="pt-[16px] md:pt-[32px] grid grid-cols-1 lg:grid-cols-2 gap-[16px] md:gap-[32px]">
