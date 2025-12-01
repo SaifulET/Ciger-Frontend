@@ -39,11 +39,11 @@ const BlogCard: React.FC<BlogCardProps> = ({ product }) => {
   return (
     <div className="flex flex-col items-start border border-[#B0B0B0] rounded-[14px] overflow-hidden bg-white">
       {/* Image */}
-      <div className="relative w-full pt-[12px]">
+      <div className="relative w-full pt-0 md:pt-[12px]">
         <Image
           src={image}
           alt={title}
-          className="object-fill h-[220px] w-[255px] m-auto"
+          className="object-fill h-[220px] w-[255px] m-auto rounded"
           width={362}
           height={200}
           sizes="(max-width: 362px) 100vw, 362px"
