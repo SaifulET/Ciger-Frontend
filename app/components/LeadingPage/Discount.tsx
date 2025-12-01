@@ -11,7 +11,7 @@ import { ProductType } from "../Product/ProductType";
 
 type ProductApiItem = {
   _id: string;
-  name: string;
+  name?: string;
   images: string[];
   title: string;
   price: number;
@@ -23,8 +23,8 @@ type ProductApiItem = {
   newBestSeller: boolean;
   newSeller: boolean;
   brandId: {
-    _id: string;
-    name: string;
+    _id?: string;
+    name?: string;
   };
   available: number;
   inStock: boolean;
@@ -53,8 +53,8 @@ type ApiResponseWrapper = {
 
 type Product = {
   id: string;
-  brand: string;
-  name: string;
+  brand?: string;
+  name?: string;
   image: string;
   originalPrice?: number;
   currentPrice: number;
@@ -128,12 +128,14 @@ export default function BestSeller() {
       setError(null);
       
       const response: ApiResponseWrapper = await api.get("/product/getAllProduct?discount=true");
+      console.log(response,'131')
       
       if (response.status !== 200) {
         throw new Error(`Failed to fetch products: HTTP ${response.status}`);
       }
 
       const responseData = response.data;
+      console.log('138')
       
       if (!responseData.success) {
         throw new Error("API returned unsuccessful response");
@@ -170,8 +172,8 @@ export default function BestSeller() {
 
         return {
           id: item._id || `product-${Math.random().toString(36).substr(2, 9)}`,
-          brand: item.brandId.name || "Unknown Brand",
-          name: item.name || item.title || "Product Name",
+         brand: item?.brandId?.name ?? "Unknown Brand",
+          name: item?.name || item.title || "Product Name",
           image: imageUrl,
           originalPrice,
           currentPrice,
@@ -187,6 +189,7 @@ export default function BestSeller() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load products";
       setError(errorMessage);
+      console.log(err,"191")
       console.error("Error fetching products:", err);
     } finally {
       setLoading(false);
