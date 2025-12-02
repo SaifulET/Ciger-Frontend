@@ -54,18 +54,7 @@
           
         ]
       }
-      ,{
-        "label": "THC",
-        "link": "/pages/products?sub=THC",
-        "subItems": [
-          { "label": "Flowers", "link": "/pages/products?sub=THC&subPro=Flowers" },
-          { "label": "PreRolls", "link": "/pages/products?sub=THC&subPro=PreRolls" },
-          { "label": "Disposables/Cartridges", "link": "/pages/products?sub=THC&subPro=Disposables/Cartridges" },
-          { "label": "Edibles", "link": "/pages/products?sub=THC&subPro=Edibles" },
-          { "label": "Concentrates", "link": "/pages/products?sub=THC&subPro=concentrates" }
-          
-        ]
-      }
+      
       ,{
   "label": "Roll Your Own",
   "link": "/pages/products?sub=Roll Your Own",
