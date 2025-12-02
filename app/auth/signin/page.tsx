@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import logo from "@/public/logo1.svg";
 import useUserStore from "@/app/store/userStore";
+import { useCartStore } from "@/app/store/cartStore";
+
 import Cookies from "js-cookie";
 
 const SignInPage: NextPage = () => {
@@ -16,6 +18,9 @@ const SignInPage: NextPage = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const {  UserLoginRequest } = useUserStore();
+
+   const {initializeCart
+  } = useCartStore();
   const router = useRouter();
 
   // Redirect if already logged in
@@ -42,6 +47,7 @@ const SignInPage: NextPage = () => {
 
       if (res.status === "success") {
         setErrorMessage("");
+       
         // The redirect will be handled by the useEffect when isLoggedIn changes
       } else {
         setErrorMessage(res.message || "Login failed. Please try again.");

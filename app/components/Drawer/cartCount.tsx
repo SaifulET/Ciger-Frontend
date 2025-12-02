@@ -48,6 +48,7 @@ export default function CartDrawer() {
 
   // Initialize cart when component mounts or user changes
   useEffect(() => {
+    
     initializeCart(userId);
   }, [userId, initializeCart]);
 

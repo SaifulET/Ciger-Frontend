@@ -105,7 +105,7 @@ const useUserStore = create<UserStoreState>()(
             email,
             password,
           });
-console.log(res.data.data,'108')
+          console.log(res.data.data,'108')
           Cookies.set("token", res.data.token);
           set({ user: res.data.data._id });
           set({ isLoggedIn: true });

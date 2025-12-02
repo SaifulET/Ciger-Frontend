@@ -2,7 +2,7 @@
 import api from '@/lib/axios';
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-
+import { ObjectId } from 'bson';
 // Helper function to parse price strings
 const parsePrice = (price: string | number): number => {
   if (typeof price === 'number') return price;
@@ -52,8 +52,9 @@ interface CartState {
   removeItem: (cartItemId: string, userId: string | null) => Promise<void>;
   clearCart: (userId: string | null) => Promise<void>;
   syncGuestCartToUser: (userId: string) => Promise<void>;
-  
+   ClearStorage:()=> Promise<void>;
   // Computed
+
   getCartCount: () => number;
   getSubtotal: () => number;
   getFormattedSubtotal: () => string;
@@ -72,6 +73,7 @@ export const useCartStore = create<CartState>()(
         set({ isLoading: true });
         try {
           if (userId) {
+            console.log(userId,"75")
             const response = await api.get(`/cart/getUserCart/${userId}`);
             const result = await response.data;
             if (result.success) {
@@ -133,6 +135,7 @@ export const useCartStore = create<CartState>()(
             set({ isSyncing: false });
           }
         } else {
+          let userId;
           const existingItem = items.find(item => item.productId._id === product._id);
           const price = (product.price);
           
@@ -148,10 +151,11 @@ export const useCartStore = create<CartState>()(
                 : item
             );
             set({ items: updatedItems });
+            userId=updatedItems[0].userId;
           } else {
             const newItem: CartItem = {
-              _id: `guest-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-              userId: 'guest',
+              _id: `${Date.now()}${Math.random().toString(36).substr(2, 9)}`,
+              userId: new ObjectId().toHexString(),
               productId: {
                 ...product,
                 price: price,
@@ -164,8 +168,34 @@ export const useCartStore = create<CartState>()(
               total: price
             };
             set({ items: [...items, newItem] });
+            userId= newItem?.userId;
           }
-        }
+          
+
+ try {
+  console.log("abc");
+console.log(userId);
+            const response = await api.post('/cart/createCart', {
+              userId: userId,
+              productId: product._id,
+              quantity:  1
+            });
+            
+            const result = await response.data;
+            
+            if (result.success) {
+              await get().initializeCart(userId);
+            }
+          } catch (error) {
+            console.error('Failed to add item:', error);
+          } finally {
+            set({ isSyncing: false });
+          }
+
+
+        
+}
+
       },
 
       // Update item quantity - FIXED THIS FUNCTION
@@ -305,6 +335,9 @@ export const useCartStore = create<CartState>()(
         const { items } = get();
         const item = items.find(item => item.productId._id === productId);
         return item ? (item.quantity || 0) : 0;
+      },
+      ClearStorage: async ()=>{
+         set({ items: [] });
       }
     }),
     {

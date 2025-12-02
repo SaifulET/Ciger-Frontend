@@ -28,6 +28,8 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useRouter, usePathname } from "next/navigation";
 import useUserStore from "@/app/store/userStore";
+import { useCartStore } from "@/app/store/cartStore";
+
 
 interface SubItem {
   label: string;
@@ -50,7 +52,7 @@ const Navbar: React.FC = () => {
   const [isClient, setIsClient] = useState<boolean>(false);
   const [isProduct, setIsProduct] = useState<boolean>(false);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
-
+const { ClearStorage}=useCartStore()
   const { user, isLogin, UserLogoutRequest,userInfo } = useUserStore();
   console.log(user,"54")
   const router = useRouter();
@@ -175,6 +177,7 @@ const Navbar: React.FC = () => {
 
   // Handle logout
   const handleLogout = async () => {
+    await  ClearStorage()
     await UserLogoutRequest();
     setDesktopProfileOpen(false);
     setMobileProfileOpen(false);
