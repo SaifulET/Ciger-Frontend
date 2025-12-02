@@ -303,7 +303,7 @@ export default function ProductCarousel() {
         {/* Header */}
         <div className="flex pb-[32px]">
           <h2 className="text-[28px] font-bold text-gray-900 flex-1 flex justify-center text-center pl-[48px] md:pl-[32px]">
-            Brands
+            Featured Brands
           </h2>
 
           <Link

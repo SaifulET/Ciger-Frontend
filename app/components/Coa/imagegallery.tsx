@@ -36,7 +36,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
             <img 
               src={image.image} 
               alt={image.name}
-              className="object-fill  transition-transform duration-300 group-hover:scale-105"
+              className="object-fit "
               loading="lazy"
             />
             <div className="absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/10" />
@@ -56,7 +56,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
     <h2 className="pb-[32px] text-[24px] font-semibold text-gray-800 text-center ">
       Pre-Rolls
     </h2>
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:gap-10 lg:grid-cols-3 xl:grid-cols-4 2xl:gap-12">
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:gap-12 lg:grid-cols-3 xl:grid-cols-4 2xl:gap-14">
       {images.slice(3, 7).map((image) => (
         <div 
           key={image.id}
@@ -67,7 +67,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
             <img 
               src={image.image} 
               alt={image.name}
-              className="object-fit m-auto transition-transform duration-300 group-hover:scale-105  pt-[100px]"
+              className="object-fit m-auto  pt-[100px]"
               loading="lazy"
             />
             <div className="absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/10" />

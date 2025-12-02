@@ -1,6 +1,5 @@
 import React from 'react';
 import ImageGallery from './imagegallery';
-import excelbis from "@/public/excelbis.png"
 // Your JSON data
 const imageData = {
   imageGallery: [

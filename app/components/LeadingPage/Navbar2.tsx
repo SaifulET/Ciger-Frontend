@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Search, ChevronDown, Menu, X, User } from "lucide-react";
@@ -29,13 +29,21 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { useRouter, usePathname } from "next/navigation";
 import useUserStore from "@/app/store/userStore";
 import { useCartStore } from "@/app/store/cartStore";
-
+import { useProductStore } from "@/app/store/productStore";
 
 interface SubItem {
   label: string;
   link: string;
   subItems?: SubItem[];
   icon?: string;
+}
+
+interface SearchSuggestion {
+  id: number;
+  name: string;
+  brand: string;
+  image: string;
+  category: string;
 }
 
 const Navbar: React.FC = () => {
@@ -50,20 +58,140 @@ const Navbar: React.FC = () => {
     {}
   );
   const [isClient, setIsClient] = useState<boolean>(false);
-  const [isProduct, setIsProduct] = useState<boolean>(false);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
-const { ClearStorage}=useCartStore()
-  const { user, isLogin, UserLogoutRequest,userInfo } = useUserStore();
-  console.log(user,"54")
+  const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
+  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState<number>(-1);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState<boolean>(false);
+  
+  const { ClearStorage } = useCartStore();
+  const { user, isLogin, UserLogoutRequest, userInfo } = useUserStore();
+  const { products, fetchAllProducts } = useProductStore();
+  
   const router = useRouter();
   const pathname = usePathname();
+  
+  const searchRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+
+  // Fetch products on mount
+  useEffect(() => {
+    fetchAllProducts();
+  }, [fetchAllProducts]);
+
+  // Filter suggestions based on input
+  const filterSuggestions = useCallback((searchTerm: string): SearchSuggestion[] => {
+    if (!searchTerm.trim() || products.length === 0) return [];
+    
+    const lowerCaseTerm = searchTerm.toLowerCase();
+    
+    // Filter products by name, brand, or category
+    const filtered = products
+      .filter(product => {
+        return (
+          product.name.toLowerCase().includes(lowerCaseTerm) ||
+          product.brand.toLowerCase().includes(lowerCaseTerm) ||
+          product.category.toLowerCase().includes(lowerCaseTerm)
+        );
+      })
+      .slice(0, 10) // Get top 10 matches
+      .map(product => ({
+        id: product.id,
+        name: product.name,
+        brand: product.brand,
+        image: product.image,
+        category: product.category,
+      }));
+    
+    return filtered;
+  }, [products]);
+
+  // Update suggestions when input changes
+  useEffect(() => {
+    if (value.trim()) {
+      setIsLoadingSuggestions(true);
+      const timer = setTimeout(() => {
+        const filtered = filterSuggestions(value);
+        setSuggestions(filtered);
+        setSelectedSuggestionIndex(-1);
+        setShowSuggestions(true);
+        setIsLoadingSuggestions(false);
+      }, 300); // Debounce for 300ms
+      
+      return () => clearTimeout(timer);
+    } else {
+      setShowSuggestions(false);
+      setSuggestions([]);
+    }
+  }, [value, filterSuggestions]);
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Handle keyboard navigation in suggestions
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSuggestions || suggestions.length === 0) {
+      if (e.key === "Enter" && value.trim() !== "") {
+        handleSearch();
+      }
+      return;
+    }
+    
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        setSelectedSuggestionIndex(prev => 
+          prev < suggestions.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        setSelectedSuggestionIndex(prev => prev > 0 ? prev - 1 : prev);
+        break;
+      case "Enter":
+        e.preventDefault();
+        if (selectedSuggestionIndex >= 0) {
+          const selected = suggestions[selectedSuggestionIndex];
+          router.push(`/pages/products/${selected.id}`);
+          setValue("");
+          setShowSuggestions(false);
+        } else {
+          handleSearch();
+        }
+        break;
+      case "Escape":
+        setShowSuggestions(false);
+        break;
+    }
+  };
+
+  // Scroll selected suggestion into view
+  useEffect(() => {
+    if (selectedSuggestionIndex >= 0 && suggestionsRef.current) {
+      const selectedElement = suggestionsRef.current.children[selectedSuggestionIndex] as HTMLElement;
+      if (selectedElement) {
+        selectedElement.scrollIntoView({
+          block: "nearest",
+          behavior: "smooth"
+        });
+      }
+    }
+  }, [selectedSuggestionIndex]);
 
   // Set isClient to true after component mounts on client
   useEffect(() => {
     setIsClient(true);
-    
   }, []);
-  console.log(userInfo,"64")
 
   // Prevent body scroll when mobile modal is open
   useEffect(() => {
@@ -111,11 +239,24 @@ const { ClearStorage}=useCartStore()
     return false;
   };
 
-  const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && value.trim() !== "") {
+  const handleSearch = () => {
+    if (value.trim() !== "") {
       router.push(`/pages/products?keyword=${encodeURIComponent(value)}`);
       setValue("");
+      setShowSuggestions(false);
     }
+  };
+
+  const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: SearchSuggestion) => {
+    router.push(`/pages/products/${suggestion.id}`);
+    setValue("");
+    setShowSuggestions(false);
   };
 
   const handleMenuClickDesktop = (item: SubItem) => {
@@ -151,9 +292,13 @@ const { ClearStorage}=useCartStore()
       setMobileProfileOpen(false);
       setMobileModalOpen(false);
       setMobileCartOpen(false);
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
     } else {
       setMobileSearchOpen(false);
       setValue("");
+      setShowSuggestions(false);
     }
     setTimeout(() => setIsAnimating(false), 300);
   };
@@ -168,6 +313,7 @@ const { ClearStorage}=useCartStore()
       setMobileProfileOpen(false);
       setMobileCartOpen(false);
       setMobileSearchOpen(false);
+      setShowSuggestions(false);
     } else {
       setMobileModalOpen(false);
       setExpandedItems({});
@@ -177,7 +323,7 @@ const { ClearStorage}=useCartStore()
 
   // Handle logout
   const handleLogout = async () => {
-    await  ClearStorage()
+    await ClearStorage();
     await UserLogoutRequest();
     setDesktopProfileOpen(false);
     setMobileProfileOpen(false);
@@ -190,7 +336,7 @@ const { ClearStorage}=useCartStore()
       Brands: BrandfetchIcon,
       Products: PackageIcon,
       "Contact Us": Mail01FreeIcons,
-      "COA":SecurityValidationIcon,
+      "COA": SecurityValidationIcon,
       Blogs: File01Icon,
       Discounts: Discount01FreeIcons,
     };
@@ -223,12 +369,14 @@ const { ClearStorage}=useCartStore()
 
         {/* Desktop: search + buttons + cart */}
         <div className="hidden lg:flex items-center justify-between gap-3 md:gap-4 w-full flex-nowrap">
-          <div className="relative flex-grow ml-0 md:ml-0 max-h-[48px]">
+          <div ref={searchRef} className="relative flex-grow ml-0 md:ml-0 max-h-[48px]">
             <input
+              ref={inputRef}
               type="text"
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              onKeyDown={handleSearchKeyPress}
+              onKeyDown={handleKeyDown}
+              onFocus={() => value.trim() && setShowSuggestions(true)}
               className="w-full h-[48px] focus:h-11 px-4 rounded-xl border border-gray-300 bg-[#F5F5F5] text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
             />
             {!value && (
@@ -241,6 +389,60 @@ const { ClearStorage}=useCartStore()
                 </div>
               </div>
             )}
+
+            {/* Desktop Search Suggestions */}
+            {showSuggestions && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-64 overflow-hidden">
+                <div 
+                  ref={suggestionsRef}
+                  className="max-h-64 overflow-y-auto"
+                >
+                  {isLoadingSuggestions ? (
+                    <div className="p-4 text-center text-gray-500">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-800 mx-auto"></div>
+                      <p className="mt-2">Loading suggestions...</p>
+                    </div>
+                  ) : suggestions.length > 0 ? (
+                    <>
+                      {suggestions.slice(0, 5).map((suggestion, index) => (
+                        <div
+                          key={suggestion.id}
+                          className={`flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
+                            index === selectedSuggestionIndex ? "bg-gray-100" : ""
+                          } ${index < suggestions.length - 1 ? "border-b border-gray-100" : ""}`}
+                          onClick={() => handleSuggestionClick(suggestion)}
+                          onMouseEnter={() => setSelectedSuggestionIndex(index)}
+                        >
+                          <div className="w-10 h-10 relative flex-shrink-0">
+                            <Image
+                              src={suggestion.image || '/placeholder-product.png'}
+                              alt={suggestion.name}
+                              fill
+                              className="object-cover rounded"
+                              sizes="40px"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-gray-800 truncate">{suggestion.name}</p>
+                            <p className="text-sm text-gray-500 truncate">{suggestion.brand} • {suggestion.category}</p>
+                          </div>
+                          <ChevronDown size={16} className="transform -rotate-90 text-gray-400" />
+                        </div>
+                      ))}
+                      {suggestions.length > 5 && (
+                        <div className="text-center p-3 text-gray-600 border-t border-gray-100">
+                          <p className="text-sm">And {suggestions.length - 5} more suggestions...</p>
+                        </div>
+                      )}
+                    </>
+                  ) : value.trim() && (
+                    <div className="p-4 text-center text-gray-500">
+                      <p>No products found matching {value}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Buttons */}
@@ -248,7 +450,6 @@ const { ClearStorage}=useCartStore()
             {/* FIXED: Use isLoggedIn from Zustand store */}
             {!Cookies.get('token') ? (
               <>
-              
                 <Link href="/auth/signup">
                   <button
                     onClick={() => setMobileProfileOpen(false)}
@@ -271,20 +472,18 @@ const { ClearStorage}=useCartStore()
                   className="flex items-center gap-2 text-base font-semibold px-6 md:px-8 py-3 md:py-5 rounded-lg text-[#0C0C0C] transition cursor-pointer"
                 >
                   <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center">
-                    {userInfo?.image && <div>
-                       <Image
-                                    src={userInfo?.image}
-                                    alt={`profile`}
-                                    width={40}
-                                    height={40}
-                                    className="object-fit"
-                                    
-                                  />
-                    </div> }
-                    {!userInfo?.image && <div>
-                       <User size={20} />
-                    </div> }
-                  
+                    {userInfo?.image && (
+                      <Image
+                        src={userInfo?.image}
+                        alt={`profile`}
+                        width={40}
+                        height={40}
+                        className="object-fit"
+                      />
+                    )}
+                    {!userInfo?.image && (
+                      <User size={20} />
+                    )}
                   </div>
                   <span>{userInfo?.firstName}</span>
                   <ChevronDown
@@ -352,7 +551,7 @@ const { ClearStorage}=useCartStore()
           <div className="px-[16px] transition-all duration-300 w-full">
             {mobileSearchOpen ? (
               // Full-width search bar with X - with smooth transition
-              <div className="w-full">
+              <div className="w-full" ref={searchRef}>
                 <div className="flex justify-between items-center">
                   {/* Hamburger - 5 columns (left) */}
                   <div className="flex justify-start gap-[8px]">
@@ -414,6 +613,7 @@ const { ClearStorage}=useCartStore()
                           setMobileProfileOpen(false);
                           setMobileModalOpen(false);
                           setMobileSearchOpen(false);
+                          setShowSuggestions(false);
                         }}
                       >
                         <CartPage />
@@ -429,6 +629,7 @@ const { ClearStorage}=useCartStore()
                             setMobileModalOpen(false);
                             setMobileCartOpen(false);
                             setMobileSearchOpen(false);
+                            setShowSuggestions(false);
                           }}
                         >
                           <HugeiconsIcon icon={UserIcon} />
@@ -509,10 +710,12 @@ const { ClearStorage}=useCartStore()
                 {/* Search input with slide-in animation */}
                 <div className="flex w-full gap-2 transition-all duration-300 mb-4 animate-slideDown">
                   <input
+                    ref={inputRef}
                     type="text"
                     value={value}
                     onChange={(e) => setValue(e.target.value)}
-                    onKeyDown={handleSearchKeyPress}
+                    onKeyDown={handleKeyDown}
+                    onFocus={() => value.trim() && setShowSuggestions(true)}
                     placeholder="Search Product or Brand"
                     className="w-full h-[48px] px-4 rounded-lg border border-gray-300 bg-[#EDEDED] text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all"
                     autoFocus
@@ -525,6 +728,60 @@ const { ClearStorage}=useCartStore()
                     <HugeiconsIcon icon={MultiplicationSignIcon} />
                   </button>
                 </div>
+
+                {/* Mobile Search Suggestions */}
+                {showSuggestions && (
+                  <div className="absolute left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-64 overflow-hidden">
+                    <div 
+                      ref={suggestionsRef}
+                      className="max-h-64 overflow-y-auto"
+                    >
+                      {isLoadingSuggestions ? (
+                        <div className="p-4 text-center text-gray-500">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-800 mx-auto"></div>
+                          <p className="mt-2">Loading suggestions...</p>
+                        </div>
+                      ) : suggestions.length > 0 ? (
+                        <>
+                          {suggestions.map((suggestion, index) => (
+                            <div
+                              key={suggestion.id}
+                              className={`flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
+                                index === selectedSuggestionIndex ? "bg-gray-100" : ""
+                              } ${index < suggestions.length - 1 ? "border-b border-gray-100" : ""}`}
+                              onClick={() => handleSuggestionClick(suggestion)}
+                              onMouseEnter={() => setSelectedSuggestionIndex(index)}
+                            >
+                              <div className="w-10 h-10 relative flex-shrink-0">
+                                <Image
+                                  src={suggestion.image || '/placeholder-product.png'}
+                                  alt={suggestion.name}
+                                  fill
+                                  className="object-cover rounded"
+                                  sizes="40px"
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-gray-800 truncate">{suggestion.name}</p>
+                                <p className="text-sm text-gray-500 truncate">{suggestion.brand} • {suggestion.category}</p>
+                              </div>
+                              <ChevronDown size={16} className="transform -rotate-90 text-gray-400" />
+                            </div>
+                          ))}
+                          {suggestions.length > 5 && (
+                            <div className="text-center p-3 text-gray-600 border-t border-gray-100">
+                              <p className="text-sm">And {suggestions.length - 5} more suggestions...</p>
+                            </div>
+                          )}
+                        </>
+                      ) : value.trim() && (
+                        <div className="p-4 text-center text-gray-500">
+                          <p>No products found matching {value}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               // Grid container with 12 columns
@@ -589,6 +846,7 @@ const { ClearStorage}=useCartStore()
                         setMobileProfileOpen(false);
                         setMobileModalOpen(false);
                         setMobileSearchOpen(false);
+                        setShowSuggestions(false);
                       }}
                     >
                       <CartPage />
@@ -604,6 +862,7 @@ const { ClearStorage}=useCartStore()
                           setMobileModalOpen(false);
                           setMobileCartOpen(false);
                           setMobileSearchOpen(false);
+                          setShowSuggestions(false);
                         }}
                       >
                         <HugeiconsIcon icon={UserIcon} />
@@ -934,11 +1193,24 @@ const { ClearStorage}=useCartStore()
             transform: translateX(0);
           }
         }
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
         .animate-fadeIn {
           animation: fadeIn 0.3s ease-out;
         }
         .animate-slideInLeft {
           animation: slideInLeft 0.3s ease-out;
+        }
+        .animate-slideDown {
+          animation: slideDown 0.3s ease-out;
         }
       `}</style>
     </header>
