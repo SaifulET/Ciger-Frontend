@@ -68,7 +68,7 @@
     ]
   },
   { "label": "Discounts", "link": "/pages/discounts" },
-  { "label": "COA", "link": "/pages/coa" },
+ 
 
   { "label": "Blogs", "link": "/pages/blog" },
   { "label": "Contact Us", "link": "/pages/contact" }
