@@ -20,7 +20,9 @@ export default function LayoutWrapper({ children }: { children: ReactNode }) {
       </div>
       <div className="">
         <Footer/>
+
       </div>
+
     </>
   );
 }

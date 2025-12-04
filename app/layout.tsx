@@ -1,8 +1,9 @@
+
 import type { Metadata } from "next";
 import { ReactNode } from "react";
 import { Poppins } from "next/font/google";
 import "./globals.css";
-import Script from "next/script";
+
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -18,13 +19,15 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
   <html lang="en" className={poppins.className} suppressHydrationWarning>
+   
     <body suppressHydrationWarning>
       <div  className="bg-white text-[#212121]">
+          
         
         {children}
-        <Script src="https://cdn.agechecker.net/static/age-gate/v1/age-gate.js"></Script>
+        
       </div>
-      
+
     </body>
   </html>
 );
