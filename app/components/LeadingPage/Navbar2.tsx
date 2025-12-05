@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Search, ChevronDown, Menu, X, User } from "lucide-react";
-import logo from "@/public/logo1.svg";
+import logo from "@/public/logol.png";
+// import logo from "@/public/logo1.svg";
 import menuData from "@/Data/MenuItems.json";
 import CartPage from "../Drawer/cartCount";
 import Cookies from "js-cookie";
@@ -360,8 +361,9 @@ const Navbar: React.FC = () => {
         <Link href="/pages/">
           <div className="flex-shrink-0">
             <Image
-              className="object-cover w-0 lg:w-[220px] lg:h-[30px]"
+              className="object-cover scale-150  w-0  lg:w-[220px] lg:h-[60px]"
               src={logo}
+           
               alt="Logo"
             />
           </div>
@@ -583,9 +585,10 @@ const Navbar: React.FC = () => {
                     <Link href="/pages/">
                       <div className="flex justify-center items-center">
                         <Image
-                          className="object-cover w-[220px] h-auto"
+                         className="object-cover w-[220px] h-[50px] flex item-center mb-[10px]"
                           src={logo}
                           alt="Logo"
+                         
                         />
                       </div>
                     </Link>
@@ -816,7 +819,7 @@ const Navbar: React.FC = () => {
                   <Link href="/pages/">
                     <div className="flex justify-center items-center">
                       <Image
-                        className="object-cover w-[220px] h-auto"
+                        className="object-cover w-[220px] h-[50px] flex item-center mb-[10px]"
                         src={logo}
                         alt="Logo"
                       />

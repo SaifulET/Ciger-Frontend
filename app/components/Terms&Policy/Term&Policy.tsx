@@ -271,11 +271,116 @@ const PrivacyPolicy = () => {
         </div>
 
         {/* Last Updated */}
-        <div className="mt-12 pt-6 border-t border-gray-200">
-          <p className="text-sm text-gray-500">
-            Last Updated: November 27, 2025
-          </p>
-        </div>
+         <div className=" space-y-4 text-base leading-relaxed">
+      <h2 className="text-2xl font-bold">Update December 4th 2025</h2>
+
+      <p>
+        As a result of the PACT Act, USPS can no longer ship vaping products. Please read our  <a href="https://www.electrictobacconist.com/usps-vape-mail-ban-i285"className="underline text-blue-500">Vape Mail Ban</a> page for more information. Electric Tobacconist complies with all
+        federal and state-specific laws and regulations. Please see below for a list of
+        state-based restrictions related to vaping products.
+      </p>
+
+      <h3 className="text-xl font-semibold">We are currently unable to ship to the following states:</h3>
+      <ul className="list-disc ml-6 space-y-1">
+        <li>Alaska</li>
+        <li>Arkansas</li>
+        <li>Connecticut</li>
+        <li>Colorado</li>
+        <li>Georgia</li>
+        <li>Hawaii</li>
+        <li>Maine</li>
+        <li>Nebraska</li>
+        <li>New Hampshire</li>
+        <li>New York</li>
+        <li>North Carolina</li>
+        <li>Ohio</li>
+        <li>Oregon</li>
+        <li>South Carolina</li>
+        <li>South Dakota</li>
+        <li>Utah</li>
+        <li>Vermont</li>
+      </ul>
+
+      <h3 className="text-xl font-semibold">We are also unable to ship to U.S. territories:</h3>
+      <ul className="list-disc ml-6 space-y-1">
+        <li>Guam</li>
+        <li>North Marianas</li>
+        <li>American Samoa</li>
+        <li>Puerto Rico</li>
+        <li>U.S. Virgin Islands</li>
+      </ul>
+
+      <p>We cannot ship to APO/FPO/AE military addresses.</p>
+
+      <h3 className="text-xl font-semibold">States allowing only certain brands (JUUL, blu, VUSE, NJOY & Logic):</h3>
+      <ul className="list-disc ml-6 space-y-1">
+        <li>Arizona</li>
+        <li>California (excluding blu)</li>
+        <li>Connecticut</li>
+        <li>Delaware</li>
+        <li>DC</li>
+        <li>Illinois</li>
+        <li>Indiana</li>
+        <li>Maryland</li>
+        <li>Massachusetts</li>
+        <li>Michigan</li>
+        <li>Minnesota</li>
+        <li>Nevada</li>
+        <li>New Jersey</li>
+        <li>New Mexico</li>
+        <li>Pennsylvania</li>
+        <li>Rhode Island</li>
+        <li>Virginia</li>
+        <li>Washington</li>
+        <li>Wisconsin</li>
+      </ul>
+
+      <h3 className="text-xl font-semibold">States/Cities prohibiting discounts/coupons:</h3>
+      <ul className="list-disc ml-6 space-y-1">
+        <li>Massachusetts</li>
+        <li>New Jersey</li>
+      </ul>
+
+      <h3 className="text-xl font-semibold">Additional Restrictions and Flavor Bans:</h3><br></br>
+      <p className=" space-y-1">
+        <p>Alabama has banned the sale of all tobacco-free (i.e., synthetic) nicotine products.</p><br></br>
+        <p>California has banned the sale of flavored e-liquid products, including menthol.</p><br></br>
+        <p>Illinois has restricted the sale of products from brands that have received a PMTA Marketing Denial Order (MDO) from the FDA. See the <a href="https://www.fda.gov/tobacco-products/market-and-distribute-tobacco-product/tobacco-products-marketing-orders#Marketing%20Denial"className="underline text-blue-500"target="_blank">FDA&apos;s Tobacco Products Marketing Orders page</a> for more information. We also no longer ship to Chicago, IL.</p><br></br>
+        <p>Massachusetts has enacted a temporary ban on the online sale of flavored nicotine products, including menthol, and any product with a nicotine strength over 35mg.</p><br></br>
+        <p>Maryland has banned the sale of flavored disposables.</p><br></br>
+        <p>Minnesota has limited the sale of products into the state to those that have received a PMTA Marketing Granted Order. Please visit <a href="https://www.electrictobacconist.com/fda-premarket-tobacco-product-marketing-granted-orders" className="underline text-blue-500"target="_blank">the FDA Marketing Granted Orders page</a>  for additional information.</p><br></br>
+        <p>New Jersey has banned the sale of flavored nicotine products, including menthol and any nicotine-free items (excluding tobacco).</p>
+        <p>New York prohibits the online sale of vaping products that contain liquid.</p><br></br>
+        <p>Philadelphia, Pennsylvania, has banned flavored nicotine products, including menthol. This ban does not include nicotine-free liquid. The city also prohibits the online sale of e-liquid containing nicotine salt.</p><br></br>
+        <p>San Francisco, California, has banned the sale of all vaping products.</p><br></br>
+        <p>Wisconsin has limited sales to products listed on the <a href="https://www.revenue.wi.gov/Pages/OnlineServices/electronic-vaping-device-directory.aspx#"target="_blank" className="text-blue-500 underline">Wisconsin Electronic Vaping Device Directory.</a></p><br></br>
+      </p>
+
+      <h3 className="text-xl font-semibold">Flavored vape bans enacted in these states/cities:</h3><br></br>
+      <ul className="list-disc ml-6 space-y-1">
+        <li>Aspen, Colorado*</li>
+        <li>Boulder, Colorado*</li>
+        <li>Carbondale, Colorado</li>
+        <li>California*</li>
+        <li>Rhode Island*</li>
+      </ul>
+      <p>*Includes menthol</p>
+
+      <p>Please note: Due to Proposition EE, we have temporarily suspended sales to all cities in Colorado.</p>
+
+      <p>If you are in California, you will receive a phone call from us after 5 PM to confirm your order.</p>
+
+      <p>If you have any questions, please reach out to us for more information.</p>
+
+      <p>
+        Flavored products are defined as any product that is not &quot;tobacco&quot; flavored. If the
+        product you are trying to purchase is restricted in your state/locality, checkout
+        will prevent your order until the restricted product is removed.
+      </p>
+    </div>
+    
+
+
       </div>
     </div>
   );
