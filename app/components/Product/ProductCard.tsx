@@ -75,7 +75,7 @@ const handleAddToCart = () => {
           <h3 className="font-semibold text-gray-900 text-[16px] line-clamp-2">{product?.name}</h3>
           <div className="flex-col md:flex-row flex items-baseline gap-0 md:gap-1">
             <span className="text-[24px] font-semibold text-gray-900">${(product?.currentPrice).toFixed(2)   }</span>
-            {product?.originalPrice && <span className="text-[14px] font-semibold text-gray-400 line-through">${(product?.originalPrice).toFixed(2)   }</span>}
+            {product?.originalPrice !== undefined && product.originalPrice > 0   && <span className="text-[14px] font-semibold text-gray-400 line-through">${(product?.originalPrice).toFixed(2)   }</span>}
           </div>
         </div>
       </div>
