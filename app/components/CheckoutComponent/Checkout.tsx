@@ -1,11 +1,12 @@
-"use client"
-import { useEffect, useState } from 'react';
-import mastercard from "@/public/mastercard.svg"
-import visacard from "@/public/visaelectron.svg"
-import Image from 'next/image';
-import api from '@/lib/axios';
+"use client";
+import { useEffect, useState } from "react";
+import mastercard from "@/public/mastercard.svg";
+import visacard from "@/public/visaelectron.svg";
+import Image from "next/image";
+import api from "@/lib/axios";
+import useUserStore from "@/app/store/userStore";
 
-// Define types first
+// Define types for form data, errors, etc.
 interface FormData {
   email: string;
   firstName: string;
@@ -40,304 +41,149 @@ interface Errors {
   cardCountry?: string;
 }
 
-interface AgeVerificationResult {
-  status: 'verified' | 'underage' | 'failed';
-  timestamp: string;
-  verificationId?: string;
-  ageVerified?: number;
-  country?: string;
-  region?: string;
-  metadata?: Record<string, unknown>;
-}
-
-interface VerifyAgeResponse {
-  valid: boolean;
-  message?: string;
-  userAge?: number;
-  expiresAt?: string;
-}
-
 const CheckoutPage = () => {
+  const {user} =useUserStore()
+  console.log(user)
   const [formData, setFormData] = useState<FormData>({
-    email: '',
-    firstName: '',
-    lastName: '',
-    country: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    address: '',
-    apartment: '',
-    phone: '',
+    email: "",
+    firstName: "",
+    lastName: "",
+    country: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    address: "",
+    apartment: "",
+    phone: "",
     saveInfo: false,
-    birthMonth: '',
-    birthDay: '',
-    birthYear: '',
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
-    nameOnCard: '',
-    cardCountry: '',
-    discountCode: '',
+    birthMonth: "",
+    birthDay: "",
+    birthYear: "",
+    cardNumber: "",
+    expiryDate: "",
+    cvv: "",
+    nameOnCard: "",
+    cardCountry: "",
+    discountCode: "",
   });
 
   const [errors, setErrors] = useState<Errors>({});
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isAgeVerified, setIsAgeVerified] = useState(false);
 
-
-
-
+  // Dynamically load Collect.js script
   useEffect(() => {
-    // AgeChecker configuration
-    window.AgeCheckerConfig = {
-      element: "#checkout-button",  // ID of the button to trigger the popup
-      key: "LtE6WKMhRT41WntUJhk5oiEpuYl6g6SI",  // Replace with your actual AgeChecker API key
-      background: "rgba(0, 0, 0, 0.7)",  // Custom background for popup
-      font: "'Muli', 'Arial', sans-serif",  // Custom font for popup text
-      accent_color: "linear-gradient(135deg, #7fc24c 0%, #04a1bf 100%)",  // Custom button color
-      mode: "auto",  // Auto-show the popup when the page loads
-
-      // Optionally, you can add event handlers to customize behavior
-      onstatuschanged: (verification) => {
-        console.log("abc")
-        if (verification.status === "accepted") {
-          console.log("User is verified as adult");
-          setIsAgeVerified(true)
-          // Proceed with checkout, or other actions
-        } else {
-          console.log("User is denied age verification");
-          setIsAgeVerified(false)
-          // Handle age denial, redirect, or show an error
-        }
-      },
-    };
-
-    // Dynamically load the AgeChecker script
     const script = document.createElement("script");
-    script.src = "https://cdn.agechecker.net/static/popup/v1/popup.js";
-    script.crossOrigin = "anonymous";
-    script.onerror = () => {
-      window.location.href = "https://agechecker.net/loaderror";  // Error page if script fails to load
+    script.src = "https://ecrypt.transactiongateway.com/token/Collect.js"; // URL for Collect.js
+    script.setAttribute("data-tokenization-key", "your-tokenization-key-here"); // Replace with your actual tokenization key
+    script.async = true;
+    document.head.appendChild(script);
+
+    script.onload = () => {
+      if (window.CollectJS) {
+        window.CollectJS.configure({
+          dataTokenizationKey: "your-tokenization-key-here", // Your tokenization key
+          dataVariant: "inline", // Inline form integration
+          dataPaymentSelector: "#payButton", // Button that triggers payment
+        });
+      }
     };
 
-    document.head.appendChild(script);
+    return () => {
+      document.head.removeChild(script); // Cleanup script on unmount
+    };
   }, []);
 
+  // Handle form validation and input changes
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const checked = type === "checkbox" ? (e.target as HTMLInputElement).checked : false;
+    const newValue = type === "checkbox" ? checked : value;
 
+    const newErrors = { ...errors };
 
+    if (name === "email" && type !== "checkbox") {
+      if (value && !validateEmail(value)) {
+        newErrors.email = "Please enter a valid email";
+      } else {
+        delete newErrors.email;
+      }
+    }
+    // Additional validation logic can go here for other fields
 
-
-
-
-  // Age verification handler
-  // const handleAgeVerification = () => {
-    
-  //   console.log("90",window. AgeChecker)
-  //   if (!window. AgeChecker) {
-  //     alert("Age verification system not loaded.");
-  //     return;
-  //   }
-
-  //   window. AgeChecker.verify({
-  //     siteId: "ciger-frontend.vercel.app", // use your domain
-  //     onSuccess: async (result: AgeVerificationResult) => {
-  //       try {
-  //         const res = await api.post<VerifyAgeResponse>("/ageCheck/Age", {
-  //           token: result.verificationId
-  //         });
-
-  //         if (res.data.valid) {
-  //           alert("Age verified successfully!");
-  //           setIsAgeVerified(true);
-  //           // Optionally save to localStorage
-  //           localStorage.setItem('ageVerified', 'true');
-  //           localStorage.setItem('ageVerificationTimestamp', new Date().toISOString());
-  //         } else {
-  //           alert("Verification failed: " + (res.data.message || "Unknown error"));
-  //           setIsAgeVerified(false);
-  //         }
-  //       } catch (error) {
-  //         console.error("Age verification API error:", error);
-  //         alert("Failed to verify age. Please try again.");
-  //         setIsAgeVerified(false);
-  //       }
-  //     },
-  //     onFailure: () => {
-  //       alert("Verification canceled or failed.");
-  //       setIsAgeVerified(false);
-  //     }
-  //   });
-  // };
+    setFormData((prev) => ({ ...prev, [name]: newValue }));
+    setErrors(newErrors);
+  };
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    const checked = type === 'checkbox' ? (e.target as HTMLInputElement).checked : false;
-    const newValue = type === 'checkbox' ? checked : value;
-    
-    let processedValue: string | boolean = newValue;
-    const newErrors = { ...errors };
-
-    if (name === 'email' && type !== 'checkbox') {
-      if (value && !validateEmail(value)) {
-        newErrors.email = 'Please enter a valid email';
-      } else {
-        delete newErrors.email;
-      }
-      processedValue = value;
-    }
-
-    if (name === 'birthMonth' && value) {
-      const month = parseInt(value);
-      if (month < 1 || month > 12 || value.length > 2) {
-        newErrors.birthMonth = 'Month must be 1-12';
-      } else {
-        delete newErrors.birthMonth;
-      }
-      processedValue = value.slice(0, 2);
-    }
-
-    if (name === 'birthDay' && value) {
-      const day = parseInt(value);
-      if (day < 1 || day > 31 || value.length > 2) {
-        newErrors.birthDay = 'Day must be 1-31';
-      } else {
-        delete newErrors.birthDay;
-      }
-      processedValue = value.slice(0, 2);
-    }
-
-    if (name === 'birthYear' && value) {
-      if (value.length > 4 || (value.length === 4 && isNaN(parseInt(value)))) {
-        newErrors.birthYear = 'Year must be 4 digits';
-      } else if (value.length === 4 && (parseInt(value) < 1900 || parseInt(value) > new Date().getFullYear())) {
-        newErrors.birthYear = 'Year must be valid';
-      } else {
-        delete newErrors.birthYear;
-      }
-      processedValue = value.slice(0, 4);
-    }
-
-    if (name === 'cardNumber' && value) {
-      const cleaned = value.replace(/\s/g, '');
-      if (cleaned.length > 16) {
-        processedValue = cleaned.slice(0, 16);
-      } else {
-        processedValue = cleaned;
-      }
-      if (cleaned.length !== 16 && cleaned.length > 0) {
-        newErrors.cardNumber = 'Card number must be 16 digits';
-      } else {
-        delete newErrors.cardNumber;
-      }
-      const formatted = (processedValue as string).replace(/(\d{4})/g, '$1 ').trim();
-      processedValue = formatted;
-    }
-
-    if (name === 'expiryDate' && value) {
-      let cleaned = value.replace(/\D/g, '');
-      if (cleaned.length > 4) {
-        cleaned = cleaned.slice(0, 4);
-      }
-      if (cleaned.length >= 2) {
-        processedValue = cleaned.slice(0, 2) + '/' + cleaned.slice(2, 4);
-      } else {
-        processedValue = cleaned;
-      }
-      if (cleaned.length === 4) {
-        const month = parseInt(cleaned.slice(0, 2));
-        if (month < 1 || month > 12) {
-          newErrors.expiryDate = 'Invalid month';
-        } else {
-          delete newErrors.expiryDate;
-        }
-      }
-    }
-
-    if (name === 'cvv' && value) {
-      const cleaned = value.replace(/\D/g, '');
-      if (cleaned.length > 6) {
-        processedValue = cleaned.slice(0, 6);
-      } else {
-        processedValue = cleaned;
-      }
-      if (cleaned.length !== 6 && cleaned.length > 0) {
-        newErrors.cvv = 'CVV must be 6 digits';
-      } else {
-        delete newErrors.cvv;
-      }
-    }
-
-    if (name === 'cardCountry' && value) {
-      if (value.length > 4) {
-        processedValue = value.slice(0, 4);
-      } else {
-        processedValue = value;
-      }
-      if ((processedValue as string).length !== 4 && (processedValue as string).length > 0) {
-        newErrors.cardCountry = 'Country code must be 4 digits';
-      } else {
-        delete newErrors.cardCountry;
-      }
-    }
-
-    setFormData(prev => ({
-      ...prev,
-      [name]: processedValue,
-    }));
-    setErrors(newErrors);
+  const validateForm = () => {
+    return (
+      agreedToTerms &&
+      isAgeVerified &&
+      formData.email &&
+      !errors.email &&
+      formData.birthMonth &&
+      formData.birthDay &&
+      formData.birthYear &&
+      !errors.birthMonth &&
+      !errors.birthDay &&
+      !errors.birthYear &&
+      formData.cardNumber.replace(/\s/g, "").length === 16 &&
+      formData.expiryDate.length === 5 &&
+      formData.cvv.length === 6 &&
+      formData.cardCountry.length === 4
+    );
   };
-
-  const cartItems = [
-    { name: 'Good Stuff Red Pipe Tobacco - 16 oz. Bag', price: 24.50, qty: 3 },
-    { name: 'Good Stuff Red Pipe Tobacco - 16 oz. Bag', price: 24.50, qty: 3 },
-    { name: 'Good Stuff Red Pipe Tobacco - 16 oz. Bag', price: 24.50, qty: 3 },
-    { name: 'Good Stuff Red Pipe Tobacco - 16 oz. Bag', price: 24.50, qty: 3 },
-  ];
-
-  const subtotal = 171.50;
-  const shipping = 24.50;
-  const tax = 24.50;
-  const discount = -14.50;
-  const total = 206.00;
-
-  const isFormValid = agreedToTerms && 
-    isAgeVerified && // Add age verification check
-    formData.email && 
-    !errors.email &&
-    formData.birthMonth && 
-    formData.birthDay && 
-    formData.birthYear && 
-    !errors.birthMonth &&
-    !errors.birthDay &&
-    !errors.birthYear &&
-    formData.cardNumber.replace(/\s/g, '').length === 16 &&
-    formData.expiryDate.length === 5 &&
-    formData.cvv.length === 6 &&
-    formData.cardCountry.length === 4;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isFormValid) return;
-    if(!isAgeVerified) {
-       alert('Before Payment First Verify Age!');
-       return;
+    if (!validateForm()) {
+      alert("Please fill out all required fields correctly.");
+      return;
     }
-    try {
-      // Submit order logic here
-      
-      console.log('Submitting order:', formData);
-      // const response = await api.post('/api/checkout', formData);
-      // Handle successful checkout
-      alert('Order placed successfully!');
-    } catch (error) {
-      console.error('Checkout error:', error);
-      alert('Failed to place order. Please try again.');
+
+    // If age verification hasn't been completed, stop the form submission
+    if (!isAgeVerified) {
+      alert("Please verify your age before proceeding with the payment.");
+      return;
+    }
+
+    // Collect.js payment tokenization process
+    if (window.CollectJS) {
+      window.CollectJS.startPaymentRequest();
+
+      window.CollectJS.on("complete", async (e: CollectJSEvent) => {
+        const paymentToken = e.paymentToken; // Token received after payment collection
+
+        try {
+          // Call backend API to process the payment
+          const response = await api.post("/api/payment", {
+            paymentToken,
+            amount: 1000, // Replace with actual amount in cents
+            currency: "USD", // Specify currency
+          });
+
+          if (response.data.success) {
+            alert("Payment successful!");
+          } else {
+            alert("Payment failed!");
+          }
+        } catch (error) {
+          console.error("Payment processing error:", error);
+          alert("Failed to process payment. Please try again.");
+        }
+      });
+
+      window.CollectJS.on("failure", (e: CollectJSEvent) => {
+        console.log("Payment failed:", e);
+        alert("Payment failed. Please check your payment details and try again.");
+      });
+    } else {
+      alert("CollectJS failed to load.");
     }
   };
 
@@ -597,7 +443,7 @@ const CheckoutPage = () => {
               <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
 
               <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
-                {cartItems.map((item, idx) => (
+                {/* {cartItems.map((item, idx) => (
                   <div key={idx} className="flex justify-between text-sm">
                     <div className="flex-1">
                       <p className="text-gray-700">{item.name}</p>
@@ -608,10 +454,10 @@ const CheckoutPage = () => {
                       <span className="font-medium w-16 text-right">${(item.price * item.qty).toFixed(2)}</span>
                     </div>
                   </div>
-                ))}
+                ))} */}
               </div>
 
-              <div className="border-t pt-3 space-y-2 text-sm">
+              {/* <div className="border-t pt-3 space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Sub Total</span>
                   <span className="font-medium">${subtotal.toFixed(2)}</span>
@@ -630,11 +476,12 @@ const CheckoutPage = () => {
                   <span className="font-medium">5%</span>
                   <span className="font-medium text-red-500">${discount.toFixed(2)}</span>
                 </div>
-              </div>
+              </div> */}
 
               <div className="border-t mt-3 pt-3 flex justify-between font-semibold text-base">
                 <span>Total</span>
-                <span>${total.toFixed(2)}</span>
+                {/* <span>${total.toFixed(2)}</span> */}
+                <span>$100</span>
               </div>
 
               <div className="flex items-center mt-4">
@@ -754,17 +601,16 @@ const CheckoutPage = () => {
                 {errors.cardCountry && <p className="text-red-500 text-xs mt-1">{errors.cardCountry}</p>}
               </div>
 
-              <button
-                type="submit"
-                disabled={!isFormValid}
-                className={`w-full font-semibold py-3 rounded-md text-base transition ${
-                  isFormValid
-                    ? 'bg-yellow-600 hover:bg-yellow-700 text-white cursor-pointer'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
-              >
-                Confirm & Pay ${total.toFixed(2)}
-              </button>
+              <div>
+          <button
+            id="payButton"
+            type="submit"
+            className={`w-full py-3 rounded-md text-white ${isAgeVerified ? "bg-green-600" : "bg-yellow-600"}`}
+            disabled={!isAgeVerified || !validateForm()}
+          >
+            {isAgeVerified ? "Proceed with Payment" : "Verify Age First"}
+          </button>
+        </div>
             </form>
           </div>
         </div>
@@ -945,55 +791,7 @@ const CheckoutPage = () => {
             <p className="text-xs text-gray-600 mb-4">
               Age verification is required by law. Most customers can be verified instantly. Your information will only be used to verify your age.
             </p>
-{/* 
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  MM <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  name="birthMonth"
-                  placeholder="01"
-                  className={`w-full px-3 py-2 border rounded-md text-sm ${errors.birthMonth ? 'border-red-500' : 'border-gray-300'}`}
-                  value={formData.birthMonth}
-                  onChange={handleInputChange}
-                  min="1"
-                  max="12"
-                />
-                {errors.birthMonth && <p className="text-red-500 text-xs mt-1">{errors.birthMonth}</p>}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  DD <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  name="birthDay"
-                  placeholder="02"
-                  className={`w-full px-3 py-2 border rounded-md text-sm ${errors.birthDay ? 'border-red-500' : 'border-gray-300'}`}
-                  value={formData.birthDay}
-                  onChange={handleInputChange}
-                  min="1"
-                  max="31"
-                />
-                {errors.birthDay && <p className="text-red-500 text-xs mt-1">{errors.birthDay}</p>}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  YYYY <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  name="birthYear"
-                  placeholder="1998"
-                  className={`w-full px-3 py-2 border rounded-md text-sm ${errors.birthYear ? 'border-red-500' : 'border-gray-300'}`}
-                  value={formData.birthYear}
-                  onChange={handleInputChange}
-                />
-                {errors.birthYear && <p className="text-red-500 text-xs mt-1">{errors.birthYear}</p>}
-              </div>
-            </div> */}
+
 
             <button id="checkout-button" className={`w-full font-medium py-2 rounded-md text-sm ${
                   isAgeVerified 
@@ -1009,7 +807,7 @@ const CheckoutPage = () => {
             <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
 
             <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
-              {cartItems.map((item, idx) => (
+              {/* {cartItems.map((item, idx) => (
                 <div key={idx} className="flex justify-between text-sm">
                   <div className="flex-1">
                     <p className="text-gray-700">{item.name}</p>
@@ -1020,10 +818,10 @@ const CheckoutPage = () => {
                     <span className="font-medium text-right">${(item.price * item.qty).toFixed(2)}</span>
                   </div>
                 </div>
-              ))}
+              ))} */}
             </div>
 
-            <div className="border-t pt-3 space-y-2 text-sm">
+            {/* <div className="border-t pt-3 space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Sub Total</span>
                 <span className="font-medium">${subtotal.toFixed(2)}</span>
@@ -1042,11 +840,11 @@ const CheckoutPage = () => {
                 <span className="text-gray-600">5%</span>
                 <span className="font-medium text-red-500">${discount.toFixed(2)}</span>
               </div>
-            </div>
+            </div> */}
 
             <div className="border-t mt-3 pt-3 flex justify-between font-semibold text-base">
               <span>Total</span>
-              <span>${total.toFixed(2)}</span>
+              {/* <span>${total.toFixed(2)}</span> */}
             </div>
 
             <div className="flex items-center mt-4">
@@ -1167,16 +965,16 @@ const CheckoutPage = () => {
               {errors.cardCountry && <p className="text-red-500 text-xs mt-1">{errors.cardCountry}</p>}
             </div>
 
-            <button
-              disabled={!isFormValid}
-              className={`w-full font-semibold py-3 rounded-md text-base transition ${
-                isFormValid
-                  ? 'bg-yellow-600 hover:bg-yellow-700 text-white cursor-pointer'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }`}
-            >
-              Confirm & Pay ${total.toFixed(2)}
-            </button>
+           <div>
+          <button
+            id="payButton"
+            type="submit"
+            className={`w-full py-3 rounded-md text-white ${isAgeVerified ? "bg-green-600" : "bg-yellow-600"}`}
+            disabled={!isAgeVerified || !validateForm()}
+          >
+            {isAgeVerified ? "Proceed with Payment" : "Verify Age First"}
+          </button>
+        </div>
           </div>
         </form>
       </div>

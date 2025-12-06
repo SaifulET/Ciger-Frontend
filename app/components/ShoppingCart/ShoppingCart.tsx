@@ -5,9 +5,10 @@ import { Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useCartStore } from "@/app/store/cartStore";
 import useUserStore from "@/app/store/userStore";
+import api from "@/lib/axios";
 
 // Add a fallback image (optional)
-const FALLBACK_IMAGE = "/images/placeholder-product.jpg";
+const FALLBACK_IMAGE = "";
 
 // Update the type to include string arrays
 type ImageSource = string | string[] | null | undefined;
@@ -90,7 +91,7 @@ export default function ShoppingCart() {
     newChecked.delete(cartItemId);
     setCheckedItems(newChecked);
   };
-
+console.log("93",checkedItems,"93");
   const handleUpdateQuantity = (cartItemId: string, action: "increase" | "decrease") => {
     const item = items.find(item => item._id === cartItemId);
     if (!item) return;
@@ -105,7 +106,7 @@ export default function ShoppingCart() {
     updateQuantity(cartItemId, newQuantity, userId);
   };
 
-  const handleCheckout = () => {
+  const handleCheckout =async () => {
     if (checkedItems.size === 0) {
       alert("Please select items to checkout");
       return;
@@ -118,9 +119,13 @@ export default function ShoppingCart() {
     };
     
     console.log("Checkout Data:", checkoutData);
-    setTimeout(() => {
+      const checkedId=await api.post("/cart/checkedid",{cartIds:checkoutData.selectedItemIds,userId:user})
+      if(checkedId.data){
+         setTimeout(() => {
       window.location.href = "/pages/checkout";
     }, 100);
+      }
+   
   };
 
   // Show loading state
