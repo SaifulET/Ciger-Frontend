@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Search, ChevronDown, Menu, X, User } from "lucide-react";
 import logo from "@/public/logol.png";
-// import logo from "@/public/logo1.svg";
 import menuData from "@/Data/MenuItems.json";
 import CartPage from "../Drawer/cartCount";
 import Cookies from "js-cookie";
@@ -55,9 +54,7 @@ const Navbar: React.FC = () => {
   const [mobileCartOpen, setMobileCartOpen] = useState<boolean>(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState<boolean>(false);
   const [desktopProfileOpen, setDesktopProfileOpen] = useState<boolean>(false);
-  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
-    {}
-  );
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [isClient, setIsClient] = useState<boolean>(false);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
@@ -81,13 +78,24 @@ const Navbar: React.FC = () => {
     fetchAllProducts();
   }, [fetchAllProducts]);
 
-  // Filter suggestions based on input
+  // Filter suggestions based on input - SHOW ALL PRODUCTS
   const filterSuggestions = useCallback((searchTerm: string): SearchSuggestion[] => {
-    if (!searchTerm.trim() || products.length === 0) return [];
+    if (products.length === 0) return [];
     
-    const lowerCaseTerm = searchTerm.toLowerCase();
+    const lowerCaseTerm = searchTerm.toLowerCase().trim();
     
-    // Filter products by name, brand, or category
+    if (!lowerCaseTerm) {
+      // Show ALL products when search input is empty
+      return products.map(product => ({
+        id: product.id,
+        name: product.name,
+        brand: product.brand,
+        image: product.image,
+        category: product.category,
+      }));
+    }
+    
+    // Filter products by name, brand, or category when there's a search term
     const filtered = products
       .filter(product => {
         return (
@@ -95,37 +103,27 @@ const Navbar: React.FC = () => {
           product.brand.toLowerCase().includes(lowerCaseTerm) ||
           product.category.toLowerCase().includes(lowerCaseTerm)
         );
-      })
-      .slice(0, 10) // Get top 10 matches
-      .map(product => ({
-        id: product.id,
-        name: product.name,
-        brand: product.brand,
-        image: product.image,
-        category: product.category,
-      }));
+      });
     
     return filtered;
   }, [products]);
 
-  // Update suggestions when input changes
+  // Update suggestions when input changes or when focused
   useEffect(() => {
-    if (value.trim()) {
+    if (value.trim() || showSuggestions) {
       setIsLoadingSuggestions(true);
       const timer = setTimeout(() => {
         const filtered = filterSuggestions(value);
         setSuggestions(filtered);
         setSelectedSuggestionIndex(-1);
-        setShowSuggestions(true);
         setIsLoadingSuggestions(false);
       }, 300); // Debounce for 300ms
       
       return () => clearTimeout(timer);
     } else {
-      setShowSuggestions(false);
       setSuggestions([]);
     }
-  }, [value, filterSuggestions]);
+  }, [value, filterSuggestions, showSuggestions]);
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -363,7 +361,6 @@ const Navbar: React.FC = () => {
             <Image
               className="object-cover scale-150  w-0  lg:w-[220px] lg:h-[60px]"
               src={logo}
-           
               alt="Logo"
             />
           </div>
@@ -378,7 +375,7 @@ const Navbar: React.FC = () => {
               value={value}
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              onFocus={() => value.trim() && setShowSuggestions(true)}
+              onFocus={() => setShowSuggestions(true)}
               className="w-full h-[48px] focus:h-11 px-4 rounded-xl border border-gray-300 bg-[#F5F5F5] text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
             />
             {!value && (
@@ -392,12 +389,12 @@ const Navbar: React.FC = () => {
               </div>
             )}
 
-            {/* Desktop Search Suggestions */}
+            {/* Desktop Search Suggestions - SHOW ALL PRODUCTS */}
             {showSuggestions && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-64 overflow-hidden">
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-96 overflow-hidden">
                 <div 
                   ref={suggestionsRef}
-                  className="max-h-64 overflow-y-auto"
+                  className="max-h-96 overflow-y-auto"
                 >
                   {isLoadingSuggestions ? (
                     <div className="p-4 text-center text-gray-500">
@@ -406,7 +403,12 @@ const Navbar: React.FC = () => {
                     </div>
                   ) : suggestions.length > 0 ? (
                     <>
-                      {suggestions.slice(0, 5).map((suggestion, index) => (
+                      <div className="p-3 bg-gray-50 border-b">
+                        <p className="text-sm font-medium text-gray-600">
+                          {value.trim() ? `Found ${suggestions.length} products matching "${value}"` : `Showing all ${suggestions.length} products`}
+                        </p>
+                      </div>
+                      {suggestions.map((suggestion, index) => (
                         <div
                           key={suggestion.id}
                           className={`flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
@@ -431,15 +433,10 @@ const Navbar: React.FC = () => {
                           <ChevronDown size={16} className="transform -rotate-90 text-gray-400" />
                         </div>
                       ))}
-                      {suggestions.length > 5 && (
-                        <div className="text-center p-3 text-gray-600 border-t border-gray-100">
-                          <p className="text-sm">And {suggestions.length - 5} more suggestions...</p>
-                        </div>
-                      )}
                     </>
-                  ) : value.trim() && (
+                  ) : (
                     <div className="p-4 text-center text-gray-500">
-                      <p>No products found matching {value}</p>
+                      <p>No products available</p>
                     </div>
                   )}
                 </div>
@@ -588,7 +585,6 @@ const Navbar: React.FC = () => {
                          className="object-cover w-[220px] h-[50px] flex item-center mb-[10px]"
                           src={logo}
                           alt="Logo"
-                         
                         />
                       </div>
                     </Link>
@@ -718,7 +714,7 @@ const Navbar: React.FC = () => {
                     value={value}
                     onChange={(e) => setValue(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    onFocus={() => value.trim() && setShowSuggestions(true)}
+                    onFocus={() => setShowSuggestions(true)}
                     placeholder="Search Product or Brand"
                     className="w-full h-[48px] px-4 rounded-lg border border-gray-300 bg-[#EDEDED] text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all"
                     autoFocus
@@ -732,12 +728,12 @@ const Navbar: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Mobile Search Suggestions */}
+                {/* Mobile Search Suggestions - SHOW ALL PRODUCTS */}
                 {showSuggestions && (
-                  <div className="absolute left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-64 overflow-hidden">
+                  <div className="absolute left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-96 overflow-hidden">
                     <div 
                       ref={suggestionsRef}
-                      className="max-h-64 overflow-y-auto"
+                      className="max-h-96 overflow-y-auto"
                     >
                       {isLoadingSuggestions ? (
                         <div className="p-4 text-center text-gray-500">
@@ -746,6 +742,11 @@ const Navbar: React.FC = () => {
                         </div>
                       ) : suggestions.length > 0 ? (
                         <>
+                          <div className="p-3 bg-gray-50 border-b">
+                            <p className="text-sm font-medium text-gray-600">
+                              {value.trim() ? `Found ${suggestions.length} products matching "${value}"` : `Showing all ${suggestions.length} products`}
+                            </p>
+                          </div>
                           {suggestions.map((suggestion, index) => (
                             <div
                               key={suggestion.id}
@@ -771,15 +772,10 @@ const Navbar: React.FC = () => {
                               <ChevronDown size={16} className="transform -rotate-90 text-gray-400" />
                             </div>
                           ))}
-                          {suggestions.length > 5 && (
-                            <div className="text-center p-3 text-gray-600 border-t border-gray-100">
-                              <p className="text-sm">And {suggestions.length - 5} more suggestions...</p>
-                            </div>
-                          )}
                         </>
-                      ) : value.trim() && (
+                      ) : (
                         <div className="p-4 text-center text-gray-500">
-                          <p>No products found matching {value}</p>
+                          <p>No products available</p>
                         </div>
                       )}
                     </div>
@@ -947,7 +943,6 @@ const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Rest of your component remains the same... */}
       {/* ---------- Desktop Menu (unchanged) ---------- */}
       <nav className="hidden lg:block bg-white w-full relative pb-[24px]">
         <div className="flex flex-row justify-center items-center gap-10 lg:gap-24 ">

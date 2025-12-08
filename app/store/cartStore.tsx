@@ -44,10 +44,11 @@ interface CartState {
   items: CartItem[];
   isLoading: boolean;
   isSyncing: boolean;
-
+ guestId: string;
   // Actions
   initializeCart: (userId: string | null) => Promise<void>;
   addItem: (product: Product, userId: string | null) => Promise<void>;
+
   updateQuantity: (
     cartItemId: string,
     newQuantity: number,
@@ -69,6 +70,7 @@ export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
+      guestId: "",
       isLoading: false,
 
       isSyncing: false,
@@ -145,6 +147,11 @@ export const useCartStore = create<CartState>()(
           }
         } else {
           let userId;
+          let guestId = get().guestId;
+          if (!guestId) {
+            guestId = new ObjectId().toHexString();
+            set({ guestId: guestId });
+          }
           const existingItem = items.find(
             (item) => item.productId._id === product._id
           );
@@ -166,7 +173,7 @@ export const useCartStore = create<CartState>()(
           } else {
             const newItem: CartItem = {
               _id: `${Date.now()}${Math.random().toString(36).substr(2, 9)}`,
-              userId: new ObjectId().toHexString(),
+              userId: guestId,
               productId: {
                 ...product,
                 price: price,
@@ -278,6 +285,8 @@ export const useCartStore = create<CartState>()(
         }
       },
 
+
+
       // Clear entire cart
       clearCart: async (userId: string | null) => {
         if (userId) {
@@ -353,7 +362,11 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: "cart-storage",
-
+      partialize: (state) => ({
+       
+        guestId: state.guestId,
+       
+      }),
       skipHydration: false,
     }
   )

@@ -18,6 +18,7 @@ export default function ProductCard({ product, onAddCart}: ProductCardProps) {
  const { addItem, getItemQuantity } = useCartStore();
   const { user } = useUserStore();
   const userId = user || null;
+  
 
   
   

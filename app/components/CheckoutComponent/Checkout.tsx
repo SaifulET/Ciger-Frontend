@@ -5,6 +5,7 @@ import visacard from "@/public/visaelectron.svg";
 import Image from "next/image";
 import api from "@/lib/axios";
 import useUserStore from "@/app/store/userStore";
+import { useCartStore } from "@/app/store/cartStore";
 
 // Define types for form data, errors, etc.
 interface FormData {
@@ -41,13 +42,61 @@ interface Errors {
   cardCountry?: string;
 }
 
+interface CartItem {
+  _id: string;
+  userId: string;
+  productId: {
+    _id: string;
+    name: string;
+    images: string[];
+    price: number;
+    discount: number;
+    isInStock: boolean;
+    brandId: {
+      _id: string;
+      name: string;
+    };
+  };
+  quantity: number;
+  total: number;
+  isSelected: boolean;
+  isOrdered: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ServicePricing {
+  _id: string;
+  shippingCost: number;
+  AdvertisingText: string;
+  MinimumFreeShipping: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface CartApiResponse {
+  success: boolean;
+  count: number;
+  data: CartItem[];
+}
+
+interface ServicePricingApiResponse {
+  success: boolean;
+  data: ServicePricing;
+}
+
 const CheckoutPage = () => {
-  const {user} =useUserStore()
-  console.log(user)
+  const { user } = useUserStore();
+ const{guestId}= useCartStore();  
+ console.log('guestId',guestId,'guestId in checkout');
+  console.log('user',user,'user in checkout');
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [servicePricing, setServicePricing] = useState<ServicePricing | null>(null);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState<FormData>({
     email: "",
-    firstName: "",
-    lastName: "",
+    firstName:  "",
+    lastName:  "",
     country: "",
     city: "",
     state: "",
@@ -70,6 +119,101 @@ const CheckoutPage = () => {
   const [errors, setErrors] = useState<Errors>({});
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isAgeVerified, setIsAgeVerified] = useState(false);
+  const [discountApplied, setDiscountApplied] = useState(false);
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [taxMessage, setTaxMessage] = useState("");
+
+  // Fetch cart data and service pricing
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        console.log('fetching data for checkout');
+        setLoading(true);
+        
+        // Fetch cart items
+        if (user) {
+          const cartResponse = await api.get<CartApiResponse>(`/cart/getUserCart/${user}`);
+          console.log(cartResponse.data,'cart response in checkout');
+          if (cartResponse.data.success) {
+            setCartItems(cartResponse.data.data);
+          }
+        }
+        else if(guestId){
+          console.log('fetching cart for guest',guestId);
+          const cartResponse = await api.get<CartApiResponse>(`/cart/getUserCart/${guestId}`);
+          console.log(cartResponse.data,'cart response in checkout for guest'); 
+         if (cartResponse.data.success) {
+            setCartItems(cartResponse.data.data);
+          }
+        }
+        
+        // Fetch service pricing
+        const pricingResponse = await api.get<ServicePricingApiResponse>("/servicePricing/getServicePricing");
+        console.log(pricingResponse.data,'service pricing in checkout');
+        if (pricingResponse.data.success) {
+          setServicePricing(pricingResponse.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user,guestId]);
+
+  // Calculate cart totals
+  const subtotal = cartItems.reduce((sum, item) => {
+    const price = item.productId.price || 0;
+    const discount = item.productId.discount || 0;
+    const discountedPrice = price * (1 - discount / 100);
+    return sum + (discountedPrice * item.quantity);
+  }, 0);
+
+  // Calculate shipping cost based on service pricing
+  const shippingCost = servicePricing ? 
+    (subtotal >= servicePricing.MinimumFreeShipping ? servicePricing.MinimumFreeShipping : servicePricing.shippingCost) : 0;
+
+  // Calculate tax (15%)
+const calculateTax = async () => {
+  try {
+    const response = await api.post('/tax/calculateTax', {
+      amount: subtotal,        // cart total
+      to_zip: formData.zipCode,
+      to_state: formData.state,
+      shipping: shippingCost
+    });
+
+    console.log("Tax info:", response.data);
+    return response.data;
+    
+  } catch (err) {
+    setTaxMessage("Fill the correct address to calculate tax");
+    console.error("Tax calculation failed:", err);
+  }
+};
+
+
+let tax = 0;
+ const handleCheckout = async () => {
+  const taxResult = await calculateTax();
+
+   tax = taxResult?.tax?.amount_to_collect || 0;
+
+  console.log("Tax:", tax);
+};
+handleCheckout();
+useEffect(() => {
+(async()=>{
+  await handleCheckout();
+})()
+}, [formData.zipCode, formData.state, subtotal, shippingCost]);
+  // Calculate discount from applied code
+  const discount = discountApplied ? subtotal * (discountPercent / 100) : 0;
+
+  // Calculate total
+  const total = subtotal + shippingCost + tax - discount;
 
   // Dynamically load Collect.js script
   useEffect(() => {
@@ -109,7 +253,6 @@ const CheckoutPage = () => {
         delete newErrors.email;
       }
     }
-    // Additional validation logic can go here for other fields
 
     setFormData((prev) => ({ ...prev, [name]: newValue }));
     setErrors(newErrors);
@@ -126,17 +269,23 @@ const CheckoutPage = () => {
       isAgeVerified &&
       formData.email &&
       !errors.email &&
-      formData.birthMonth &&
-      formData.birthDay &&
-      formData.birthYear &&
-      !errors.birthMonth &&
-      !errors.birthDay &&
-      !errors.birthYear &&
       formData.cardNumber.replace(/\s/g, "").length === 16 &&
       formData.expiryDate.length === 5 &&
       formData.cvv.length === 6 &&
-      formData.cardCountry.length === 4
+      formData.cardCountry
     );
+  };
+
+  const handleApplyDiscount = () => {
+    // Here you would typically validate the discount code with your API
+    // For now, we'll just apply a 5% discount for demonstration
+    if (formData.discountCode.trim() !== "") {
+      setDiscountApplied(true);
+      setDiscountPercent(5);
+    } else {
+      setDiscountApplied(false);
+      setDiscountPercent(0);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -160,15 +309,47 @@ const CheckoutPage = () => {
         const paymentToken = e.paymentToken; // Token received after payment collection
 
         try {
-          // Call backend API to process the payment
-          const response = await api.post("/api/payment", {
-            paymentToken,
-            amount: 1000, // Replace with actual amount in cents
-            currency: "USD", // Specify currency
-          });
+          // Prepare order data
+          const orderData = {
+            userId: user,
+            items: cartItems.map(item => ({
+              productId: item.productId._id,
+              quantity: item.quantity,
+              price: item.productId.price,
+              discount: item.productId.discount
+            })),
+            shippingInfo: {
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              email: formData.email,
+              phone: formData.phone,
+              country: formData.country,
+              city: formData.city,
+              state: formData.state,
+              zipCode: formData.zipCode,
+              address: formData.address,
+              apartment: formData.apartment
+            },
+            payment: {
+              paymentToken,
+              amount: Math.round(total * 100), // Convert to cents
+              currency: "USD"
+            },
+            totals: {
+              subtotal,
+              shipping: shippingCost,
+              tax,
+              discount,
+              total
+            }
+          };
+
+          // Call backend API to process the order
+          const response = await api.post("/api/orders", orderData);
 
           if (response.data.success) {
-            alert("Payment successful!");
+            alert("Payment successful! Your order has been placed.");
+            // Clear cart or redirect to order confirmation page
           } else {
             alert("Payment failed!");
           }
@@ -187,11 +368,20 @@ const CheckoutPage = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading checkout...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen p-[16px] md:p-[32px]">
       <div className="">
-        <h1 className="bg-white rounded-lg text-[28px] font-semibold leading-[48px] text-gray-900 text-center p-[16px] md:p-[32px] mb-[16px] md:mb-[32px]">Checkout</h1>
-      
+        <h1 className="bg-white rounded-lg text-[28px] font-semibold leading-[48px] text-gray-900 text-center p-[16px] md:p-[32px] mb-[16px] md:mb-[32px]">
+          Checkout
+        </h1>
 
         {/* Desktop Layout */}
         <div className="hidden lg:grid lg:grid-cols-2 lg:gap-[32px]">
@@ -261,7 +451,11 @@ const CheckoutPage = () => {
                   value={formData.country}
                   onChange={handleInputChange}
                 >
-                  <option>Dhaka</option>
+                  <option value="">Select Country</option>
+                  <option value="US">United States</option>
+                  <option value="CA">Canada</option>
+                  <option value="UK">United Kingdom</option>
+                  {/* Add more countries as needed */}
                 </select>
               </div>
 
@@ -343,7 +537,7 @@ const CheckoutPage = () => {
                 <input
                   type="tel"
                   name="phone"
-                  placeholder="Moakhali"
+                  placeholder="Phone number"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   value={formData.phone}
                   onChange={handleInputChange}
@@ -372,6 +566,7 @@ const CheckoutPage = () => {
                 Age verification is required by law. Most customers can be verified instantly. Your information will only be used to verify your age.
               </p>
 
+              {/* Date inputs commented out as per original code */}
               {/* <div className="grid grid-cols-3 gap-3 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -416,15 +611,22 @@ const CheckoutPage = () => {
                     className={`w-full px-3 py-2 border rounded-md text-sm ${errors.birthYear ? 'border-red-500' : 'border-gray-300'}`}
                     value={formData.birthYear}
                     onChange={handleInputChange}
+                    min="1900"
+                    max={new Date().getFullYear()}
                   />
                   {errors.birthYear && <p className="text-red-500 text-xs mt-1">{errors.birthYear}</p>}
                 </div>
               </div> */}
 
               <button
-                // onClick={handleAgeVerification}
+                type="button"
                 id="checkout-button"
-
+                onClick={() => {
+                  // For now, we'll just simulate age verification
+                  // In a real app, you would integrate with an age verification service
+                  setIsAgeVerified(true);
+                  alert("Age verification initiated. Please follow the verification process.");
+                }}
                 className={`w-full font-medium py-2 rounded-md text-sm ${
                   isAgeVerified 
                     ? 'bg-green-600 text-white hover:bg-green-700' 
@@ -442,47 +644,75 @@ const CheckoutPage = () => {
             <div className="bg-white p-[16px] md:p-[32px] rounded-lg mb-[16px] md:mb-[32px]">
               <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
 
-              <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
-                {/* {cartItems.map((item, idx) => (
-                  <div key={idx} className="flex justify-between text-sm">
-                    <div className="flex-1">
-                      <p className="text-gray-700">{item.name}</p>
-                    </div>
-                    <div className="flex gap-8 ml-4">
-                      <span className="text-gray-600 w-16 text-right">${item.price.toFixed(2)}</span>
-                      <span className="text-gray-600 w-8 text-center">{item.qty}</span>
-                      <span className="font-medium w-16 text-right">${(item.price * item.qty).toFixed(2)}</span>
-                    </div>
+              {cartItems.length === 0 ? (
+                <p className="text-gray-500 text-sm">Your cart is empty</p>
+              ) : (
+                <>
+                  <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
+                    {cartItems.map((item) => {
+                      const price = item.productId.price || 0;
+                      const discount = item.productId.discount || 0;
+                      const discountedPrice = price * (1 - discount / 100);
+                      const itemTotal = discountedPrice * item.quantity;
+                      
+                      return (
+                        <div key={item._id} className="flex justify-between text-sm">
+                          <div className="flex-1">
+                            <p className="text-gray-700">{item.productId.name}</p>
+                            {discount > 0 && (
+                              <p className="text-xs text-gray-500">
+                                Discount: {discount}% off
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex gap-8 ml-4">
+                            <span className="text-gray-600 w-16 text-right">${discountedPrice.toFixed(2)}</span>
+                            <span className="text-gray-600 w-8 text-center">{item.quantity}</span>
+                            <span className="font-medium w-16 text-right">${itemTotal.toFixed(2)}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                ))} */}
-              </div>
 
-              {/* <div className="border-t pt-3 space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Sub Total</span>
-                  <span className="font-medium">${subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Shipping Cost</span>
-                  <span className="font-medium">${shipping.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Sales Tax</span>
-                  <span className="font-medium pl-[32px]">5%</span>
-                  <span className="font-medium">${tax.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Discount CODE</span>
-                  <span className="font-medium">5%</span>
-                  <span className="font-medium text-red-500">${discount.toFixed(2)}</span>
-                </div>
-              </div> */}
+                  <div className="border-t pt-3 space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Sub Total</span>
+                      <span className="font-medium">${subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Shipping Cost</span>
+                      <span className="font-medium">
+                        {shippingCost === 0 ? 'FREE' : `$${shippingCost.toFixed(2)}`}
+                        {servicePricing && subtotal >= servicePricing.MinimumFreeShipping && (
+                          <span className="text-xs text-green-600 ml-1">(Free shipping over ${servicePricing.MinimumFreeShipping})</span>
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Sales Tax</span>
+                      <span className="font-medium pl-[32px]">{tax*100/subtotal}%</span>
+                      <span className="font-medium">${tax.toFixed(2)}</span>
+                    </div>
+                    {discountApplied && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Discount Code</span>
+                        <span className="font-medium">{discountPercent}%</span>
+                        <span className="font-medium text-red-500">-${discount.toFixed(2)}</span>
+                      </div>
+                    )}
+                  </div>
 
-              <div className="border-t mt-3 pt-3 flex justify-between font-semibold text-base">
-                <span>Total</span>
-                {/* <span>${total.toFixed(2)}</span> */}
-                <span>$100</span>
-              </div>
+                  <div className="border-t mt-3 pt-3 flex justify-between font-semibold text-base">
+                    <span>Total</span>
+                    <span>${total.toFixed(2)}</span>
+                  </div>
+                </>
+              )}
+               {taxMessage &&(
+
+              <p className="text-xs text-red-600 mt-2">{taxMessage}</p>
+            )}
 
               <div className="flex items-center mt-4">
                 <input
@@ -504,12 +734,16 @@ const CheckoutPage = () => {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="Code"
+                  placeholder="Enter discount code"
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
                   value={formData.discountCode}
                   onChange={(e) => setFormData(prev => ({ ...prev, discountCode: e.target.value }))}
                 />
-                <button className="bg-yellow-600 hover:bg-yellow-700 text-white font-medium px-6 py-2 rounded-md text-sm">
+                <button 
+                  type="button"
+                  onClick={handleApplyDiscount}
+                  className="bg-yellow-600 hover:bg-yellow-700 text-white font-medium px-6 py-2 rounded-md text-sm"
+                >
                   Apply
                 </button>
               </div>
@@ -531,6 +765,7 @@ const CheckoutPage = () => {
                     value={formData.cardNumber}
                     onChange={handleInputChange}
                     name="cardNumber"
+                    maxLength={19}
                   /> 
                   <Image src={mastercard} alt="mastercard" width={30} height={30}/>
                   <Image src={visacard} alt="visaCard" width={30} height={30}/>
@@ -591,34 +826,34 @@ const CheckoutPage = () => {
                 </label>
                 <input
                   type="text"
-                  placeholder="xxxx"
+                  placeholder="Country code (e.g., USA)"
                   className={`w-full px-3 py-2 border rounded-md text-sm ${errors.cardCountry ? 'border-red-500' : 'border-gray-300'}`}
                   value={formData.cardCountry}
                   onChange={handleInputChange}
                   name="cardCountry"
-                  maxLength={4}
                 />
                 {errors.cardCountry && <p className="text-red-500 text-xs mt-1">{errors.cardCountry}</p>}
               </div>
 
-              <div>
-          <button
-            id="payButton"
-            type="submit"
-            className={`w-full py-3 rounded-md text-white ${isAgeVerified ? "bg-green-600" : "bg-yellow-600"}`}
-            disabled={!isAgeVerified || !validateForm()}
-          >
-            {isAgeVerified ? "Proceed with Payment" : "Verify Age First"}
-          </button>
-        </div>
+              <button
+                id="payButton"
+                type="submit"
+                className={`w-full py-3 rounded-md text-white ${
+                  isAgeVerified ? "bg-green-600 hover:bg-green-700" : "bg-yellow-600 hover:bg-yellow-700"
+                }`}
+                disabled={!isAgeVerified || !validateForm() || cartItems.length === 0}
+              >
+                {cartItems.length === 0 ? "Cart is Empty" : 
+                 isAgeVerified ? `Pay $${total.toFixed(2)}` : "Verify Age First"}
+              </button>
             </form>
           </div>
         </div>
 
-        {/* Mobile Layout - Same form wrapped */}
+        {/* Mobile Layout */}
         <form onSubmit={handleSubmit} className="lg:hidden space-y-6">
-          {/* Mobile sections remain the same, just wrap the entire content in form */}
-           <div className="bg-white  p-[16px]  rounded-lg">
+          {/* Contact Information */}
+          <div className="bg-white p-[16px] rounded-lg">
             <h2 className="text-lg font-semibold mb-4">Contact Information</h2>
             
             <div className="mb-4">
@@ -644,7 +879,7 @@ const CheckoutPage = () => {
                 <input
                   type="text"
                   name="firstName"
-                  placeholder="Dhaka"
+                  placeholder="First Name"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   value={formData.firstName}
                   onChange={handleInputChange}
@@ -657,7 +892,7 @@ const CheckoutPage = () => {
                 <input
                   type="text"
                   name="lastName"
-                  placeholder="Dhaka"
+                  placeholder="Last Name"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   value={formData.lastName}
                   onChange={handleInputChange}
@@ -670,19 +905,22 @@ const CheckoutPage = () => {
                 Country <span className="text-red-500">*</span>
               </label>
               <select
-  name="country"
-  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md text-sm appearance-none"
-  style={{
-    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")`,
-    backgroundPosition: 'right 0.5rem center',
-    backgroundRepeat: 'no-repeat',
-    backgroundSize: '1.5em 1.5em',
-  }}
-  value={formData.country}
-  onChange={handleInputChange}
->
-  <option>Dhaka</option>
-</select>
+                name="country"
+                className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md text-sm appearance-none"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")`,
+                  backgroundPosition: 'right 0.5rem center',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundSize: '1.5em 1.5em',
+                }}
+                value={formData.country}
+                onChange={handleInputChange}
+              >
+                <option value="">Select Country</option>
+                <option value="US">United States</option>
+                <option value="CA">Canada</option>
+                <option value="UK">United Kingdom</option>
+              </select>
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-4">
@@ -693,7 +931,7 @@ const CheckoutPage = () => {
                 <input
                   type="text"
                   name="city"
-                  placeholder="Dhaka"
+                  placeholder="City"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   value={formData.city}
                   onChange={handleInputChange}
@@ -706,7 +944,7 @@ const CheckoutPage = () => {
                 <input
                   type="text"
                   name="state"
-                  placeholder="Dhaka"
+                  placeholder="State"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   value={formData.state}
                   onChange={handleInputChange}
@@ -721,7 +959,7 @@ const CheckoutPage = () => {
               <input
                 type="text"
                 name="zipCode"
-                placeholder="Dhaka"
+                placeholder="ZIP Code"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                 value={formData.zipCode}
                 onChange={handleInputChange}
@@ -735,7 +973,7 @@ const CheckoutPage = () => {
               <input
                 type="text"
                 name="address"
-                placeholder="Moakhali"
+                placeholder="Address"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                 value={formData.address}
                 onChange={handleInputChange}
@@ -749,7 +987,7 @@ const CheckoutPage = () => {
               <input
                 type="text"
                 name="apartment"
-                placeholder="SA"
+                placeholder="Apartment"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                 value={formData.apartment}
                 onChange={handleInputChange}
@@ -786,66 +1024,99 @@ const CheckoutPage = () => {
           </div>
 
           {/* Date of Birth */}
-          <div className="bg-white  p-[16px]  rounded-lg">
+          <div className="bg-white p-[16px] rounded-lg">
             <h3 className="font-semibold mb-2">Enter your date of birth</h3>
             <p className="text-xs text-gray-600 mb-4">
               Age verification is required by law. Most customers can be verified instantly. Your information will only be used to verify your age.
             </p>
 
-
-            <button id="checkout-button" className={`w-full font-medium py-2 rounded-md text-sm ${
-                  isAgeVerified 
-                    ? 'bg-green-600 text-white hover:bg-green-700' 
-                    : 'bg-yellow-600 hover:bg-yellow-700 text-white'
-                }`}>
-               {isAgeVerified ? '✓ Age Verified' : 'Verify Age'}
+            <button 
+              type="button"
+              id="checkout-button"
+              onClick={() => {
+                setIsAgeVerified(true);
+                alert("Age verification initiated. Please follow the verification process.");
+              }}
+              className={`w-full font-medium py-2 rounded-md text-sm ${
+                isAgeVerified 
+                  ? 'bg-green-600 text-white hover:bg-green-700' 
+                  : 'bg-yellow-600 hover:bg-yellow-700 text-white'
+              }`}
+            >
+              {isAgeVerified ? '✓ Age Verified' : 'Verify Age'}
             </button>
           </div>
 
           {/* Order Summary */}
-          <div className="bg-white  p-[16px]  rounded-lg">
+          <div className="bg-white p-[16px] rounded-lg">
             <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
 
-            <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
-              {/* {cartItems.map((item, idx) => (
-                <div key={idx} className="flex justify-between text-sm">
-                  <div className="flex-1">
-                    <p className="text-gray-700">{item.name}</p>
-                  </div>
-                  <div className="flex gap-4 ml-4">
-                    <span className="text-gray-600 text-right">${item.price.toFixed(2)}</span>
-                    <span className="text-gray-600">{item.qty}</span>
-                    <span className="font-medium text-right">${(item.price * item.qty).toFixed(2)}</span>
-                  </div>
+            {cartItems.length === 0 ? (
+              <p className="text-gray-500 text-sm">Your cart is empty</p>
+            ) : (
+              <>
+                <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
+                  {cartItems.map((item) => {
+                    const price = item.productId.price || 0;
+                    const discount = item.productId.discount || 0;
+                    const discountedPrice = price * (1 - discount / 100);
+                    const itemTotal = discountedPrice * item.quantity;
+                    
+                    return (
+                      <div key={item._id} className="flex justify-between text-sm">
+                        <div className="flex-1">
+                          <p className="text-gray-700">{item.productId.name}</p>
+                          {discount > 0 && (
+                            <p className="text-xs text-gray-500">
+                              Discount: {discount}% off
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex gap-4 ml-4">
+                          <span className="text-gray-600">${discountedPrice.toFixed(2)}</span>
+                          <span className="text-gray-600">{item.quantity}</span>
+                          <span className="font-medium">${itemTotal.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))} */}
-            </div>
 
-            {/* <div className="border-t pt-3 space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Sub Total</span>
-                <span className="font-medium">${subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Shipping Cost</span>
-                <span className="font-medium">${shipping.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Sales Tax</span>
-                <span className="font-medium pl-[32px]">5%</span>
-                <span className="font-medium">${tax.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Discount CODE</span>
-                <span className="text-gray-600">5%</span>
-                <span className="font-medium text-red-500">${discount.toFixed(2)}</span>
-              </div>
-            </div> */}
+                <div className="border-t pt-3 space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Sub Total</span>
+                    <span className="font-medium">${subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Shipping Cost</span>
+                    <span className="font-medium">
+                      {shippingCost === 0 ? 'FREE' : `$${shippingCost.toFixed(2)}`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Sales Tax</span>
+                    <span className="font-medium">15%</span>
+                    <span className="font-medium">${tax.toFixed(2)}</span>
+                  </div>
+                  {discountApplied && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Discount Code</span>
+                      <span className="text-gray-600">{discountPercent}%</span>
+                      <span className="font-medium text-red-500">-${discount.toFixed(2)}</span>
+                    </div>
+                  )}
+                </div>
 
-            <div className="border-t mt-3 pt-3 flex justify-between font-semibold text-base">
-              <span>Total</span>
-              {/* <span>${total.toFixed(2)}</span> */}
-            </div>
+                <div className="border-t mt-3 pt-3 flex justify-between font-semibold text-base">
+                  <span>Total</span>
+                  <span>${total.toFixed(2)}</span>
+                </div>
+              </>
+            )}
+            {taxMessage &&(
+
+              <p className="text-xs text-red-600 mt-2">{taxMessage}</p>
+            )}
 
             <div className="flex items-center mt-4">
               <input
@@ -862,24 +1133,28 @@ const CheckoutPage = () => {
           </div>
 
           {/* Discount Code */}
-          <div className="bg-white  p-[16px] rounded-lg">
+          <div className="bg-white p-[16px] rounded-lg">
             <h3 className="font-semibold mb-3">Discount Code</h3>
             <div className="flex gap-2">
               <input
                 type="text"
-                placeholder="Code"
-                className="flex-1 px-2 md:px-3 py-2 border border-gray-300 rounded-md text-sm"
+                placeholder="Enter discount code"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
                 value={formData.discountCode}
                 onChange={(e) => setFormData(prev => ({ ...prev, discountCode: e.target.value }))}
               />
-              <button className="bg-yellow-600 hover:bg-yellow-700 text-white font-medium px-4 md:px-6 py-2 rounded-md text-sm">
+              <button 
+                type="button"
+                onClick={handleApplyDiscount}
+                className="bg-yellow-600 hover:bg-yellow-700 text-white font-medium px-4 py-2 rounded-md text-sm"
+              >
                 Apply
               </button>
             </div>
           </div>
 
           {/* Payment */}
-          <div className="bg-white  p-[16px]  rounded-lg">
+          <div className="bg-white p-[16px] rounded-lg">
             <h2 className="text-lg font-semibold mb-4">Payment</h2>
 
             <div className="mb-4">
@@ -894,10 +1169,10 @@ const CheckoutPage = () => {
                   value={formData.cardNumber}
                   onChange={handleInputChange}
                   name="cardNumber"
+                  maxLength={19}
                 />
                 <Image src={mastercard} alt="mastercard" width={30} height={30}/>
                 <Image src={visacard} alt="visaCard" width={30} height={30}/>
-                
               </div>
               {errors.cardNumber && <p className="text-red-500 text-xs mt-1">{errors.cardNumber}</p>}
             </div>
@@ -955,26 +1230,26 @@ const CheckoutPage = () => {
               </label>
               <input
                 type="text"
-                placeholder="xxxx"
+                placeholder="Country code (e.g., USA)"
                 className={`w-full px-3 py-2 border rounded-md text-sm ${errors.cardCountry ? 'border-red-500' : 'border-gray-300'}`}
                 value={formData.cardCountry}
                 onChange={handleInputChange}
                 name="cardCountry"
-                maxLength={4}
               />
               {errors.cardCountry && <p className="text-red-500 text-xs mt-1">{errors.cardCountry}</p>}
             </div>
 
-           <div>
-          <button
-            id="payButton"
-            type="submit"
-            className={`w-full py-3 rounded-md text-white ${isAgeVerified ? "bg-green-600" : "bg-yellow-600"}`}
-            disabled={!isAgeVerified || !validateForm()}
-          >
-            {isAgeVerified ? "Proceed with Payment" : "Verify Age First"}
-          </button>
-        </div>
+            <button
+              id="payButton"
+              type="submit"
+              className={`w-full py-3 rounded-md text-white ${
+                isAgeVerified ? "bg-green-600 hover:bg-green-700" : "bg-yellow-600 hover:bg-yellow-700"
+              }`}
+              disabled={!isAgeVerified || !validateForm() || cartItems.length === 0}
+            >
+              {cartItems.length === 0 ? "Cart is Empty" : 
+               isAgeVerified ? `Pay $${total.toFixed(2)}` : "Verify Age First"}
+            </button>
           </div>
         </form>
       </div>
