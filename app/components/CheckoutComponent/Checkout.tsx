@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import mastercard from "@/public/mastercard.svg";
 import visacard from "@/public/visaelectron.svg";
 import Image from "next/image";
@@ -7,7 +7,7 @@ import api from "@/lib/axios";
 import useUserStore from "@/app/store/userStore";
 import { useCartStore } from "@/app/store/cartStore";
 
-// Define types for form data, errors, etc.
+// Define types
 interface FormData {
   email: string;
   firstName: string;
@@ -85,11 +85,106 @@ interface ServicePricingApiResponse {
   data: ServicePricing;
 }
 
+interface TaxDetail {
+  amount_to_collect: number;
+  rate: number;
+  taxable_amount: number;
+  county?: string;
+  city?: string;
+  state?: string;
+}
+
+interface TaxResponse {
+  tax: TaxDetail;
+  freight_taxable?: boolean;
+  has_nexus?: boolean;
+  request?: {
+    to_country: string;
+    to_zip: string;
+    to_state: string;
+    amount: number;
+    shipping: number;
+  };
+}
+
+interface CollectJSEvent {
+  paymentToken: string;
+  status: string;
+  message?: string;
+  error?: {
+    code: string;
+    message: string;
+  };
+}
+
+interface CollectJSConfig {
+  dataTokenizationKey: string;
+  dataVariant: "inline" | "modal";
+  dataPaymentSelector: string;
+  dataCallback?: (event: CollectJSEvent) => void;
+  dataFields?: Record<string, unknown>;
+  dataStyle?: Record<string, unknown>;
+}
+
+interface CollectJSGlobal {
+  configure: (config: CollectJSConfig) => void;
+  startPaymentRequest: () => void;
+  on: (event: "complete" | "failure" | "error", callback: (event: CollectJSEvent) => void) => void;
+  off: (event: string, callback: (event: CollectJSEvent) => void) => void;
+  tokenize: () => void;
+  close: () => void;
+}
+
+interface TaxCacheData {
+  tax: number;
+  timestamp: number;
+  expiresIn: number;
+}
+
+interface OrderData {
+  userId: string | undefined;
+  items: Array<{
+    productId: string;
+    quantity: number;
+    price: number;
+    discount: number;
+  }>;
+  shippingInfo: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    country: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    address: string;
+    apartment: string;
+  };
+  payment: {
+    paymentToken: string;
+    amount: number;
+    currency: string;
+  };
+  totals: {
+    subtotal: number;
+    shipping: number;
+    tax: number;
+    discount: number;
+    total: number;
+  };
+}
+
+// declare global {
+//   interface Window {
+//     CollectJS?: CollectJSGlobal;
+//   }
+// }
+
 const CheckoutPage = () => {
   const { user } = useUserStore();
- const{guestId}= useCartStore();  
- console.log('guestId',guestId,'guestId in checkout');
-  console.log('user',user,'user in checkout');
+  const { guestId } = useCartStore();  
+  
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [servicePricing, setServicePricing] = useState<ServicePricing | null>(null);
   const [loading, setLoading] = useState(true);
@@ -122,10 +217,58 @@ const CheckoutPage = () => {
   const [discountApplied, setDiscountApplied] = useState(false);
   const [discountPercent, setDiscountPercent] = useState(0);
   const [taxMessage, setTaxMessage] = useState("");
+  const [tax, setTax] = useState(0);
+  const [taxRate, setTaxRate] = useState(0);
+  const [isCalculatingTax, setIsCalculatingTax] = useState(false);
+
+  // Cache for tax calculations
+  const cacheTaxCalculation = useCallback((zip: string, state: string, amount: number, calculatedTax: number): void => {
+    if (typeof window === 'undefined') return;
+    
+    const cacheKey = `tax_${zip}_${state}_${Math.round(amount)}`;
+    const cacheData: TaxCacheData = {
+      tax: calculatedTax,
+      timestamp: Date.now(),
+      expiresIn: 24 * 60 * 60 * 1000 // 24 hours
+    };
+    localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+  }, []);
+
+  const getCachedTax = useCallback((zip: string, state: string, amount: number): number | null => {
+    if (typeof window === 'undefined') return null;
+    
+    const cacheKey = `tax_${zip}_${state}_${Math.round(amount)}`;
+    const cached = localStorage.getItem(cacheKey);
+    
+    if (cached) {
+      try {
+        const data: TaxCacheData = JSON.parse(cached);
+        if (Date.now() - data.timestamp < data.expiresIn) {
+          return data.tax;
+        }
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error("Error reading tax cache:", errorMessage);
+      }
+    }
+    return null;
+  }, []);
+
+  // Check if we should calculate tax
+  const shouldCalculateTax = useCallback((): boolean => {
+    return (
+      formData.zipCode !== undefined && 
+      formData.zipCode.length >= 3 && 
+      formData.state !== undefined && 
+      formData.state.length >= 2 &&
+      cartItems.length > 0 &&
+      subtotal > 0
+    );
+  }, [formData.zipCode, formData.state, cartItems.length]);
 
   // Fetch cart data and service pricing
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (): Promise<void> => {
       try {
         console.log('fetching data for checkout');
         setLoading(true);
@@ -153,100 +296,159 @@ const CheckoutPage = () => {
         if (pricingResponse.data.success) {
           setServicePricing(pricingResponse.data.data);
         }
-      } catch (error) {
-        console.error("Error fetching data:", error);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error("Error fetching data:", errorMessage);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [user,guestId]);
+  }, [user, guestId]);
 
   // Calculate cart totals
-  const subtotal = cartItems.reduce((sum, item) => {
-    const price = item.productId.price || 0;
-    const discount = item.productId.discount || 0;
-    const discountedPrice = price * (1 - discount / 100);
-    return sum + (discountedPrice * item.quantity);
-  }, 0);
+  const subtotal = useMemo((): number => {
+    return cartItems.reduce((sum: number, item: CartItem): number => {
+      const price: number = item.productId.price || 0;
+      const discount: number = item.productId.discount || 0;
+      const discountedPrice: number = price * (1 - discount / 100);
+      return sum + (discountedPrice * item.quantity);
+    }, 0);
+  }, [cartItems]);
 
   // Calculate shipping cost based on service pricing
-  const shippingCost = servicePricing ? 
-    (subtotal >= servicePricing.MinimumFreeShipping ? servicePricing.MinimumFreeShipping : servicePricing.shippingCost) : 0;
-
-  // Calculate tax (15%)
-const calculateTax = async () => {
-  try {
-    const response = await api.post('/tax/calculateTax', {
-      amount: subtotal,        // cart total
-      to_zip: formData.zipCode,
-      to_state: formData.state,
-      shipping: shippingCost
-    });
-
-    console.log("Tax info:", response.data);
-    return response.data;
+  const shippingCost = useMemo((): number => {
+    if (!servicePricing) return 0;
     
-  } catch (err) {
-    setTaxMessage("Fill the correct address to calculate tax");
-    console.error("Tax calculation failed:", err);
-  }
-};
+    return subtotal >= servicePricing.MinimumFreeShipping ? 0 : servicePricing.shippingCost;
+  }, [servicePricing, subtotal]);
 
-
-let tax = 0;
- const handleCheckout = async () => {
-  const taxResult = await calculateTax();
-
-   tax = taxResult?.tax?.amount_to_collect || 0;
-
-  console.log("Tax:", tax);
-};
-handleCheckout();
-useEffect(() => {
-(async()=>{
-  await handleCheckout();
-})()
-}, [formData.zipCode, formData.state, subtotal, shippingCost]);
   // Calculate discount from applied code
-  const discount = discountApplied ? subtotal * (discountPercent / 100) : 0;
+  const discount = useMemo((): number => {
+    return discountApplied ? subtotal * (discountPercent / 100) : 0;
+  }, [discountApplied, discountPercent, subtotal]);
 
-  // Calculate total
-  const total = subtotal + shippingCost + tax - discount;
+  // Memoized dependencies for tax calculation
+  const taxCalculationDeps = useMemo((): { zip: string; state: string; subtotal: number; shipping: number } => ({
+    zip: formData.zipCode,
+    state: formData.state,
+    subtotal: Math.round(subtotal * 100), // Round to avoid floating point changes
+    shipping: Math.round(shippingCost * 100)
+  }), [formData.zipCode, formData.state, subtotal, shippingCost]);
 
-  // Dynamically load Collect.js script
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://ecrypt.transactiongateway.com/token/Collect.js"; // URL for Collect.js
-    script.setAttribute("data-tokenization-key", "your-tokenization-key-here"); // Replace with your actual tokenization key
-    script.async = true;
-    document.head.appendChild(script);
+  // Smart tax calculation with caching and debouncing
+  useEffect((): (() => void) => {
+    const calculateTax = async (): Promise<void> => {
+      if (!shouldCalculateTax()) {
+        setTax(0);
+        setTaxRate(0);
+        if (!formData.zipCode || !formData.state) {
+          setTaxMessage("Enter address to calculate tax");
+        }
+        return;
+      }
 
-    script.onload = () => {
-      if (window.CollectJS) {
-        window.CollectJS.configure({
-          dataTokenizationKey: "your-tokenization-key-here", // Your tokenization key
-          dataVariant: "inline", // Inline form integration
-          dataPaymentSelector: "#payButton", // Button that triggers payment
+      // Check cache first
+      const cachedTax = getCachedTax(formData.zipCode, formData.state, subtotal);
+      if (cachedTax !== null) {
+        setTax(cachedTax);
+        setTaxRate(subtotal > 0 ? (cachedTax / subtotal) * 100 : 0);
+        setTaxMessage("");
+        return;
+      }
+
+      setIsCalculatingTax(true);
+      setTaxMessage("Calculating tax...");
+      
+      try {
+        const response = await api.post<TaxResponse>('/tax/calculateTax', {
+          amount: subtotal,
+          to_zip: formData.zipCode,
+          to_state: formData.state,
+          shipping: shippingCost
         });
+
+        console.log("Tax API response:", response.data);
+        
+        if (response.data?.tax?.amount_to_collect !== undefined) {
+          const taxAmount: number = response.data.tax.amount_to_collect;
+          setTax(taxAmount);
+          
+          // Calculate tax rate percentage for display
+          const rate: number = subtotal > 0 ? (taxAmount / subtotal) * 100 : 0;
+          setTaxRate(rate);
+          
+          // Cache the successful calculation
+          cacheTaxCalculation(formData.zipCode, formData.state, subtotal, taxAmount);
+          setTaxMessage("");
+        } else {
+          setTax(0);
+          setTaxRate(0);
+          setTaxMessage("Unable to calculate tax. Please check your address.");
+        }
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error("Tax calculation failed:", errorMessage);
+        setTax(0);
+        setTaxRate(0);
+        setTaxMessage("Unable to calculate tax. Please verify your address.");
+      } finally {
+        setIsCalculatingTax(false);
       }
     };
 
-    return () => {
-      document.head.removeChild(script); // Cleanup script on unmount
-    };
-  }, []);
+    // Debounce the tax calculation to avoid too many API calls
+    const timeoutId: NodeJS.Timeout = setTimeout(calculateTax, 500);
+    
+    return (): void => clearTimeout(timeoutId);
+  }, [taxCalculationDeps, shouldCalculateTax, getCachedTax, cacheTaxCalculation, shippingCost, subtotal, formData.state, formData.zipCode]);
+
+  // Calculate total
+  const total = useMemo((): number => {
+    return subtotal + shippingCost + tax - discount;
+  }, [subtotal, shippingCost, tax, discount]);
+
+  // Dynamically load Collect.js script
+  // useEffect((): (() => void) => {
+  //   const script: HTMLScriptElement = document.createElement("script");
+  //   script.src = "https://ecrypt.transactiongateway.com/token/Collect.js";
+  //   script.setAttribute("data-tokenization-key", "your-tokenization-key-here");
+  //   script.async = true;
+  //   document.head.appendChild(script);
+
+  //   const handleScriptLoad = (): void => {
+  //   //   if (window.CollectJS) {
+  //   //     const config: CollectJSConfig = {
+  //   //       dataTokenizationKey: "your-tokenization-key-here",
+  //   //       dataVariant: "inline",
+  //   //       dataPaymentSelector: "#payButton",
+  //   //     };
+  //   //     window.CollectJS.configure(config);
+  //   //   }
+  //   // };
+
+  //   script.addEventListener("load", handleScriptLoad);
+
+  //   return (): void => {
+  //     if (script.parentNode) {
+  //       document.head.removeChild(script);
+  //     }
+  //     script.removeEventListener("load", handleScriptLoad);
+  //   };
+  // }, []);
 
   // Handle form validation and input changes
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
     const { name, value, type } = e.target;
-    const checked = type === "checkbox" ? (e.target as HTMLInputElement).checked : false;
-    const newValue = type === "checkbox" ? checked : value;
+    const isCheckbox: boolean = type === "checkbox";
+    const checked: boolean = isCheckbox ? (e.target as HTMLInputElement).checked : false;
+    const newValue: string | boolean = isCheckbox ? checked : value;
 
-    const newErrors = { ...errors };
+    const newErrors: Errors = { ...errors };
 
-    if (name === "email" && type !== "checkbox") {
+    // Email validation
+    if (name === "email" && !isCheckbox) {
       if (value && !validateEmail(value)) {
         newErrors.email = "Please enter a valid email";
       } else {
@@ -254,118 +456,200 @@ useEffect(() => {
       }
     }
 
-    setFormData((prev) => ({ ...prev, [name]: newValue }));
+    // Card number validation
+    if (name === "cardNumber") {
+      const cleaned: string = value.replace(/\s/g, '');
+      if (cleaned && !/^\d+$/.test(cleaned)) {
+        newErrors.cardNumber = "Card number must contain only digits";
+      } else if (cleaned && cleaned.length !== 16) {
+        newErrors.cardNumber = "Card number must be 16 digits";
+      } else {
+        delete newErrors.cardNumber;
+      }
+      
+      // Format card number with spaces
+      if (cleaned.length <= 16) {
+        const formatted: string = cleaned.replace(/(\d{4})/g, '$1 ').trim();
+        setFormData(prev => ({ ...prev, [name]: formatted }));
+      }
+      return;
+    }
+
+    // Expiry date validation and formatting
+    if (name === "expiryDate") {
+      const cleaned: string = value.replace(/\D/g, '');
+      if (cleaned.length > 4) return;
+      
+      if (cleaned && cleaned.length !== 4) {
+        newErrors.expiryDate = "Enter MM/YY format";
+      } else {
+        delete newErrors.expiryDate;
+      }
+      
+      // Format as MM/YY
+      let formatted: string = cleaned;
+      if (cleaned.length >= 2) {
+        formatted = `${cleaned.slice(0, 2)}/${cleaned.slice(2)}`;
+      }
+      
+      setFormData(prev => ({ ...prev, [name]: formatted }));
+      return;
+    }
+
+    // CVV validation
+    if (name === "cvv") {
+      const cleaned: string = value.replace(/\D/g, '');
+      if (cleaned.length > 6) return;
+      
+      if (cleaned && cleaned.length < 3) {
+        newErrors.cvv = "CVV must be 3-6 digits";
+      } else {
+        delete newErrors.cvv;
+      }
+      
+      setFormData(prev => ({ ...prev, [name]: cleaned }));
+      return;
+    }
+
+    // Card country validation
+    if (name === "cardCountry") {
+      if (!value.trim()) {
+        newErrors.cardCountry = "Please enter country";
+      } else {
+        delete newErrors.cardCountry;
+      }
+    }
+
+    setFormData((prev: FormData): FormData => ({ ...prev, [name]: newValue }));
     setErrors(newErrors);
   };
 
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const validateEmail = (email: string): boolean => {
+    const emailRegex: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  const validateForm = () => {
+  const validateForm = (): boolean => {
     return (
       agreedToTerms &&
       isAgeVerified &&
-      formData.email &&
+      formData.email !== "" &&
       !errors.email &&
       formData.cardNumber.replace(/\s/g, "").length === 16 &&
       formData.expiryDate.length === 5 &&
-      formData.cvv.length === 6 &&
-      formData.cardCountry
+      formData.cvv.length >= 3 &&
+      formData.cvv.length <= 6 &&
+      formData.cardCountry !== "" &&
+      cartItems.length > 0
     );
   };
 
-  const handleApplyDiscount = () => {
-    // Here you would typically validate the discount code with your API
-    // For now, we'll just apply a 5% discount for demonstration
+  const handleApplyDiscount = (): void => {
     if (formData.discountCode.trim() !== "") {
-      setDiscountApplied(true);
-      setDiscountPercent(5);
+      // In a real app, you would validate the discount code with your API
+      // For demonstration, we'll apply a 10% discount for "SAVE10"
+      if (formData.discountCode.toUpperCase() === "SAVE10") {
+        setDiscountApplied(true);
+        setDiscountPercent(10);
+      } else {
+        setDiscountApplied(false);
+        setDiscountPercent(0);
+        alert("Invalid discount code. Try 'SAVE10' for 10% off.");
+      }
     } else {
       setDiscountApplied(false);
       setDiscountPercent(0);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
+    
     if (!validateForm()) {
       alert("Please fill out all required fields correctly.");
       return;
     }
 
-    // If age verification hasn't been completed, stop the form submission
     if (!isAgeVerified) {
       alert("Please verify your age before proceeding with the payment.");
       return;
     }
 
-    // Collect.js payment tokenization process
-    if (window.CollectJS) {
-      window.CollectJS.startPaymentRequest();
+    // if (window.CollectJS) {
+    //   window.CollectJS.startPaymentRequest();
 
-      window.CollectJS.on("complete", async (e: CollectJSEvent) => {
-        const paymentToken = e.paymentToken; // Token received after payment collection
+    //   const handlePaymentComplete = async (event: CollectJSEvent): Promise<void> => {
+    //     const paymentToken: string = event.paymentToken;
 
-        try {
-          // Prepare order data
-          const orderData = {
-            userId: user,
-            items: cartItems.map(item => ({
-              productId: item.productId._id,
-              quantity: item.quantity,
-              price: item.productId.price,
-              discount: item.productId.discount
-            })),
-            shippingInfo: {
-              firstName: formData.firstName,
-              lastName: formData.lastName,
-              email: formData.email,
-              phone: formData.phone,
-              country: formData.country,
-              city: formData.city,
-              state: formData.state,
-              zipCode: formData.zipCode,
-              address: formData.address,
-              apartment: formData.apartment
-            },
-            payment: {
-              paymentToken,
-              amount: Math.round(total * 100), // Convert to cents
-              currency: "USD"
-            },
-            totals: {
-              subtotal,
-              shipping: shippingCost,
-              tax,
-              discount,
-              total
-            }
-          };
+    //     try {
+    //       const orderData: OrderData = {
+    //         userId: user || guestId,
+    //         items: cartItems.map((item: CartItem) => ({
+    //           productId: item.productId._id,
+    //           quantity: item.quantity,
+    //           price: item.productId.price,
+    //           discount: item.productId.discount
+    //         })),
+    //         shippingInfo: {
+    //           firstName: formData.firstName,
+    //           lastName: formData.lastName,
+    //           email: formData.email,
+    //           phone: formData.phone,
+    //           country: formData.country,
+    //           city: formData.city,
+    //           state: formData.state,
+    //           zipCode: formData.zipCode,
+    //           address: formData.address,
+    //           apartment: formData.apartment
+    //         },
+    //         payment: {
+    //           paymentToken,
+    //           amount: Math.round(total * 100),
+    //           currency: "USD"
+    //         },
+    //         totals: {
+    //           subtotal,
+    //           shipping: shippingCost,
+    //           tax,
+    //           discount,
+    //           total
+    //         }
+    //       };
 
-          // Call backend API to process the order
-          const response = await api.post("/api/orders", orderData);
+    //       const response = await api.post<{ success: boolean; message?: string }>("/api/orders", orderData);
 
-          if (response.data.success) {
-            alert("Payment successful! Your order has been placed.");
-            // Clear cart or redirect to order confirmation page
-          } else {
-            alert("Payment failed!");
-          }
-        } catch (error) {
-          console.error("Payment processing error:", error);
-          alert("Failed to process payment. Please try again.");
-        }
-      });
+    //       if (response.data.success) {
+    //         alert("Payment successful! Your order has been placed.");
+    //         // Clear cart or redirect to order confirmation page
+    //       } else {
+    //         alert(`Payment failed: ${response.data.message || 'Unknown error'}`);
+    //       }
+    //     } catch (error: unknown) {
+    //       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    //       console.error("Payment processing error:", errorMessage);
+    //       alert("Failed to process payment. Please try again.");
+    //     }
+    //   };
 
-      window.CollectJS.on("failure", (e: CollectJSEvent) => {
-        console.log("Payment failed:", e);
-        alert("Payment failed. Please check your payment details and try again.");
-      });
-    } else {
-      alert("CollectJS failed to load.");
-    }
+    //   const handlePaymentFailure = (event: CollectJSEvent): void => {
+    //     console.log("Payment failed:", event);
+    //     const failureMessage: string = event.error?.message || event.message || 'Unknown payment error';
+    //     alert(`Payment failed: ${failureMessage}`);
+    //   };
+
+    //   window.CollectJS.on("complete", handlePaymentComplete);
+    //   window.CollectJS.on("failure", handlePaymentFailure);
+
+    //   // Cleanup event listeners
+    //   return (): void => {
+    //     if (window.CollectJS) {
+    //       window.CollectJS.off("complete", handlePaymentComplete);
+    //       window.CollectJS.off("failure", handlePaymentFailure);
+    //     }
+    //   };
+    // } else {
+    //   alert("Payment system failed to load.");
+    // }
   };
 
   if (loading) {
@@ -455,7 +739,6 @@ useEffect(() => {
                   <option value="US">United States</option>
                   <option value="CA">Canada</option>
                   <option value="UK">United Kingdom</option>
-                  {/* Add more countries as needed */}
                 </select>
               </div>
 
@@ -566,64 +849,10 @@ useEffect(() => {
                 Age verification is required by law. Most customers can be verified instantly. Your information will only be used to verify your age.
               </p>
 
-              {/* Date inputs commented out as per original code */}
-              {/* <div className="grid grid-cols-3 gap-3 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    MM <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    name="birthMonth"
-                    placeholder="01"
-                    className={`w-full px-3 py-2 border rounded-md text-sm ${errors.birthMonth ? 'border-red-500' : 'border-gray-300'}`}
-                    value={formData.birthMonth}
-                    onChange={handleInputChange}
-                    min="1"
-                    max="12"
-                  />
-                  {errors.birthMonth && <p className="text-red-500 text-xs mt-1">{errors.birthMonth}</p>}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    DD <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    name="birthDay"
-                    placeholder="02"
-                    className={`w-full px-3 py-2 border rounded-md text-sm ${errors.birthDay ? 'border-red-500' : 'border-gray-300'}`}
-                    value={formData.birthDay}
-                    onChange={handleInputChange}
-                    min="1"
-                    max="31"
-                  />
-                  {errors.birthDay && <p className="text-red-500 text-xs mt-1">{errors.birthDay}</p>}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    YYYY <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    name="birthYear"
-                    placeholder="1998"
-                    className={`w-full px-3 py-2 border rounded-md text-sm ${errors.birthYear ? 'border-red-500' : 'border-gray-300'}`}
-                    value={formData.birthYear}
-                    onChange={handleInputChange}
-                    min="1900"
-                    max={new Date().getFullYear()}
-                  />
-                  {errors.birthYear && <p className="text-red-500 text-xs mt-1">{errors.birthYear}</p>}
-                </div>
-              </div> */}
-
               <button
                 type="button"
                 id="checkout-button"
                 onClick={() => {
-                  // For now, we'll just simulate age verification
-                  // In a real app, you would integrate with an age verification service
                   setIsAgeVerified(true);
                   alert("Age verification initiated. Please follow the verification process.");
                 }}
@@ -649,11 +878,11 @@ useEffect(() => {
               ) : (
                 <>
                   <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
-                    {cartItems.map((item) => {
-                      const price = item.productId.price || 0;
-                      const discount = item.productId.discount || 0;
-                      const discountedPrice = price * (1 - discount / 100);
-                      const itemTotal = discountedPrice * item.quantity;
+                    {cartItems.map((item: CartItem) => {
+                      const price: number = item.productId.price || 0;
+                      const discount: number = item.productId.discount || 0;
+                      const discountedPrice: number = price * (1 - discount / 100);
+                      const itemTotal: number = discountedPrice * item.quantity;
                       
                       return (
                         <div key={item._id} className="flex justify-between text-sm">
@@ -691,8 +920,16 @@ useEffect(() => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Sales Tax</span>
-                      <span className="font-medium pl-[32px]">{tax*100/subtotal}%</span>
-                      <span className="font-medium">${tax.toFixed(2)}</span>
+                      {isCalculatingTax ? (
+                        <span className="text-gray-500 text-sm">Calculating...</span>
+                      ) : taxMessage ? (
+                        <span className="text-xs text-red-600">{taxMessage}</span>
+                      ) : (
+                        <>
+                          <span className="font-medium pl-[32px]">{taxRate.toFixed(2)}%</span>
+                          <span className="font-medium">${tax.toFixed(2)}</span>
+                        </>
+                      )}
                     </div>
                     {discountApplied && (
                       <div className="flex justify-between">
@@ -709,17 +946,13 @@ useEffect(() => {
                   </div>
                 </>
               )}
-               {taxMessage &&(
-
-              <p className="text-xs text-red-600 mt-2">{taxMessage}</p>
-            )}
 
               <div className="flex items-center mt-4">
                 <input
                   type="checkbox"
                   id="terms"
                   checked={agreedToTerms}
-                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAgreedToTerms(e.target.checked)}
                   className="w-4 h-4 rounded border-gray-300"
                 />
                 <label htmlFor="terms" className="ml-2 text-sm text-gray-700">
@@ -737,7 +970,7 @@ useEffect(() => {
                   placeholder="Enter discount code"
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
                   value={formData.discountCode}
-                  onChange={(e) => setFormData(prev => ({ ...prev, discountCode: e.target.value }))}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, discountCode: e.target.value }))}
                 />
                 <button 
                   type="button"
@@ -838,9 +1071,9 @@ useEffect(() => {
               <button
                 id="payButton"
                 type="submit"
-                className={`w-full py-3 rounded-md text-white ${
+                className={`w-full py-3 rounded-md text-white font-medium transition-colors ${
                   isAgeVerified ? "bg-green-600 hover:bg-green-700" : "bg-yellow-600 hover:bg-yellow-700"
-                }`}
+                } ${!validateForm() ? 'opacity-50 cursor-not-allowed' : ''}`}
                 disabled={!isAgeVerified || !validateForm() || cartItems.length === 0}
               >
                 {cartItems.length === 0 ? "Cart is Empty" : 
@@ -1056,11 +1289,11 @@ useEffect(() => {
             ) : (
               <>
                 <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
-                  {cartItems.map((item) => {
-                    const price = item.productId.price || 0;
-                    const discount = item.productId.discount || 0;
-                    const discountedPrice = price * (1 - discount / 100);
-                    const itemTotal = discountedPrice * item.quantity;
+                  {cartItems.map((item: CartItem) => {
+                    const price: number = item.productId.price || 0;
+                    const discount: number = item.productId.discount || 0;
+                    const discountedPrice: number = price * (1 - discount / 100);
+                    const itemTotal: number = discountedPrice * item.quantity;
                     
                     return (
                       <div key={item._id} className="flex justify-between text-sm">
@@ -1095,8 +1328,16 @@ useEffect(() => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Sales Tax</span>
-                    <span className="font-medium">15%</span>
-                    <span className="font-medium">${tax.toFixed(2)}</span>
+                    {isCalculatingTax ? (
+                      <span className="text-gray-500 text-sm">Calculating...</span>
+                    ) : taxMessage ? (
+                      <span className="text-xs text-red-600">{taxMessage}</span>
+                    ) : (
+                      <>
+                        <span className="font-medium">{taxRate.toFixed(2)}%</span>
+                        <span className="font-medium">${tax.toFixed(2)}</span>
+                      </>
+                    )}
                   </div>
                   {discountApplied && (
                     <div className="flex justify-between">
@@ -1113,17 +1354,13 @@ useEffect(() => {
                 </div>
               </>
             )}
-            {taxMessage &&(
-
-              <p className="text-xs text-red-600 mt-2">{taxMessage}</p>
-            )}
 
             <div className="flex items-center mt-4">
               <input
                 type="checkbox"
                 id="termsMobile"
                 checked={agreedToTerms}
-                onChange={(e) => setAgreedToTerms(e.target.checked)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAgreedToTerms(e.target.checked)}
                 className="w-4 h-4 rounded border-gray-300"
               />
               <label htmlFor="termsMobile" className="ml-2 text-sm text-gray-700">
@@ -1141,7 +1378,7 @@ useEffect(() => {
                 placeholder="Enter discount code"
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
                 value={formData.discountCode}
-                onChange={(e) => setFormData(prev => ({ ...prev, discountCode: e.target.value }))}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, discountCode: e.target.value }))}
               />
               <button 
                 type="button"
@@ -1242,9 +1479,9 @@ useEffect(() => {
             <button
               id="payButton"
               type="submit"
-              className={`w-full py-3 rounded-md text-white ${
+              className={`w-full py-3 rounded-md text-white font-medium transition-colors ${
                 isAgeVerified ? "bg-green-600 hover:bg-green-700" : "bg-yellow-600 hover:bg-yellow-700"
-              }`}
+              } ${!validateForm() ? 'opacity-50 cursor-not-allowed' : ''}`}
               disabled={!isAgeVerified || !validateForm() || cartItems.length === 0}
             >
               {cartItems.length === 0 ? "Cart is Empty" : 
