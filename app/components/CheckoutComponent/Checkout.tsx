@@ -1,11 +1,12 @@
 "use client";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import mastercard from "@/public/mastercard.svg";
 import visacard from "@/public/visaelectron.svg";
 import Image from "next/image";
 import api from "@/lib/axios";
 import useUserStore from "@/app/store/userStore";
 import { useCartStore } from "@/app/store/cartStore";
+import { ageCheckerConfig } from "@/lib/ageCheckerConfig";
 
 // Define types
 interface FormData {
@@ -107,38 +108,14 @@ interface TaxResponse {
   };
 }
 
-interface CollectJSEvent {
-  paymentToken: string;
-  status: string;
-  message?: string;
-  error?: {
-    code: string;
-    message: string;
-  };
-}
-
-interface CollectJSConfig {
-  dataTokenizationKey: string;
-  dataVariant: "inline" | "modal";
-  dataPaymentSelector: string;
-  dataCallback?: (event: CollectJSEvent) => void;
-  dataFields?: Record<string, unknown>;
-  dataStyle?: Record<string, unknown>;
-}
-
-interface CollectJSGlobal {
-  configure: (config: CollectJSConfig) => void;
-  startPaymentRequest: () => void;
-  on: (event: "complete" | "failure" | "error", callback: (event: CollectJSEvent) => void) => void;
-  off: (event: string, callback: (event: CollectJSEvent) => void) => void;
-  tokenize: () => void;
-  close: () => void;
-}
-
-interface TaxCacheData {
-  tax: number;
-  timestamp: number;
-  expiresIn: number;
+interface AgeVerificationResult {
+  status: 'verified' | 'underage' | 'failed';
+  timestamp: string;
+  verificationId?: string;
+  ageVerified?: number;
+  country?: string;
+  region?: string;
+  metadata?: Record<string, unknown>;
 }
 
 interface OrderData {
@@ -162,7 +139,7 @@ interface OrderData {
     apartment: string;
   };
   payment: {
-    paymentToken: string;
+    paymentMethod: string;
     amount: number;
     currency: string;
   };
@@ -175,11 +152,23 @@ interface OrderData {
   };
 }
 
-// declare global {
-//   interface Window {
-//     CollectJS?: CollectJSGlobal;
-//   }
-// }
+interface TaxCacheData {
+  tax: number;
+  timestamp: number;
+  expiresIn: number;
+}
+
+declare global {
+  interface Window {
+    AgeChecker?: {
+      verify: (options: {
+        siteId: string;
+        onSuccess: (result: AgeVerificationResult) => void;
+        onFailure?: () => void;
+      }) => void;
+    };
+  }
+}
 
 const CheckoutPage = () => {
   const { user } = useUserStore();
@@ -214,12 +203,16 @@ const CheckoutPage = () => {
   const [errors, setErrors] = useState<Errors>({});
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isAgeVerified, setIsAgeVerified] = useState(false);
+  const [isVerifyingAge, setIsVerifyingAge] = useState(false);
+  const [ageVerificationMessage, setAgeVerificationMessage] = useState<string>("");
   const [discountApplied, setDiscountApplied] = useState(false);
   const [discountPercent, setDiscountPercent] = useState(0);
   const [taxMessage, setTaxMessage] = useState("");
   const [tax, setTax] = useState(0);
   const [taxRate, setTaxRate] = useState(0);
   const [isCalculatingTax, setIsCalculatingTax] = useState(false);
+
+  const ageCheckerInitialized = useRef<boolean>(false);
 
   // Cache for tax calculations
   const cacheTaxCalculation = useCallback((zip: string, state: string, amount: number, calculatedTax: number): void => {
@@ -409,34 +402,125 @@ const CheckoutPage = () => {
     return subtotal + shippingCost + tax - discount;
   }, [subtotal, shippingCost, tax, discount]);
 
-  // Dynamically load Collect.js script
-  // useEffect((): (() => void) => {
-  //   const script: HTMLScriptElement = document.createElement("script");
-  //   script.src = "https://ecrypt.transactiongateway.com/token/Collect.js";
-  //   script.setAttribute("data-tokenization-key", "your-tokenization-key-here");
-  //   script.async = true;
-  //   document.head.appendChild(script);
+  // Dynamically load AgeChecker script
+  useEffect((): (() => void) => {
+    if (ageCheckerInitialized.current) return (): void => {};
 
-  //   const handleScriptLoad = (): void => {
-  //   //   if (window.CollectJS) {
-  //   //     const config: CollectJSConfig = {
-  //   //       dataTokenizationKey: "your-tokenization-key-here",
-  //   //       dataVariant: "inline",
-  //   //       dataPaymentSelector: "#payButton",
-  //   //     };
-  //   //     window.CollectJS.configure(config);
-  //   //   }
-  //   // };
+    // Check if already verified in this session or recently
+    const isAlreadyVerified = localStorage.getItem('age_verified') === 'true';
+    const verificationTimestamp = localStorage.getItem('age_verification_timestamp');
+    const isVerificationRecent = verificationTimestamp 
+      ? (Date.now() - parseInt(verificationTimestamp)) < (24 * 60 * 60 * 1000) // 24 hours
+      : false;
 
-  //   script.addEventListener("load", handleScriptLoad);
+    if (isAlreadyVerified && isVerificationRecent) {
+      setIsAgeVerified(true);
+      setAgeVerificationMessage("✓ Age verified (recently verified)");
+    }
 
-  //   return (): void => {
-  //     if (script.parentNode) {
-  //       document.head.removeChild(script);
-  //     }
-  //     script.removeEventListener("load", handleScriptLoad);
-  //   };
-  // }, []);
+    // Load AgeChecker script
+    const script: HTMLScriptElement = document.createElement("script");
+    script.src = `https://cdn.agechecker.net/static/js/ac.js?key=${ageCheckerConfig.key}`;
+    script.async = true;
+    
+    script.onload = (): void => {
+      console.log("AgeChecker script loaded successfully");
+      ageCheckerInitialized.current = true;
+    };
+
+    script.onerror = (): void => {
+      console.error("Failed to load AgeChecker script");
+      setIsVerifyingAge(false);
+      setAgeVerificationMessage("Age verification service is currently unavailable.");
+    };
+
+    document.head.appendChild(script);
+
+    return (): void => {
+      if (script.parentNode) {
+        document.head.removeChild(script);
+      }
+      ageCheckerInitialized.current = false;
+    };
+  }, []);
+
+  // Handle age verification button click
+  const handleAgeVerification = (): void => {
+    if (!window.AgeChecker) {
+      setAgeVerificationMessage("Age verification service is loading. Please try again in a moment.");
+      return;
+    }
+
+    setIsVerifyingAge(true);
+    setAgeVerificationMessage("Starting age verification...");
+
+    try {
+      window.AgeChecker.verify({
+        siteId: ageCheckerConfig.key,
+        onSuccess: (result: AgeVerificationResult) => {
+          console.log("Age verification result:", result);
+          
+          if (result.status === 'verified') {
+            console.log("User is verified as adult");
+            setIsAgeVerified(true);
+            setIsVerifyingAge(false);
+            setAgeVerificationMessage("✓ Age verified successfully");
+            
+            // Store verification in localStorage for future visits
+            localStorage.setItem('age_verified', 'true');
+            localStorage.setItem('age_verification_timestamp', Date.now().toString());
+            localStorage.setItem('age_verification_id', result.verificationId || '');
+            
+            // Optionally, send verification to your backend
+            if (user || guestId) {
+              api.post('/age-verification/record', {
+                userId: user || guestId,
+                status: 'verified',
+                verificationId: result.verificationId,
+                ageVerified: result.ageVerified,
+                country: result.country,
+                region: result.region,
+                timestamp: result.timestamp,
+                metadata: result.metadata
+              }).catch(error => {
+                console.error("Failed to record age verification:", error);
+              });
+            }
+          } else if (result.status === 'underage') {
+            console.log("User is underage");
+            setIsAgeVerified(false);
+            setIsVerifyingAge(false);
+            setAgeVerificationMessage("Age verification failed. You must be 21+ to purchase.");
+            
+            // Clear any stored verification
+            localStorage.removeItem('age_verified');
+            localStorage.removeItem('age_verification_timestamp');
+            localStorage.removeItem('age_verification_id');
+            
+            // Redirect if configured
+            if (ageCheckerConfig.popupType === 'redirect' && ageCheckerConfig.redirectUrl) {
+              window.location.href = ageCheckerConfig.redirectUrl;
+            }
+          } else {
+            console.log("Age verification failed");
+            setIsAgeVerified(false);
+            setIsVerifyingAge(false);
+            setAgeVerificationMessage("Age verification could not be completed. Please try again.");
+          }
+        },
+        onFailure: () => {
+          console.log("Age verification process failed");
+          setIsVerifyingAge(false);
+          setAgeVerificationMessage("Age verification service is currently unavailable.");
+        }
+      });
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Error starting age verification:", errorMessage);
+      setIsVerifyingAge(false);
+      setAgeVerificationMessage("Failed to start age verification. Please try again.");
+    }
+  };
 
   // Handle form validation and input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
@@ -575,81 +659,56 @@ const CheckoutPage = () => {
       return;
     }
 
-    // if (window.CollectJS) {
-    //   window.CollectJS.startPaymentRequest();
+    try {
+      const orderData: OrderData = {
+        userId: user || guestId,
+        items: cartItems.map((item: CartItem) => ({
+          productId: item.productId._id,
+          quantity: item.quantity,
+          price: item.productId.price,
+          discount: item.productId.discount
+        })),
+        shippingInfo: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          country: formData.country,
+          city: formData.city,
+          state: formData.state,
+          zipCode: formData.zipCode,
+          address: formData.address,
+          apartment: formData.apartment
+        },
+        payment: {
+          paymentMethod: "credit_card", // You'll need to implement actual payment processing
+          amount: Math.round(total * 100),
+          currency: "USD"
+        },
+        totals: {
+          subtotal,
+          shipping: shippingCost,
+          tax,
+          discount,
+          total
+        }
+      };
 
-    //   const handlePaymentComplete = async (event: CollectJSEvent): Promise<void> => {
-    //     const paymentToken: string = event.paymentToken;
+      const response = await api.post<{ success: boolean; message?: string; orderId?: string }>("/api/orders", orderData);
 
-    //     try {
-    //       const orderData: OrderData = {
-    //         userId: user || guestId,
-    //         items: cartItems.map((item: CartItem) => ({
-    //           productId: item.productId._id,
-    //           quantity: item.quantity,
-    //           price: item.productId.price,
-    //           discount: item.productId.discount
-    //         })),
-    //         shippingInfo: {
-    //           firstName: formData.firstName,
-    //           lastName: formData.lastName,
-    //           email: formData.email,
-    //           phone: formData.phone,
-    //           country: formData.country,
-    //           city: formData.city,
-    //           state: formData.state,
-    //           zipCode: formData.zipCode,
-    //           address: formData.address,
-    //           apartment: formData.apartment
-    //         },
-    //         payment: {
-    //           paymentToken,
-    //           amount: Math.round(total * 100),
-    //           currency: "USD"
-    //         },
-    //         totals: {
-    //           subtotal,
-    //           shipping: shippingCost,
-    //           tax,
-    //           discount,
-    //           total
-    //         }
-    //       };
-
-    //       const response = await api.post<{ success: boolean; message?: string }>("/api/orders", orderData);
-
-    //       if (response.data.success) {
-    //         alert("Payment successful! Your order has been placed.");
-    //         // Clear cart or redirect to order confirmation page
-    //       } else {
-    //         alert(`Payment failed: ${response.data.message || 'Unknown error'}`);
-    //       }
-    //     } catch (error: unknown) {
-    //       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    //       console.error("Payment processing error:", errorMessage);
-    //       alert("Failed to process payment. Please try again.");
-    //     }
-    //   };
-
-    //   const handlePaymentFailure = (event: CollectJSEvent): void => {
-    //     console.log("Payment failed:", event);
-    //     const failureMessage: string = event.error?.message || event.message || 'Unknown payment error';
-    //     alert(`Payment failed: ${failureMessage}`);
-    //   };
-
-    //   window.CollectJS.on("complete", handlePaymentComplete);
-    //   window.CollectJS.on("failure", handlePaymentFailure);
-
-    //   // Cleanup event listeners
-    //   return (): void => {
-    //     if (window.CollectJS) {
-    //       window.CollectJS.off("complete", handlePaymentComplete);
-    //       window.CollectJS.off("failure", handlePaymentFailure);
-    //     }
-    //   };
-    // } else {
-    //   alert("Payment system failed to load.");
-    // }
+      if (response.data.success) {
+        alert(`Order placed successfully! Order ID: ${response.data.orderId}`);
+        // Clear cart or redirect to order confirmation page
+        // You might want to redirect to a thank you page
+        // window.location.href = `/order-confirmation/${response.data.orderId}`;
+      } else {
+        alert(`Order failed: ${response.data.message || 'Unknown error'}`);
+      }
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Order processing error:", errorMessage);
+      alert("Failed to process order. Please try again.");
+    }
   };
 
   if (loading) {
@@ -842,27 +901,51 @@ const CheckoutPage = () => {
               </div>
             </div>
 
-            {/* Date of Birth */}
+            {/* Date of Birth & Age Verification */}
             <div className="bg-white rounded-lg p-[16px] md:p-[32px]">
-              <h3 className="font-semibold mb-2">Enter your date of birth</h3>
+              <h3 className="font-semibold mb-2">Age Verification</h3>
               <p className="text-xs text-gray-600 mb-4">
                 Age verification is required by law. Most customers can be verified instantly. Your information will only be used to verify your age.
               </p>
 
+              {/* Age Verification Status */}
+              {ageVerificationMessage && (
+                <div className={`mb-4 p-3 rounded-md text-sm ${
+                  isAgeVerified 
+                    ? 'bg-green-50 text-green-800 border border-green-200' 
+                    : ageVerificationMessage.includes("unavailable")
+                    ? 'bg-yellow-50 text-yellow-800 border border-yellow-200'
+                    : 'bg-red-50 text-red-800 border border-red-200'
+                }`}>
+                  {ageVerificationMessage}
+                </div>
+              )}
+
               <button
-                type="button"
+                onClick={handleAgeVerification}
                 id="checkout-button"
-                onClick={() => {
-                  setIsAgeVerified(true);
-                  alert("Age verification initiated. Please follow the verification process.");
-                }}
-                className={`w-full font-medium py-2 rounded-md text-sm ${
+                disabled={isVerifyingAge}
+                className={`w-full font-medium py-2 rounded-md text-sm transition-colors ${
                   isAgeVerified 
                     ? 'bg-green-600 text-white hover:bg-green-700' 
+                    : isVerifyingAge
+                    ? 'bg-gray-400 text-white cursor-not-allowed'
                     : 'bg-yellow-600 hover:bg-yellow-700 text-white'
                 }`}
               >
-                {isAgeVerified ? '✓ Age Verified' : 'Verify Age'}
+                {isVerifyingAge ? (
+                  <span className="flex items-center justify-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Verifying...
+                  </span>
+                ) : isAgeVerified ? (
+                  '✓ Age Verified'
+                ) : (
+                  'Verify Age'
+                )}
               </button>
             </div>
           </div>
@@ -1069,7 +1152,6 @@ const CheckoutPage = () => {
               </div>
 
               <button
-                id="payButton"
                 type="submit"
                 className={`w-full py-3 rounded-md text-white font-medium transition-colors ${
                   isAgeVerified ? "bg-green-600 hover:bg-green-700" : "bg-yellow-600 hover:bg-yellow-700"
@@ -1256,27 +1338,51 @@ const CheckoutPage = () => {
             </div>
           </div>
 
-          {/* Date of Birth */}
+          {/* Date of Birth & Age Verification */}
           <div className="bg-white p-[16px] rounded-lg">
-            <h3 className="font-semibold mb-2">Enter your date of birth</h3>
+            <h3 className="font-semibold mb-2">Age Verification</h3>
             <p className="text-xs text-gray-600 mb-4">
               Age verification is required by law. Most customers can be verified instantly. Your information will only be used to verify your age.
             </p>
 
+            {/* Age Verification Status */}
+            {ageVerificationMessage && (
+              <div className={`mb-4 p-3 rounded-md text-sm ${
+                isAgeVerified 
+                  ? 'bg-green-50 text-green-800 border border-green-200' 
+                  : ageVerificationMessage.includes("unavailable")
+                  ? 'bg-yellow-50 text-yellow-800 border border-yellow-200'
+                  : 'bg-red-50 text-red-800 border border-red-200'
+              }`}>
+                {ageVerificationMessage}
+              </div>
+            )}
+
             <button 
-              type="button"
+              onClick={handleAgeVerification}
               id="checkout-button"
-              onClick={() => {
-                setIsAgeVerified(true);
-                alert("Age verification initiated. Please follow the verification process.");
-              }}
-              className={`w-full font-medium py-2 rounded-md text-sm ${
+              disabled={isVerifyingAge}
+              className={`w-full font-medium py-2 rounded-md text-sm transition-colors ${
                 isAgeVerified 
                   ? 'bg-green-600 text-white hover:bg-green-700' 
+                  : isVerifyingAge
+                  ? 'bg-gray-400 text-white cursor-not-allowed'
                   : 'bg-yellow-600 hover:bg-yellow-700 text-white'
               }`}
             >
-              {isAgeVerified ? '✓ Age Verified' : 'Verify Age'}
+              {isVerifyingAge ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Verifying...
+                </span>
+              ) : isAgeVerified ? (
+                '✓ Age Verified'
+              ) : (
+                'Verify Age'
+              )}
             </button>
           </div>
 
@@ -1477,7 +1583,6 @@ const CheckoutPage = () => {
             </div>
 
             <button
-              id="payButton"
               type="submit"
               className={`w-full py-3 rounded-md text-white font-medium transition-colors ${
                 isAgeVerified ? "bg-green-600 hover:bg-green-700" : "bg-yellow-600 hover:bg-yellow-700"
