@@ -14,8 +14,8 @@ export default function ProductImages({ images, currentImageIndex, setCurrentIma
   return (
     <div className="">
       <div className="bg-white rounded-lg shadow-sm overflow-hidden ">
-        <div className="relative  aspect-square flex items-center justify-center ">
-          <img src={images[currentImageIndex]} alt="Product" className="object-cover w-9/10 rounded-2xl" />
+        <div className="relative  aspect-square flex items-center justify-center  ">
+          <img src={images[currentImageIndex]} alt="Product" className="object-fit max-h-[600px] rounded-2xl " />
           
 
           <button onClick={handlePrev} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full transition">
