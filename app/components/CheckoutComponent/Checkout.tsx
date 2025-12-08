@@ -6,9 +6,10 @@ import Image from "next/image";
 import api from "@/lib/axios";
 import useUserStore from "@/app/store/userStore";
 import { useCartStore } from "@/app/store/cartStore";
-import { ageCheckerConfig } from "@/lib/ageCheckerConfig";
+import { ageCheckerConfig } from "@/lib/ageCheckerConfig"; // Your existing config
+import type { AgeVerificationResult } from "@/lib/ageChecker"; // Your existing types
 
-// Define types
+// Define types for form data, errors, etc.
 interface FormData {
   email: string;
   firstName: string;
@@ -108,16 +109,6 @@ interface TaxResponse {
   };
 }
 
-interface AgeVerificationResult {
-  status: 'verified' | 'underage' | 'failed';
-  timestamp: string;
-  verificationId?: string;
-  ageVerified?: number;
-  country?: string;
-  region?: string;
-  metadata?: Record<string, unknown>;
-}
-
 interface OrderData {
   userId: string | undefined;
   items: Array<{
@@ -156,18 +147,6 @@ interface TaxCacheData {
   tax: number;
   timestamp: number;
   expiresIn: number;
-}
-
-declare global {
-  interface Window {
-    AgeChecker?: {
-      verify: (options: {
-        siteId: string;
-        onSuccess: (result: AgeVerificationResult) => void;
-        onFailure?: () => void;
-      }) => void;
-    };
-  }
 }
 
 const CheckoutPage = () => {
@@ -257,7 +236,7 @@ const CheckoutPage = () => {
       cartItems.length > 0 &&
       subtotal > 0
     );
-  }, [formData.zipCode, formData.state, cartItems.length]);
+  }, [formData.zipCode, formData.state, cartItems.length,]);
 
   // Fetch cart data and service pricing
   useEffect(() => {
@@ -402,9 +381,9 @@ const CheckoutPage = () => {
     return subtotal + shippingCost + tax - discount;
   }, [subtotal, shippingCost, tax, discount]);
 
-  // Dynamically load AgeChecker script
+  // Initialize AgeChecker
   useEffect((): (() => void) => {
-    if (ageCheckerInitialized.current) return (): void => {};
+    if (ageCheckerInitialized.current || typeof window === 'undefined') return ()=>{};
 
     // Check if already verified in this session or recently
     const isAlreadyVerified = localStorage.getItem('age_verified') === 'true';
@@ -418,14 +397,30 @@ const CheckoutPage = () => {
       setAgeVerificationMessage("✓ Age verified (recently verified)");
     }
 
-    // Load AgeChecker script
+    // Check if AgeChecker script is already loaded
+    if (window.AgeChecker) {
+      console.log("AgeChecker already loaded");
+      ageCheckerInitialized.current = true;
+      return ()=>{};
+    }
+
+    // Load AgeChecker script using your configuration
     const script: HTMLScriptElement = document.createElement("script");
     script.src = `https://cdn.agechecker.net/static/js/ac.js?key=${ageCheckerConfig.key}`;
     script.async = true;
     
     script.onload = (): void => {
       console.log("AgeChecker script loaded successfully");
+      console.log("AgeChecker global object:", window.AgeChecker);
       ageCheckerInitialized.current = true;
+      
+      // Initialize AgeChecker with your config
+      if (window.AgeChecker) {
+        console.log("AgeChecker initialized successfully");
+      } else {
+        console.error("AgeChecker loaded but window.AgeChecker is undefined");
+        setAgeVerificationMessage("Age verification failed to initialize.");
+      }
     };
 
     script.onerror = (): void => {
@@ -446,7 +441,10 @@ const CheckoutPage = () => {
 
   // Handle age verification button click
   const handleAgeVerification = (): void => {
+    console.log("Age verification button clicked");
+    
     if (!window.AgeChecker) {
+      console.error("AgeChecker not available");
       setAgeVerificationMessage("Age verification service is loading. Please try again in a moment.");
       return;
     }
@@ -455,6 +453,7 @@ const CheckoutPage = () => {
     setAgeVerificationMessage("Starting age verification...");
 
     try {
+      // Use your AgeChecker configuration
       window.AgeChecker.verify({
         siteId: ageCheckerConfig.key,
         onSuccess: (result: AgeVerificationResult) => {
@@ -531,7 +530,6 @@ const CheckoutPage = () => {
 
     const newErrors: Errors = { ...errors };
 
-    // Email validation
     if (name === "email" && !isCheckbox) {
       if (value && !validateEmail(value)) {
         newErrors.email = "Please enter a valid email";
@@ -699,8 +697,6 @@ const CheckoutPage = () => {
       if (response.data.success) {
         alert(`Order placed successfully! Order ID: ${response.data.orderId}`);
         // Clear cart or redirect to order confirmation page
-        // You might want to redirect to a thank you page
-        // window.location.href = `/order-confirmation/${response.data.orderId}`;
       } else {
         alert(`Order failed: ${response.data.message || 'Unknown error'}`);
       }
@@ -1028,6 +1024,9 @@ const CheckoutPage = () => {
                     <span>${total.toFixed(2)}</span>
                   </div>
                 </>
+              )}
+              {taxMessage && (
+                <p className="text-xs text-red-600 mt-2">{taxMessage}</p>
               )}
 
               <div className="flex items-center mt-4">
@@ -1459,6 +1458,9 @@ const CheckoutPage = () => {
                   <span>${total.toFixed(2)}</span>
                 </div>
               </>
+            )}
+            {taxMessage && (
+              <p className="text-xs text-red-600 mt-2">{taxMessage}</p>
             )}
 
             <div className="flex items-center mt-4">
