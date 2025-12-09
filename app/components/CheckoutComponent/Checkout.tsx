@@ -800,15 +800,20 @@ const CheckoutPage = () => {
                 </label>
               </div>
             </div>
-          </div>
-           <button id="checkout-button">
+            <div>
+              
+             <button id="checkout-button" className="bg-white text-white py-4 w-full rounded-md hover:bg-blue-200 transition-colors">
 
         {isAgeChecked ? (
           <p style={{ color: "green" }}>Age verification passed ✅</p>
         ) : (
-          <p style={{ color: "red" }}>Please verify your age to continue</p>
+          <p style={{ color: "black" }}>Please verify your age </p>
         )}
-        </button>
+        </button> 
+              
+              </div> 
+          </div>
+          
 
           {/* RIGHT COLUMN: Order Summary + Discount + Payment */}
           <div className="space-y-6">
@@ -1198,15 +1203,16 @@ const CheckoutPage = () => {
                 Save this information for next time
               </label>
             </div>
+           
           </div>
-            <button id="checkout-button">
+              <button id="checkout-button" className="bg-white text-white py-4 w-full rounded-md hover:bg-blue-200 transition-colors">
 
         {isAgeChecked ? (
           <p style={{ color: "green" }}>Age verification passed ✅</p>
         ) : (
-          <p style={{ color: "red" }}>Please verify your age to continue</p>
+          <p style={{ color: "black" }}>Please verify your age </p>
         )}
-        </button>
+        </button> 
 
           {/* Order Summary */}
           <div className="bg-white p-[16px] rounded-lg">
