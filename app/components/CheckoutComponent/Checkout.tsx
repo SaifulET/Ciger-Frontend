@@ -246,6 +246,7 @@ const CheckoutPage = () => {
 
   const collectJSConfiguredRef = useRef(false);
   const COLLECT_JS_TOKENIZATION_KEY = "kys4zk-Gg5DDh-35QMup-h39wNz";
+ 
 
   // Age Checker
   useEffect(() => {
