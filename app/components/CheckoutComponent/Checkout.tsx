@@ -7,9 +7,6 @@ import api from "@/lib/axios";
 import useUserStore from "@/app/store/userStore";
 import { useCartStore } from "@/app/store/cartStore";
 
-
-
-
 interface AgeCheckerConfig {
   element: string;
   key: string;
@@ -17,16 +14,65 @@ interface AgeCheckerConfig {
   onVerified?: () => void;
 }
 
-// Minimal type for the global AgeChecker object loaded by the script
-interface AgeCheckerWindow {
-  AgeCheckerConfig?: AgeCheckerConfig;
+// Collect.js Types
+interface CollectJSCard {
+  number: string;
+  bin: string;
+  exp: string;
+  hash: string;
+  type: string;
+}
+
+interface CollectJSCheck {
+  name: string;
+  account: string;
+  hash: string;
+  aba: string;
+}
+
+interface CollectJSResponse {
+  token: string;
+  card: CollectJSCard;
+  check: CollectJSCheck;
+}
+
+// More specific interface for validation messages
+interface CollectJSValidationMessages {
+  ccnumber?: {
+    required?: string;
+    invalid?: string;
+  };
+  ccexp?: {
+    required?: string;
+    invalid?: string;
+  };
+  cvv?: {
+    required?: string;
+    invalid?: string;
+  };
+  [key: string]: unknown;
+}
+
+interface CollectJSConfig {
+  callback: (response: CollectJSResponse) => void;
+  paymentType?: 'cc' | 'ach' | 'eft';
+  fields?: Record<string, unknown>;
+  style?: Record<string, unknown>;
+  validationMessages?: CollectJSValidationMessages;
+
 }
 
 declare global {
   interface Window {
     AgeCheckerConfig?: AgeCheckerConfig;
+    CollectJS?: {
+      configure: (config: CollectJSConfig) => void;
+      startPaymentRequest: () => void;
+      closeCheckout?: () => void;
+    };
   }
 }
+
 // Define types for form data, errors, etc.
 interface FormData {
   email: string;
@@ -151,6 +197,7 @@ interface OrderData {
     paymentMethod: string;
     amount: number;
     currency: string;
+    paymentToken?: string; // Add payment token from Collect.js
   };
   totals: {
     subtotal: number;
@@ -205,17 +252,24 @@ const CheckoutPage = () => {
   const [tax, setTax] = useState(0);
   const [taxRate, setTaxRate] = useState(0);
   const [isCalculatingTax, setIsCalculatingTax] = useState(false);
+  const [isAgeChecked, setIsAgeChecked] = useState(true);
+  
+  // Collect.js states
+  const [isCollectJSLoaded, setIsCollectJSLoaded] = useState(false);
+  const [paymentToken, setPaymentToken] = useState<string | null>(null);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [collectJSError, setCollectJSError] = useState<string | null>(null);
+  
+  const collectJSConfiguredRef = useRef(false);
+  const COLLECT_JS_TOKENIZATION_KEY = "kys4zk-Gg5DDh-35QMup-h39wNz"; // Your Collect.js tokenization key
 
-
-
-  const [isAgeChecked, setIsAgeChecked] = useState(false);
-
+  // Age Checker
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     const config: AgeCheckerConfig = {
       element: "#checkout-button",
-      key: "LtE6WKMhRT41WntUJhk5oiEpuYl6g6SI", // Replace with your API key
+      key: "LtE6WKMhRT41WntUJhk5oiEpuYl6g6SI",
       onVerified: () => {
         console.log("Age verification successful!");
         setIsAgeChecked(true);
@@ -240,6 +294,179 @@ const CheckoutPage = () => {
     };
   }, []);
 
+  // Load and configure Collect.js
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // Check if Collect.js is already loaded
+    if (window.CollectJS) {
+      console.log("Collect.js already loaded, configuring...");
+      configureCollectJS();
+      setIsCollectJSLoaded(true);
+      return;
+    }
+
+    // Check if script already exists
+    if (document.querySelector('script[src*="Collect.js"]')) {
+      setIsCollectJSLoaded(true);
+      return;
+    }
+
+    // Load Collect.js script
+    const script = document.createElement("script");
+    script.src = "https://ecrypt.transactiongateway.com/token/Collect.js";
+    script.setAttribute("data-tokenization-key", COLLECT_JS_TOKENIZATION_KEY);
+    script.async = true;
+
+    script.onload = () => {
+      console.log("Collect.js loaded successfully");
+      setIsCollectJSLoaded(true);
+      setTimeout(() => {
+        configureCollectJS();
+      }, 100);
+    };
+
+    script.onerror = (error) => {
+      console.error("Failed to load Collect.js:", error);
+      setCollectJSError("Failed to load payment processor. Please refresh the page.");
+      setIsCollectJSLoaded(false);
+    };
+
+    document.head.appendChild(script);
+
+    return () => {
+      // Cleanup: remove script if component unmounts
+      const existingScript = document.querySelector('script[src*="Collect.js"]');
+      if (existingScript && document.head.contains(existingScript)) {
+        document.head.removeChild(existingScript);
+      }
+    };
+  }, []);
+
+  // Configure Collect.js with callback
+  const configureCollectJS = () => {
+    if (!window.CollectJS || collectJSConfiguredRef.current) {
+      return;
+    }
+
+    try {
+      const config: CollectJSConfig = {
+        paymentType: 'cc',
+        callback: handleCollectJSCallback,
+        // Optional: Customize validation messages
+        validationMessages: {
+          ccnumber: {
+            required: 'Card number is required',
+            invalid: 'Card number is invalid'
+          },
+          ccexp: {
+            required: 'Expiration date is required',
+            invalid: 'Expiration date is invalid'
+          },
+          cvv: {
+            required: 'CVV is required',
+            invalid: 'CVV is invalid'
+          }
+        },
+        // Optional: Customize lightbox style
+        style: {
+          '.lightbox': 'background: rgba(0,0,0,0.7)',
+          '.lightbox-content': 'border-radius: 10px; padding: 20px;',
+          'input': 'padding: 12px; border-radius: 6px; border: 1px solid #d1d5db;',
+          'button': 'background-color: #059669; padding: 12px 24px; border-radius: 6px;'
+        }
+      };
+
+      window.CollectJS.configure(config);
+      collectJSConfiguredRef.current = true;
+      console.log("Collect.js configured successfully");
+      setCollectJSError(null);
+    } catch (configError) {
+      console.error("Error configuring Collect.js:", configError);
+      setCollectJSError("Failed to configure payment processor.");
+    }
+  };
+
+  // Handle the response from Collect.js
+  const handleCollectJSCallback = (response: CollectJSResponse) => {
+    console.log("Collect.js callback received:", response);
+    
+    // Update state with the payment token
+    setPaymentToken(response.token);
+    console.log("Collect.js payment tokens:", response.token);
+    setIsProcessingPayment(false);
+    
+    // Show success message
+    // alert(`Payment token received successfully! Token: ${response.token.substring(0, 20)}...`);
+    console.log("Payment token:", response.token,validateForm(),"abcdddddddddd");
+    console.log("validate form result:",validateForm());
+    // Now you can submit the order with the payment token
+   
+    if (validateForm()) {
+      console.log("Submitting order with payment token...");
+      submitOrderWithToken(response.token);
+    }
+  };
+
+  // Submit order with payment token
+  const submitOrderWithToken = async (token: string) => {
+    try {
+      console.log("Preparing to submit order with token:q", token);
+      const orderData: OrderData = {
+        userId: user || guestId,
+        items: cartItems.map((item: CartItem) => ({
+          productId: item.productId._id,
+          quantity: item.quantity,
+          price: item.productId.price,
+          discount: item.productId.discount
+        })),
+        shippingInfo: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          country: formData.country,
+          city: formData.city,
+          state: formData.state,
+          zipCode: formData.zipCode,
+          address: formData.address,
+          apartment: formData.apartment
+        },
+        payment: {
+          paymentMethod: "credit_card",
+          amount:total,
+          currency: "USD",
+          paymentToken: token // Add the Collect.js token here
+        },
+        totals: {
+          subtotal,
+          shipping: shippingCost,
+          tax,
+          discount,
+          total
+        }
+      };
+
+      console.log("Submitting order with token:", orderData);
+      
+      // Make API call to your backend
+      const response = await api.post<{ success: boolean; message?: string; orderId?: string }>("/payment/payment", orderData);
+console.log("Order submission response:", response.data);
+      if (response.data.success) {
+        alert(`Order placed successfully! Order ID: ${response.data.orderId}`);
+        // Clear cart or redirect to order confirmation page
+      } else {
+        alert(`Order failed: ${response.data.message || 'Unknown error'}`);
+      }
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Order processing error:", errorMessage);
+      alert("Failed to process order. Please try again.");
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
   // Cache for tax calculations
   const cacheTaxCalculation = useCallback((zip: string, state: string, amount: number, calculatedTax: number): void => {
     if (typeof window === 'undefined') return;
@@ -248,7 +475,7 @@ const CheckoutPage = () => {
     const cacheData: TaxCacheData = {
       tax: calculatedTax,
       timestamp: Date.now(),
-      expiresIn: 24 * 60 * 60 * 1000 // 24 hours
+      expiresIn: 24 * 60 * 60 * 1000
     };
     localStorage.setItem(cacheKey, JSON.stringify(cacheData));
   }, []);
@@ -283,7 +510,7 @@ const CheckoutPage = () => {
       cartItems.length > 0 &&
       subtotal > 0
     );
-  }, [formData.zipCode, formData.state, cartItems.length,]);
+  }, [formData.zipCode, formData.state, cartItems.length]);
 
   // Fetch cart data and service pricing
   useEffect(() => {
@@ -304,7 +531,7 @@ const CheckoutPage = () => {
           console.log('fetching cart for guest',guestId);
           const cartResponse = await api.get<CartApiResponse>(`/cart/getUserCart/${guestId}`);
           console.log(cartResponse.data,'cart response in checkout for guest'); 
-         if (cartResponse.data.success) {
+          if (cartResponse.data.success) {
             setCartItems(cartResponse.data.data);
           }
         }
@@ -352,7 +579,7 @@ const CheckoutPage = () => {
   const taxCalculationDeps = useMemo((): { zip: string; state: string; subtotal: number; shipping: number } => ({
     zip: formData.zipCode,
     state: formData.state,
-    subtotal: Math.round(subtotal * 100), // Round to avoid floating point changes
+    subtotal: Math.round(subtotal * 100),
     shipping: Math.round(shippingCost * 100)
   }), [formData.zipCode, formData.state, subtotal, shippingCost]);
 
@@ -417,7 +644,6 @@ const CheckoutPage = () => {
       }
     };
 
-    // Debounce the tax calculation to avoid too many API calls
     const timeoutId: NodeJS.Timeout = setTimeout(calculateTax, 500);
     
     return (): void => clearTimeout(timeoutId);
@@ -523,19 +749,13 @@ const CheckoutPage = () => {
       agreedToTerms &&
       formData.email !== "" &&
       !errors.email &&
-      formData.cardNumber.replace(/\s/g, "").length === 16 &&
-      formData.expiryDate.length === 5 &&
-      formData.cvv.length >= 3 &&
-      formData.cvv.length <= 6 &&
-      formData.cardCountry !== "" &&
+      isAgeChecked && // Require age verification
       cartItems.length > 0
     );
   };
 
   const handleApplyDiscount = (): void => {
     if (formData.discountCode.trim() !== "") {
-      // In a real app, you would validate the discount code with your API
-      // For demonstration, we'll apply a 10% discount for "SAVE10"
       if (formData.discountCode.toUpperCase() === "SAVE10") {
         setDiscountApplied(true);
         setDiscountPercent(10);
@@ -550,61 +770,35 @@ const CheckoutPage = () => {
     }
   };
 
+  // Modified handleSubmit to use Collect.js
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     
     if (!validateForm()) {
-      alert("Please fill out all required fields correctly.");
+      alert("Please fill out all required fields correctly and verify your age.");
       return;
     }
 
+    if (!isCollectJSLoaded) {
+      alert("Payment processor is still loading. Please try again in a moment.");
+      return;
+    }
+
+    if (!window.CollectJS) {
+      alert("Payment processor not available. Please refresh the page.");
+      return;
+    }
+
+    setIsProcessingPayment(true);
+    
     try {
-      const orderData: OrderData = {
-        userId: user || guestId,
-        items: cartItems.map((item: CartItem) => ({
-          productId: item.productId._id,
-          quantity: item.quantity,
-          price: item.productId.price,
-          discount: item.productId.discount
-        })),
-        shippingInfo: {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-          country: formData.country,
-          city: formData.city,
-          state: formData.state,
-          zipCode: formData.zipCode,
-          address: formData.address,
-          apartment: formData.apartment
-        },
-        payment: {
-          paymentMethod: "credit_card", // You'll need to implement actual payment processing
-          amount: Math.round(total * 100),
-          currency: "USD"
-        },
-        totals: {
-          subtotal,
-          shipping: shippingCost,
-          tax,
-          discount,
-          total
-        }
-      };
-
-      const response = await api.post<{ success: boolean; message?: string; orderId?: string }>("/api/orders", orderData);
-
-      if (response.data.success) {
-        alert(`Order placed successfully! Order ID: ${response.data.orderId}`);
-        // Clear cart or redirect to order confirmation page
-      } else {
-        alert(`Order failed: ${response.data.message || 'Unknown error'}`);
-      }
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error("Order processing error:", errorMessage);
-      alert("Failed to process order. Please try again.");
+      // This triggers the Collect.js lightbox/payment modal
+      window.CollectJS.startPaymentRequest();
+      // The actual payment processing will continue in handleCollectJSCallback
+    } catch (error) {
+      console.error("Error starting payment request:", error);
+      alert("Failed to open payment window.");
+      setIsProcessingPayment(false);
     }
   };
 
@@ -618,9 +812,17 @@ const CheckoutPage = () => {
 
   return (
     <div className="min-h-screen p-[16px] md:p-[32px]">
-       <noscript>
+      <noscript>
         <meta httpEquiv="refresh" content="0;url=https://agechecker.net/noscript" />
       </noscript>
+    
+      
+      {!isCollectJSLoaded && (
+        <div className="max-w-6xl mx-auto mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-blue-700">Loading payment processor...</p>
+        </div>
+      )}
+
       <div className="">
         <h1 className="bg-white rounded-lg text-[28px] font-semibold leading-[48px] text-gray-900 text-center p-[16px] md:p-[32px] mb-[16px] md:mb-[32px]">
           Checkout
@@ -801,17 +1003,14 @@ const CheckoutPage = () => {
               </div>
             </div>
             <div>
-              
-             <button id="checkout-button" className="bg-white text-white py-4 w-full rounded-md hover:bg-blue-200 transition-colors">
-
-        {isAgeChecked ? (
-          <p style={{ color: "green" }}>Age verification passed ✅</p>
-        ) : (
-          <p style={{ color: "black" }}>Please verify your age </p>
-        )}
-        </button> 
-              
-              </div> 
+              <button id="checkout-button" className="bg-white text-white py-4 w-full rounded-md hover:bg-blue-200 transition-colors">
+                {isAgeChecked ? (
+                  <p style={{ color: "green" }}>Age verification passed ✅</p>
+                ) : (
+                  <p style={{ color: "black" }}>Please verify your age</p>
+                )}
+              </button>
+            </div>
           </div>
           
 
@@ -836,11 +1035,7 @@ const CheckoutPage = () => {
                         <div key={item._id} className="flex justify-between text-sm">
                           <div className="flex-1">
                             <p className="text-gray-700">{item.productId.name}</p>
-                            {discount > 0 && (
-                              <p className="text-xs text-gray-500">
-                                Discount: {discount}% off
-                              </p>
-                            )}
+                          
                           </div>
                           <div className="flex gap-8 ml-4">
                             <span className="text-gray-600 w-16 text-right">${discountedPrice.toFixed(2)}</span>
@@ -894,9 +1089,7 @@ const CheckoutPage = () => {
                   </div>
                 </>
               )}
-              {taxMessage && (
-                <p className="text-xs text-red-600 mt-2">{taxMessage}</p>
-              )}
+              
 
               <div className="flex items-center mt-4">
                 <input
@@ -933,60 +1126,35 @@ const CheckoutPage = () => {
               </div>
             </div>
 
-            {/* Payment */}
+            {/* Payment Form */}
             <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg">
               <h2 className="text-lg font-semibold mb-4">Payment</h2>
+              
+              {/* Collect.js Info */}
+              {/* <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <p className="text-sm text-blue-700">
+                  <strong>Secure Payment:</strong> Payment details will be collected securely through our payment processor.
+                  {paymentToken && (
+                    <span className="block mt-1 text-green-600">
+                      ✓ Payment token received: {paymentToken.substring(0, 20)}...
+                    </span>
+                  )}
+                </p>
+              </div> */}
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Card Number <span className="text-red-500">*</span>
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    placeholder="xxxx xxxx xxxx xxxx"
-                    className={`flex-1 px-3 py-2 border rounded-md text-sm ${errors.cardNumber ? 'border-red-500' : 'border-gray-300'}`}
-                    value={formData.cardNumber}
-                    onChange={handleInputChange}
-                    name="cardNumber"
-                    maxLength={19}
-                  /> 
-                  <Image src={mastercard} alt="mastercard" width={30} height={30}/>
-                  <Image src={visacard} alt="visaCard" width={30} height={30}/>
-                </div>
-                {errors.cardNumber && <p className="text-red-500 text-xs mt-1">{errors.cardNumber}</p>}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Expiration Date <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="MM/YY"
-                    className={`w-full px-3 py-2 border rounded-md text-sm ${errors.expiryDate ? 'border-red-500' : 'border-gray-300'}`}
-                    value={formData.expiryDate}
-                    onChange={handleInputChange}
-                    name="expiryDate"
-                    maxLength={5}
-                  />
-                  {errors.expiryDate && <p className="text-red-500 text-xs mt-1">{errors.expiryDate}</p>}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    CVV <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="CVV"
-                    className={`w-full px-3 py-2 border rounded-md text-sm ${errors.cvv ? 'border-red-500' : 'border-gray-300'}`}
-                    value={formData.cvv}
-                    onChange={handleInputChange}
-                    name="cvv"
-                    maxLength={6}
-                  />
-                  {errors.cvv && <p className="text-red-500 text-xs mt-1">{errors.cvv}</p>}
+                {/* <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Card Type
+                </label> */}
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Image src={mastercard} alt="Mastercard" width={40} height={25} />
+                    {/* <span className="text-sm">Mastercard</span> */}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Image src={visacard} alt="Visa" width={40} height={25} />
+                    {/* <span className="text-sm">Visa</span> */}
+                  </div>
                 </div>
               </div>
 
@@ -1023,17 +1191,35 @@ const CheckoutPage = () => {
                 type="submit"
                 className={`w-full py-3 rounded-md text-white font-medium transition-colors ${
                   "bg-green-600 hover:bg-green-700"
-                } ${!validateForm() ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={!validateForm() || cartItems.length === 0}
+                } ${!validateForm() || !isCollectJSLoaded || isProcessingPayment ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={!validateForm() || !isCollectJSLoaded || isProcessingPayment || cartItems.length === 0}
               >
-                {cartItems.length === 0 ? "Cart is Empty" : `Pay $${total.toFixed(2)}`}
+                {isProcessingPayment ? "Processing..." : 
+                 !isCollectJSLoaded ? "Loading Payment..." :
+                 cartItems.length === 0 ? "Cart is Empty" : 
+                 `Pay $${total.toFixed(2)}`}
               </button>
+              
+              {!isAgeChecked && (
+                <p className="text-sm text-red-600 mt-2 text-center">
+                  Please verify your age before proceeding
+                </p>
+              )}
             </form>
+            
+           
           </div>
         </div>
 
         {/* Mobile Layout */}
         <form onSubmit={handleSubmit} className="lg:hidden space-y-6">
+          {/* Collect.js Status */}
+          {!isCollectJSLoaded && (
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-700">Loading payment processor...</p>
+            </div>
+          )}
+          
           {/* Contact Information */}
           <div className="bg-white p-[16px] rounded-lg">
             <h2 className="text-lg font-semibold mb-4">Contact Information</h2>
@@ -1203,16 +1389,16 @@ const CheckoutPage = () => {
                 Save this information for next time
               </label>
             </div>
-           
           </div>
-              <button id="checkout-button" className="bg-white text-white py-4 w-full rounded-md hover:bg-blue-200 transition-colors">
-
-        {isAgeChecked ? (
-          <p style={{ color: "green" }}>Age verification passed ✅</p>
-        ) : (
-          <p style={{ color: "black" }}>Please verify your age </p>
-        )}
-        </button> 
+          
+          {/* Age Checker Button */}
+          <button id="checkout-button" className="bg-white text-white py-4 w-full rounded-md hover:bg-blue-200 transition-colors">
+            {isAgeChecked ? (
+              <p style={{ color: "green" }}>Age verification passed ✅</p>
+            ) : (
+              <p style={{ color: "black" }}>Please verify your age</p>
+            )}
+          </button>
 
           {/* Order Summary */}
           <div className="bg-white p-[16px] rounded-lg">
@@ -1330,57 +1516,27 @@ const CheckoutPage = () => {
           {/* Payment */}
           <div className="bg-white p-[16px] rounded-lg">
             <h2 className="text-lg font-semibold mb-4">Payment</h2>
+            
+            {/* Collect.js Info */}
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-sm text-blue-700">
+                <strong>Secure Payment:</strong> Payment details will be collected securely through our payment processor.
+              </p>
+            </div>
 
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Card Number <span className="text-red-500">*</span>
+                Card Type
               </label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  placeholder="xxxx xxxx xxxx xxxx"
-                  className={`flex-1 px-3 py-2 border rounded-md text-sm ${errors.cardNumber ? 'border-red-500' : 'border-gray-300'}`}
-                  value={formData.cardNumber}
-                  onChange={handleInputChange}
-                  name="cardNumber"
-                  maxLength={19}
-                />
-                <Image src={mastercard} alt="mastercard" width={30} height={30}/>
-                <Image src={visacard} alt="visaCard" width={30} height={30}/>
-              </div>
-              {errors.cardNumber && <p className="text-red-500 text-xs mt-1">{errors.cardNumber}</p>}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Expiration Date <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="MM/YY"
-                  className={`w-full px-3 py-2 border rounded-md text-sm ${errors.expiryDate ? 'border-red-500' : 'border-gray-300'}`}
-                  value={formData.expiryDate}
-                  onChange={handleInputChange}
-                  name="expiryDate"
-                  maxLength={5}
-                />
-                {errors.expiryDate && <p className="text-red-500 text-xs mt-1">{errors.expiryDate}</p>}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  CVV <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="CVV"
-                  className={`w-full px-3 py-2 border rounded-md text-sm ${errors.cvv ? 'border-red-500' : 'border-gray-300'}`}
-                  value={formData.cvv}
-                  onChange={handleInputChange}
-                  name="cvv"
-                  maxLength={6}
-                />
-                {errors.cvv && <p className="text-red-500 text-xs mt-1">{errors.cvv}</p>}
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Image src={mastercard} alt="Mastercard" width={40} height={25} />
+                  <span className="text-sm">Mastercard</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Image src={visacard} alt="Visa" width={40} height={25} />
+                  <span className="text-sm">Visa</span>
+                </div>
               </div>
             </div>
 
@@ -1417,10 +1573,13 @@ const CheckoutPage = () => {
               type="submit"
               className={`w-full py-3 rounded-md text-white font-medium transition-colors ${
                 "bg-green-600 hover:bg-green-700"
-              } ${!validateForm() ? 'opacity-50 cursor-not-allowed' : ''}`}
-              disabled={!validateForm() || cartItems.length === 0}
+              } ${!validateForm() || !isCollectJSLoaded || isProcessingPayment ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={!validateForm() || !isCollectJSLoaded || isProcessingPayment || cartItems.length === 0}
             >
-              {cartItems.length === 0 ? "Cart is Empty" : `Pay $${total.toFixed(2)}`}
+              {isProcessingPayment ? "Processing..." : 
+               !isCollectJSLoaded ? "Loading Payment..." :
+               cartItems.length === 0 ? "Cart is Empty" : 
+               `Pay Securely $${total.toFixed(2)}`}
             </button>
           </div>
         </form>
