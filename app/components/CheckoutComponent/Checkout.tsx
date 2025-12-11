@@ -236,7 +236,7 @@ const CheckoutPage = () => {
   const [tax, setTax] = useState(0);
   const [taxRate, setTaxRate] = useState(0);
   const [isCalculatingTax, setIsCalculatingTax] = useState(false);
-  const [isAgeChecked, setIsAgeChecked] = useState(true);
+  const [isAgeChecked, setIsAgeChecked] = useState(false);
 
   // Collect.js states
   const [isCollectJSLoaded, setIsCollectJSLoaded] = useState(false);
@@ -276,6 +276,9 @@ const CheckoutPage = () => {
 
     return () => {
       if (script.parentNode) {
+        console.log("Removing age checker script");
+        setIsAgeChecked(true);
+
         script.parentNode.removeChild(script);
       }
     };
@@ -467,12 +470,13 @@ const CheckoutPage = () => {
       const response = await api.post<{
         success: boolean;
         message?: string;
-        orderId?: string;
+        orderid?: string;
       }>("/payment/payment", orderData);
       console.log("Order submission response:", response.data);
 
       if (response.data.success) {
-        alert(`Order placed successfully! Order ID: ${response.data.orderId}`);
+        console.log("Order placed successfull", response.data);
+        alert(`Order placed successfully! Order ID: ${response.data.orderid}`);
       } else {
         alert(`Order failed: ${response.data.message || "Unknown error"}`);
       }
@@ -1365,13 +1369,7 @@ const CheckoutPage = () => {
                 </div>
               )}
 
-              {paymentToken && (
-                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
-                  <p className="text-sm text-green-700">
-                    ✓ Payment token received
-                  </p>
-                </div>
-              )}
+             
 
               <div className="mb-4">
                 <div className="flex items-center gap-4">
