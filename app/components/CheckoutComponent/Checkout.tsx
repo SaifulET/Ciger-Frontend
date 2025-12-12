@@ -1448,22 +1448,14 @@ if(transactionid===0 && orderFailed==false)
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Sales Tax</span>
-                      {isCalculatingTax ? (
-                        <span className="text-gray-500 text-sm">
-                          Calculating...
-                        </span>
-                      ) : taxMessage ? (
-                        <span className="text-xs text-red-600">
-                          {taxMessage}
-                        </span>
-                      ) : (
+                     
                         <>
                           <span className="font-medium pl-[32px]">
                             {taxRate.toFixed(2)}%
                           </span>
                           <span className="font-medium">${tax.toFixed(2)}</span>
                         </>
-                      )}
+                   
                     </div>
                     {discountApplied && (
                       <div className="flex justify-between">
@@ -1878,20 +1870,14 @@ if(transactionid===0 && orderFailed==false)
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Sales Tax</span>
-                    {isCalculatingTax ? (
-                      <span className="text-gray-500 text-sm">
-                        Calculating...
-                      </span>
-                    ) : taxMessage ? (
-                      <span className="text-xs text-red-600">{taxMessage}</span>
-                    ) : (
+                   
                       <>
                         <span className="font-medium">
                           {taxRate.toFixed(2)}%
                         </span>
                         <span className="font-medium">${tax.toFixed(2)}</span>
                       </>
-                    )}
+                    
                   </div>
                   {discountApplied && (
                     <div className="flex justify-between">
