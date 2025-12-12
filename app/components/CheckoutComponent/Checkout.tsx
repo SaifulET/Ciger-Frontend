@@ -288,11 +288,11 @@ const CheckoutPage = () => {
     };
 
     document.head.appendChild(script);
-
+ setIsAgeChecked(true);
     return () => {
       if (script.parentNode) {
         console.log("Removing age checker script");
-        setIsAgeChecked(true);
+       
 
         script.parentNode.removeChild(script);
       }
