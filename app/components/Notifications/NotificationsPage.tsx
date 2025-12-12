@@ -22,7 +22,6 @@ interface ApiNotification {
 
 interface ApiResponse {
   success: boolean;
-
   data: ApiNotification[];
 }
 
@@ -69,12 +68,14 @@ export default function NotificationsPage() {
       try {
         setLoading(true);
         setError(null);
-        alert(user)
+        
         const response = await api.get<ApiResponse>(`/notification/getNotifications/${user}`);
-      alert(JSON.stringify(response))
+     
         
 
         if (!response.data) {
+          alert(response.data|| 'No data received');
+          
           throw new Error('Failed to fetch notifications: No data received');
         }
 
@@ -104,7 +105,7 @@ export default function NotificationsPage() {
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred while fetching notifications');
-      alert(JSON.stringify(err))
+      alert(err);
        
         console.log('Error fetching notifications:', err);
       } finally {

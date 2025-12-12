@@ -159,7 +159,7 @@ export default function ProfilePage() {
   const fetchProfileData = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await api.get("profile/profile");
+      const response = await api.get("profile/profiles/"+user);
       
       if (response.data.success && response.data.data) {
         const userData = response.data.data;
@@ -232,7 +232,7 @@ export default function ProfilePage() {
       console.log('Sending FormData with image:', selectedFile || tempImage);
       
       // Send request with FormData
-      const response = await api.put("profile/profile", formDataToSend, {
+      const response = await api.put(`profile/profile/${user}`, formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
