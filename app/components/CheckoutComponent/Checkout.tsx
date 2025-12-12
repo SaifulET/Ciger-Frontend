@@ -247,10 +247,10 @@ const CheckoutPage = () => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const [taxMessage, setTaxMessage] = useState("");
-  const [tax, setTax] = useState(1);
+  const [tax, setTax] = useState(0);
   const [taxRate, setTaxRate] = useState(10.25);
   const [isCalculatingTax, setIsCalculatingTax] = useState(false);
-  const [isAgeChecked, setIsAgeChecked] = useState(false);
+  const [isAgeChecked, setIsAgeChecked] = useState(true);
 
   // Collect.js states
   const [isCollectJSLoaded, setIsCollectJSLoaded] = useState(false);
@@ -532,7 +532,7 @@ const CheckoutPage = () => {
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
-      
+      console.log("Error submitting order:", errorMessage);
        setOrderFailed(true);
     } finally {
       setIsProcessingPayment(false);
@@ -806,7 +806,7 @@ const handleApplyDiscount = async (): Promise<void> => {
       } catch (error: unknown) {
         const errorMessage =
           error instanceof Error ? error.message : "Unknown error";
-       
+       console.log("Error calculating tax:", errorMessage);
         setTax(0);
         setTaxRate(0);
         setTaxMessage("Unable to calculate tax. Please verify your address.");
