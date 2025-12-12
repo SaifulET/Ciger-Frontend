@@ -297,11 +297,13 @@ const CheckoutPage = () => {
   script.async = true;
 
   script.onload = () => {
+    setIsAgeChecked(true);
     console.log("Age checker script loaded successfully");
   };
 
   script.onerror = () => {
     console.log("Failed to load age checker script");
+    setIsAgeChecked(false);
     // Optional: Handle fallback behavior here
     // You might want to proceed without age check in development
   };
