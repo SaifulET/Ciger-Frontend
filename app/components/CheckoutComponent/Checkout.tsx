@@ -471,7 +471,7 @@ const CheckoutPage = () => {
       }
       if(!isCalculatingTax)
 {
-  alert("Wrong address provided for tax calculation. Please check your address details.");
+  console.log("Wrong address provided for tax calculation. Please check your address details.");
 }
       console.log("All validation passed, creating order data...");
 
@@ -1118,7 +1118,7 @@ const handleApplyDiscount = async (): Promise<void> => {
   );
 
   }
-  if(transactionid!==0 && orderFailed==false){
+  if(transactionid!=0 && orderFailed==false){
  
     return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
