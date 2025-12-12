@@ -159,7 +159,7 @@ export default function Slider() {
               src={src}
               alt={`Slide ${index + 1}`}
               fill
-              className="object-cover"
+              className="object-fit"
               priority={index === 0}
             />
           </div>
