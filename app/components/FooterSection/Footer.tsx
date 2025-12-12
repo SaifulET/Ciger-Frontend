@@ -106,34 +106,34 @@ export default function Footer() {
             </div>
 
             {/* Payment Card Icons - New line after social media */}
-            <div className="flex items-center gap-4 mt-4">
+            <div className="flex items-center gap-2 md:gap-4 mt-4">
   <Image 
     src={discover} 
     alt="Discover" 
     width={60} 
     height={24}
-    className="hover:scale-105 transition-transform duration-200"
+    className="scale-80 md:scale-100 hover:scale-105  transition-transform duration-200"
   />
   <Image 
     src={master} 
     alt="MasterCard" 
     width={60} 
     height={24}
-    className="hover:scale-105 transition-transform duration-200"
+    className="scale-80 md:scale-100 hover:scale-105 transition-transform duration-200"
   />
   <Image 
     src={paypal} 
     alt="PayPal" 
     width={60} 
     height={24}
-    className="hover:scale-105 transition-transform duration-200"
+    className="scale-80 md:scale-100 hover:scale-105 transition-transform duration-200"
   />
   <Image 
     src={visa} 
     alt="visa" 
     width={60} 
     height={24}
-    className="hover:scale-105 transition-transform duration-200"
+    className="scale-80 md:scale-100 hover:scale-105 transition-transform duration-200"
   />
   
   <Image 
@@ -141,7 +141,7 @@ export default function Footer() {
     alt="american express" 
     width={60} 
     height={24}
-    className="hover:scale-105 transition-transform duration-200"
+    className="scale-80 md:scale-100 hover:scale-105 transition-transform duration-200"
   />
   
   
