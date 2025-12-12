@@ -602,7 +602,7 @@ const CheckoutPage = () => {
       try {
         console.log("fetching data for checkout");
         setLoading(true);
-
+console.log("user:", user, "guestId:", guestId);
         // Fetch cart items
         if (user) {
           const cartResponse = await api.get<CartApiResponse>(
@@ -610,6 +610,7 @@ const CheckoutPage = () => {
           );
           console.log("Cart response:", cartResponse.data);
           if (cartResponse.data.success) {
+            console.log("Setting cart items for user",cartResponse.data);
             setCartItems(cartResponse.data.data);
           } else {
             console.error("Failed to fetch cart:", cartResponse.data);
@@ -619,6 +620,7 @@ const CheckoutPage = () => {
           const cartResponse = await api.get<CartApiResponse>(
             `/cart/getUserCart/${guestId}`
           );
+          
           console.log("Cart response for guest:", cartResponse.data);
           if (cartResponse.data.success) {
             setCartItems(cartResponse.data.data);
@@ -730,7 +732,8 @@ const handleApplyDiscount = async (): Promise<void> => {
 
   // Calculate discount from applied code
   const discount = useMemo((): number => {
-    return discountApplied ? subtotal * (discountPercent / 100) : 0;
+    console.log("Calculating discount:", { discountApplied, discountPercent, subtotal });
+    return discountApplied ? ((subtotal * discountPercent) / 100) : 0;
   }, [discountApplied, discountPercent, subtotal]);
 
   // Memoized dependencies for tax calculation

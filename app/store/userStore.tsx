@@ -202,17 +202,46 @@ const useUserStore = create<UserStoreState>()(
         }
       },
 
-      UserLogoutRequest: async () => {
-        console.log("logiout");
-        console.log(Cookies.get("token"), "kdkd");
-        const res = await api.post("/auth/signout");
-
-        Cookies.remove("token");
-        set({ user: "" });
-        set({ isLoggedIn: false });
-
-        return res.data["status"];
-      },
+     UserLogoutRequest: async () => {
+  console.log("logout");
+  
+  try {
+    const res = await api.post("/auth/signout");
+    
+    // Clear all cookies
+    Cookies.remove("token");
+    document.cookie.split(";").forEach(cookie => {
+      const name = cookie.split("=")[0].trim();
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+    });
+    
+    // Clear web storage
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Clear Zustand state
+    set({ user: "", isLoggedIn: false, userInfo: null });
+    
+    // Clear persisted store
+    localStorage.removeItem("user-store");
+    
+    return res.data["status"];
+    
+  } catch (error) {
+    // Clear storage even on error
+    Cookies.remove("token");
+    document.cookie.split(";").forEach(cookie => {
+      const name = cookie.split("=")[0].trim();
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+    });
+    localStorage.clear();
+    sessionStorage.clear();
+    set({ user: "", isLoggedIn: false, userInfo: null });
+    localStorage.removeItem("user-store");
+    
+    throw error;
+  }
+},
     }),
     {
       name: "user-store",
