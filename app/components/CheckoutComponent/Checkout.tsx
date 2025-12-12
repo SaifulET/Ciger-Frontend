@@ -264,40 +264,65 @@ const CheckoutPage = () => {
  
 
   // Age Checker
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+ useEffect(() => {
+  // Early return for SSR
+  if (typeof window === "undefined") return;
 
-    const config: AgeCheckerConfig = {
-      element: "#checkout-button",
-      key: "LtE6WKMhRT41WntUJhk5oiEpuYl6g6SI",
-      onVerified: () => {
-        console.log("Age verification successful!");
-        setIsAgeChecked(true);
-      },
-    };
+  // Check if script is already loaded to avoid duplicates
+  if (document.querySelector('script[src*="agechecker.net"]')) {
+    console.log("Age checker script already loaded");
+    return;
+  }
 
-    window.AgeCheckerConfig = config;
+  const onVerified = () => {
+    console.log("Age verification successful!");
+    setIsAgeChecked(true);
+    // You could also trigger checkout or other actions here
+  };
 
-    const script = document.createElement("script");
-    script.src = "https://cdn.agechecker.net/static/popup/v1/popup.js";
-    script.crossOrigin = "anonymous";
-    script.async = true;
+  // Configure the global settings
+  window.AgeCheckerConfig = {
+    element: "#checkout-button",
+    key: "LtE6WKMhRT41WntUJhk5oiEpuYl6g6SI",
+    onVerified,
+    // Optional: Add error handling
+    // onUnverified: () => console.log("Age verification failed"),
+    // onError: (error) => console.error("Age checker error:", error)
+  };
 
-    script.onerror = () => {
-      console.error("Age checker failed to load");
-    };
+  // Load the script
+  const script = document.createElement("script");
+  script.src = "https://cdn.agechecker.net/static/popup/v1/popup.js";
+  script.crossOrigin = "anonymous";
+  script.async = true;
 
-    document.head.appendChild(script);
- setIsAgeChecked(true);
-    return () => {
-      if (script.parentNode) {
-        console.log("Removing age checker script");
-       
+  script.onload = () => {
+    console.log("Age checker script loaded successfully");
+  };
 
-        script.parentNode.removeChild(script);
-      }
-    };
-  }, []);
+  script.onerror = () => {
+    console.log("Failed to load age checker script");
+    // Optional: Handle fallback behavior here
+    // You might want to proceed without age check in development
+  };
+
+  document.head.appendChild(script);
+
+  // Cleanup function
+  return () => {
+    // Remove the script if it exists
+    if (script.parentNode) {
+      console.log("Removing age checker script");
+      script.parentNode.removeChild(script);
+    }
+    
+    // Clean up global variable
+    delete window.AgeCheckerConfig;
+    
+    // Optional: Reset age check state if component unmounts
+    // setIsAgeChecked(false);
+  };
+}, []);
 
   // Collect.js loading and configuration
   useEffect(() => {
