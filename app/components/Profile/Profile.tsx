@@ -159,8 +159,9 @@ export default function ProfilePage() {
   const fetchProfileData = useCallback(async () => {
     try {
       setIsLoading(true);
+      console.log('Fetching profile data for user:', user);
       const response = await api.get(`/profile/profiles/${user}`);
-      
+      console.log('Profile data response:', response);
       if (response.data.success && response.data.data) {
         const userData = response.data.data;
         const formattedData: ProfileData = {
@@ -185,7 +186,8 @@ export default function ProfilePage() {
         setHasFetched(true);
       }
     } catch (error) {
-      console.error("Error fetching profile data:", error);
+      
+      console.log("Error fetching profile data:", error);
     } finally {
       setIsLoading(false);
     }
@@ -261,11 +263,12 @@ export default function ProfilePage() {
   }, [selectedFile, tempImage, profileImage]);
 
   // Fetch data when user changes and hasn't been fetched yet
-  useEffect(() => {
-    if (user && !hasFetched ) {
-      fetchProfileData();
-    }
-  }, [user, hasFetched,  fetchProfileData]);
+ useEffect(() => {
+  if (user ) {
+    console.log('User changed, fetching profile data...',user);
+    fetchProfileData();
+  }
+}, []);
 
   // Reset hasFetched when user changes
   useEffect(() => {
