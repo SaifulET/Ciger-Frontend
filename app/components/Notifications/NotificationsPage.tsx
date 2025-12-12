@@ -68,9 +68,10 @@ export default function NotificationsPage() {
       try {
         setLoading(true);
         setError(null);
-        
+        alert(user)
         const response = await api.get<ApiResponse>(`/notification/getNotifications/${user}`);
         alert(response)
+
 
         if (!response.data) {
           throw new Error('Failed to fetch notifications: No data received');
@@ -102,7 +103,7 @@ export default function NotificationsPage() {
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred while fetching notifications');
-        alert(err)
+        alert(err);
         console.log('Error fetching notifications:', err);
       } finally {
         setLoading(false);
