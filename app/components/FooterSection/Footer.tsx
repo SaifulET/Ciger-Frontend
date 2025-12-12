@@ -8,6 +8,10 @@ import tiktokIcon from "@/public/TikTok.svg";
 import Image from "next/image";
 import discover from "@/public/discover.svg";
 import master from "@/public/master.svg";
+import paypal from "@/public/paypal.svg";
+import visa from "@/public/visa.svg";
+import american from "@/public/american.svg";
+
 export default function Footer() {
   return (
     <footer className="bg-[#212121] w-full text-white px-[16px] lg:px-[64px] py-[16px] lg:py-[32px] flex flex-col">
@@ -112,11 +116,34 @@ export default function Footer() {
   />
   <Image 
     src={master} 
-    alt="Mastercard" 
+    alt="MasterCard" 
     width={60} 
     height={24}
     className="hover:scale-105 transition-transform duration-200"
   />
+  <Image 
+    src={paypal} 
+    alt="PayPal" 
+    width={60} 
+    height={24}
+    className="hover:scale-105 transition-transform duration-200"
+  />
+  <Image 
+    src={visa} 
+    alt="visa" 
+    width={60} 
+    height={24}
+    className="hover:scale-105 transition-transform duration-200"
+  />
+  
+  <Image 
+    src={american} 
+    alt="american express" 
+    width={60} 
+    height={24}
+    className="hover:scale-105 transition-transform duration-200"
+  />
+  
   
 </div>
           </div>
