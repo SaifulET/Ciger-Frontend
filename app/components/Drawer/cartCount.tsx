@@ -36,12 +36,14 @@ export default function CartDrawer() {
     updateQuantity, 
     removeItem,
     clearCart,
-    initializeCart
+    initializeCart,
+    guestId,
   } = useCartStore();
   // Get user state
   const { user } = useUserStore();
+ 
 
-  const userId = user || null;
+  const userId = user ||guestId|| null;
 
   const cartCount = getCartCount();
   const subtotal = getFormattedSubtotal();
