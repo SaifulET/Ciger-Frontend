@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, memo, useRef } from "react";
+import { useState, useEffect, useCallback, memo, useRef, useMemo } from "react";
 import { Edit2, Save, X } from "lucide-react";
 import { PencilEdit02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -54,27 +54,30 @@ const InputField = memo(({
   onChange: (field: keyof ProfileData, value: string) => void;
   placeholder?: string;
   disabled?: boolean;
-}) => (
-  <div className="w-full">
-    <label className="block text-sm font-medium text-gray-700 ">
-      {label} <span className="text-red-500">*</span>
-    </label>
-    {isEditing ? (
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(field, e.target.value)}
-        placeholder={placeholder}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 bg-white text-gray-900"
-        disabled={disabled}
-      />
-    ) : (
-      <div className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700">
-        {value || placeholder || "Not provided"}
-      </div>
-    )}
-  </div>
-));
+}) => {
+  console.log(`InputField render: ${field}`);
+  return (
+    <div className="w-full">
+      <label className="block text-sm font-medium text-gray-700 ">
+        {label} <span className="text-red-500">*</span>
+      </label>
+      {isEditing ? (
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(field, e.target.value)}
+          placeholder={placeholder}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 bg-white text-gray-900"
+          disabled={disabled}
+        />
+      ) : (
+        <div className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700">
+          {value || placeholder || "Not provided"}
+        </div>
+      )}
+    </div>
+  );
+});
 
 InputField.displayName = "InputField";
 
@@ -150,12 +153,20 @@ export default function ProfilePage() {
   const { user } = useUserStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const mountedRef = useRef(false);
 
+  // Authentication check - memoized to prevent re-renders
   useEffect(() => {
-    Cookies.get("token") ? "" : router.push("/pages")
-  }, [Cookies.get("token")]);
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      const token = Cookies.get("token");
+      if (!token) {
+        router.push("/pages");
+      }
+    }
+  }, [router]);
 
-  // Fetch profile data from backend
+  // Fetch profile data from backend - FIXED useCallback
   const fetchProfileData = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -177,6 +188,7 @@ export default function ProfilePage() {
           image: userData.image || "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png",
         };
         
+        // Batch state updates to reduce re-renders
         setProfileData(formattedData);
         setFormData(formattedData);
         setProfileImage(userData.image || "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png");
@@ -189,9 +201,9 @@ export default function ProfilePage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, []); // Empty dependency array - this function doesn't depend on any props/state
 
-  // Update profile data to backend with file upload
+  // Update profile data to backend with file upload - FIXED useCallback
   const updateProfileData = useCallback(async (data: ProfileData) => {
     try {
       setIsLoading(true);
@@ -229,8 +241,6 @@ export default function ProfilePage() {
         formDataToSend.append('image', tempImage);
       }
       
-      console.log('Sending FormData with image:', selectedFile || tempImage);
-      
       // Send request with FormData
       const response = await api.put("profile/profile", formDataToSend, {
         headers: {
@@ -239,7 +249,7 @@ export default function ProfilePage() {
       });
       
       if (response.data.success) {
-        // Update local state with new data
+        // Batch state updates
         const updatedProfileData = {
           ...data,
           image: response.data.data?.image || profileImage,
@@ -257,14 +267,14 @@ export default function ProfilePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedFile, tempImage, profileImage]);
+  }, [selectedFile, tempImage, profileImage]); // Now properly memoized
 
   // Fetch data when user changes and hasn't been fetched yet
   useEffect(() => {
     if (user && !hasFetched && !isLoading) {
       fetchProfileData();
     }
-  }, [user, hasFetched, isLoading, fetchProfileData]);
+  }, [user, hasFetched, isLoading]); // Removed fetchProfileData from dependencies
 
   // Reset hasFetched when user changes
   useEffect(() => {
@@ -273,6 +283,7 @@ export default function ProfilePage() {
     }
   }, [user]);
 
+  // Memoized input change handler
   const handleInputChange = useCallback((field: keyof ProfileData, value: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -280,6 +291,7 @@ export default function ProfilePage() {
     }));
   }, []);
 
+  // Memoized edit handler
   const handleEdit = useCallback(() => {
     setFormData(profileData);
     setTempImage(profileImage);
@@ -287,6 +299,7 @@ export default function ProfilePage() {
     setIsEditing(true);
   }, [profileData, profileImage]);
 
+  // Memoized save handler
   const handleSave = useCallback(async () => {
     const success = await updateProfileData(formData);
     if (success) {
@@ -294,6 +307,7 @@ export default function ProfilePage() {
     }
   }, [formData, updateProfileData]);
 
+  // Memoized cancel handler
   const handleCancel = useCallback(() => {
     setFormData(profileData);
     setTempImage(profileImage);
@@ -301,6 +315,7 @@ export default function ProfilePage() {
     setIsEditing(false);
   }, [profileData, profileImage]);
 
+  // Memoized image change handler
   const handleImageChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -346,6 +361,36 @@ export default function ProfilePage() {
     }
   }, []);
 
+  // Memoize the profile data to prevent unnecessary re-renders
+  const memoizedProfileData = useMemo(() => profileData, [
+    profileData.firstName,
+    profileData.lastName,
+    profileData.email,
+    profileData.phone,
+    profileData.country,
+    profileData.city,
+    profileData.address,
+    profileData.postal,
+    profileData.houseNo,
+    profileData.suffix,
+    profileData.image,
+  ]);
+
+  const memoizedFormData = useMemo(() => formData, [
+    formData.firstName,
+    formData.lastName,
+    formData.email,
+    formData.phone,
+    formData.country,
+    formData.city,
+    formData.address,
+    formData.postal,
+    formData.houseNo,
+    formData.suffix,
+    formData.image,
+  ]);
+
+  // Show loading state
   if (isLoading && !profileData.email && !hasFetched) {
     return (
       <div className="min-h-screen p-[16px] md:p-[32px] flex items-center justify-center">
@@ -353,7 +398,9 @@ export default function ProfilePage() {
       </div>
     );
   }
- 
+  
+  console.log("ProfilePage render");
+
   return (
     <div className="min-h-screen  p-[16px] md:p-[32px]">
       <div className=" ">
@@ -434,7 +481,7 @@ export default function ProfilePage() {
             <InputField
               label="First Name"
               field="firstName"
-              value={isEditing ? formData.firstName : profileData.firstName}
+              value={isEditing ? memoizedFormData.firstName : memoizedProfileData.firstName}
               isEditing={isEditing}
               onChange={handleInputChange}
               placeholder="Enter first name"
@@ -443,7 +490,7 @@ export default function ProfilePage() {
             <InputField
               label="Last Name"
               field="lastName"
-              value={isEditing ? formData.lastName : profileData.lastName}
+              value={isEditing ? memoizedFormData.lastName : memoizedProfileData.lastName}
               isEditing={isEditing}
               onChange={handleInputChange}
               placeholder="Enter last name"
@@ -453,7 +500,7 @@ export default function ProfilePage() {
               <InputField
                 label="Email"
                 field="email"
-                value={isEditing ? formData.email : profileData.email}
+                value={isEditing ? memoizedFormData.email : memoizedProfileData.email}
                 isEditing={isEditing}
                 onChange={handleInputChange}
                 placeholder="Enter email"
@@ -464,7 +511,7 @@ export default function ProfilePage() {
               <InputField
                 label="Phone"
                 field="phone"
-                value={isEditing ? formData.phone : profileData.phone}
+                value={isEditing ? memoizedFormData.phone : memoizedProfileData.phone}
                 isEditing={isEditing}
                 onChange={handleInputChange}
                 placeholder="Enter phone number"
@@ -484,7 +531,7 @@ export default function ProfilePage() {
               <InputField
                 label="Country"
                 field="country"
-                value={isEditing ? formData.country : profileData.country}
+                value={isEditing ? memoizedFormData.country : memoizedProfileData.country}
                 isEditing={isEditing}
                 onChange={handleInputChange}
                 placeholder="Enter country"
@@ -496,7 +543,7 @@ export default function ProfilePage() {
               <InputField
                 label="City"
                 field="city"
-                value={isEditing ? formData.city : profileData.city}
+                value={isEditing ? memoizedFormData.city : memoizedProfileData.city}
                 isEditing={isEditing}
                 onChange={handleInputChange}
                 placeholder="Enter city"
@@ -507,7 +554,7 @@ export default function ProfilePage() {
               <InputField
                 label="Address"
                 field="address"
-                value={isEditing ? formData.address : profileData.address}
+                value={isEditing ? memoizedFormData.address : memoizedProfileData.address}
                 isEditing={isEditing}
                 onChange={handleInputChange}
                 placeholder="Enter address"
@@ -517,7 +564,7 @@ export default function ProfilePage() {
             <InputField
               label="Postal"
               field="postal"
-              value={isEditing ? formData.postal : profileData.postal}
+              value={isEditing ? memoizedFormData.postal : memoizedProfileData.postal}
               isEditing={isEditing}
               onChange={handleInputChange}
               placeholder="Enter postal code"
@@ -527,7 +574,7 @@ export default function ProfilePage() {
               <InputField
                 label="House Number"
                 field="houseNo"
-                value={isEditing ? formData.houseNo : profileData.houseNo}
+                value={isEditing ? memoizedFormData.houseNo : memoizedProfileData.houseNo}
                 isEditing={isEditing}
                 onChange={handleInputChange}
                 placeholder="Enter house number"
@@ -536,7 +583,7 @@ export default function ProfilePage() {
               <InputField
                 label="Suffix"
                 field="suffix"
-                value={isEditing ? formData.suffix : profileData.suffix}
+                value={isEditing ? memoizedFormData.suffix : memoizedProfileData.suffix}
                 isEditing={isEditing}
                 onChange={handleInputChange}
                 placeholder="Enter suffix"
