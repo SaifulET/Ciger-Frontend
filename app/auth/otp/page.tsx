@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import logo from "@/public/logo1.svg"
+import logo from "@/public/logo2.png"
 import Image from 'next/image';
 import useUserStore from "@/app/store/userStore";
 import { getEmail } from '@/app/utility/utility';
@@ -100,7 +100,7 @@ const OTPVerification: React.FC = () => {
           <div className="w-[500px] h-24 flex items-center justify-center">
             <div className="text-center">
                {/* <Image src={Logo} alt='logo'/> */}
-              <Image src={logo} alt="logo"width={220} height={220} className='rounded-full' />
+              <Image src={logo} alt="logo"width={220} height={220} className='' />
             </div>
           </div>
 

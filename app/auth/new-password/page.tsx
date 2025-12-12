@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, Lock, Eye, EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import logo from "@/public/logo1.svg"
+import logo from "@/public/logo2.png"
 import useUserStore from '@/app/store/userStore';
 
 const NewPassword: React.FC = () => {
@@ -46,7 +46,7 @@ const NewPassword: React.FC = () => {
           {/* Logo */}
           <div className="w-[500px] h-24 flex items-center justify-center">
             <div className="text-center">
-              <Image src={logo} alt="logo" width={220} height={220} className='rounded-full'/>
+              <Image src={logo} alt="logo" width={220} height={220} className=''/>
                {/* <Image src={Logo} alt='logo'/> */}
             </div>
           </div>

@@ -56,7 +56,7 @@ export interface ApiOrder {
   address: string;
   email: string;
   phone: string;
-  orderId: string;
+  orderid: string;
   date: string;
   trackingNo: string;
   state: "processing" | "shipped" | "delivered" | "cancelled" | "refunded";

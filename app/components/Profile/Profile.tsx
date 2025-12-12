@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback, memo } from "react";
+import { useState, useEffect, useCallback, memo, useRef } from "react";
 import { Edit2, Save, X } from "lucide-react";
 import { PencilEdit02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import api from "@/lib/axios";
 import useUserStore from "@/app/store/userStore";
-  import Cookies from "js-cookie";
-import {useRouter} from "next/navigation"
+import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
+
 interface ProfileData {
   firstName: string;
   lastName: string;
@@ -102,7 +103,7 @@ const ProfileImage = memo(({ src, alt }: { src: string; alt: string }) => {
     <img
       src={imageSrc}
       alt={alt}
-      className="w-full h-full object-fit"
+      className="w-full h-full object-fit rounded-full"
       onError={handleError}
       loading="lazy"
     />
@@ -111,19 +112,30 @@ const ProfileImage = memo(({ src, alt }: { src: string; alt: string }) => {
 
 ProfileImage.displayName = "ProfileImage";
 
-// Helper function to stabilize image URLs
-const getStableImageUrl = (url: string | undefined): string => {
-  if (!url || url.trim() === "") {
-    return "/default-avatar.png";
+// Helper function to convert base64 to Blob
+const base64ToBlob = (base64: string, mimeType: string): Blob => {
+  const byteCharacters = atob(base64.split(',')[1]);
+  const byteArrays = [];
+  
+  for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+    const slice = byteCharacters.slice(offset, offset + 512);
+    const byteNumbers = new Array(slice.length);
+    
+    for (let i = 0; i < slice.length; i++) {
+      byteNumbers[i] = slice.charCodeAt(i);
+    }
+    
+    const byteArray = new Uint8Array(byteNumbers);
+    byteArrays.push(byteArray);
   }
   
-  // If it's a base64 data URL, return as is
-  if (url.startsWith('data:')) return url;
-  
-  // If it's a relative path, ensure it's consistent
-  if (url.startsWith('/')) return url;
-  
-  return url;
+  return new Blob(byteArrays, { type: mimeType });
+};
+
+// Helper function to extract MIME type from base64
+const getMimeTypeFromBase64 = (base64: string): string => {
+  const match = base64.match(/^data:(.*?);base64,/);
+  return match ? match[1] : 'image/jpeg';
 };
 
 export default function ProfilePage() {
@@ -131,10 +143,17 @@ export default function ProfilePage() {
   const [profileData, setProfileData] = useState<ProfileData>(initialProfileData);
   const [formData, setFormData] = useState<ProfileData>(initialProfileData);
   const [profileImage, setProfileImage] = useState("https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png");
-  const [tempImage, setTempImage] = useState("https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png");
+  const [tempImage, setTempImage] = useState<string | File>("https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png");
   const [isLoading, setIsLoading] = useState(false);
   const [hasFetched, setHasFetched] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { user } = useUserStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    Cookies.get("token") ? "" : router.push("/pages")
+  }, [Cookies.get("token")]);
 
   // Fetch profile data from backend
   const fetchProfileData = useCallback(async () => {
@@ -158,12 +177,11 @@ export default function ProfilePage() {
           image: userData.image || "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png",
         };
         
-        const stableImageUrl = getStableImageUrl(userData.image);
-        
         setProfileData(formattedData);
         setFormData(formattedData);
-        setProfileImage(stableImageUrl);
-        setTempImage(stableImageUrl);
+        setProfileImage(userData.image || "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png");
+        setTempImage(userData.image || "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png");
+        setSelectedFile(null);
         setHasFetched(true);
       }
     } catch (error) {
@@ -172,37 +190,64 @@ export default function ProfilePage() {
       setIsLoading(false);
     }
   }, []);
-   const router = useRouter()
-  useEffect(()=>{
-    Cookies.get("token")?"":router.push("/pages")
-  },[Cookies.get("token")])
 
-  // Update profile data to backend
+  // Update profile data to backend with file upload
   const updateProfileData = useCallback(async (data: ProfileData) => {
     try {
-      console.log("183",data,"183")
       setIsLoading(true);
-      const updateData = {
-        firstName: data?.firstName,
-        lastName: data?.lastName,
-        phone: data?.phone,
-        country: data?.country,
-        city: data?.city,
-        address: data?.address,
-        postal: data?.postal,
-        houseNo: data?.houseNo,
-        suffix: data?.suffix,
-        image: tempImage !== profileImage ? tempImage : data?.image,
-      };
-console.log(updateData,"197")
-      const response = await api.put("profile/profile", updateData,{headers: { 'Content-Type': 'multipart/form-data' }},);
-
+      
+      // Create FormData object
+      const formDataToSend = new FormData();
+      
+      // Append text fields
+      formDataToSend.append('firstName', data.firstName);
+      formDataToSend.append('lastName', data.lastName);
+      formDataToSend.append('phone', data.phone);
+      formDataToSend.append('country', data.country);
+      formDataToSend.append('city', data.city);
+      formDataToSend.append('address', data.address);
+      formDataToSend.append('postal', data.postal);
+      formDataToSend.append('houseNo', data.houseNo);
+      formDataToSend.append('suffix', data.suffix);
+      
+      // Handle image upload
+      if (selectedFile) {
+        // If a new file was selected
+        formDataToSend.append('image', selectedFile);
+      } else if (typeof tempImage === 'string' && tempImage !== profileImage && tempImage.startsWith('data:image')) {
+        // If base64 image was modified (from edit mode)
+        try {
+          const mimeType = getMimeTypeFromBase64(tempImage);
+          const blob = base64ToBlob(tempImage, mimeType);
+          const file = new File([blob], 'profile-image.jpg', { type: mimeType });
+          formDataToSend.append('image', file);
+        } catch (error) {
+          console.error('Error converting base64 to file:', error);
+        }
+      } else if (tempImage instanceof File) {
+        // If tempImage is already a File object
+        formDataToSend.append('image', tempImage);
+      }
+      
+      console.log('Sending FormData with image:', selectedFile || tempImage);
+      
+      // Send request with FormData
+      const response = await api.put("profile/profile", formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       
       if (response.data.success) {
-        const stableImageUrl = getStableImageUrl(tempImage !== profileImage ? tempImage : data.image);
+        // Update local state with new data
+        const updatedProfileData = {
+          ...data,
+          image: response.data.data?.image || profileImage,
+        };
         
-        setProfileData(data);
-        setProfileImage(stableImageUrl);
+        setProfileData(updatedProfileData);
+        setProfileImage(response.data.data?.image || profileImage);
+        setSelectedFile(null);
         return true;
       }
       return false;
@@ -212,7 +257,7 @@ console.log(updateData,"197")
     } finally {
       setIsLoading(false);
     }
-  }, [tempImage, profileImage]);
+  }, [selectedFile, tempImage, profileImage]);
 
   // Fetch data when user changes and hasn't been fetched yet
   useEffect(() => {
@@ -238,6 +283,7 @@ console.log(updateData,"197")
   const handleEdit = useCallback(() => {
     setFormData(profileData);
     setTempImage(profileImage);
+    setSelectedFile(null);
     setIsEditing(true);
   }, [profileData, profileImage]);
 
@@ -251,6 +297,7 @@ console.log(updateData,"197")
   const handleCancel = useCallback(() => {
     setFormData(profileData);
     setTempImage(profileImage);
+    setSelectedFile(null);
     setIsEditing(false);
   }, [profileData, profileImage]);
 
@@ -271,6 +318,7 @@ console.log(updateData,"197")
         return;
       }
 
+      // Create a preview URL
       const reader = new FileReader();
       reader.onloadend = () => {
         if (reader.result) {
@@ -281,10 +329,21 @@ console.log(updateData,"197")
         console.error('Error reading file');
       };
       reader.readAsDataURL(file);
+      
+      // Store the actual file for upload
+      setSelectedFile(file);
     }
     
     // Reset the input
-    e.target.value = '';
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, []);
+
+  const triggerFileInput = useCallback(() => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   }, []);
 
   if (isLoading && !profileData.email && !hasFetched) {
@@ -311,15 +370,18 @@ console.log(updateData,"197")
               <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
                 <div className="w-full h-full rounded-full bg-gray-200 overflow-hidden">
                   <ProfileImage 
-                    src={isEditing ? tempImage : profileImage} 
-                    alt="Profile" 
-                    
+                    src={isEditing ? (typeof tempImage === 'string' ? tempImage : URL.createObjectURL(tempImage)) : profileImage} 
+                    alt="Profile"
                   />
                 </div>
                 {isEditing && (
-                  <label className="absolute bottom-0 right-0 w-8 h-8  sm:w-9 sm:h-9 bg-white rounded-full flex items-center justify-center cursor-pointer transition-colors shadow-md border-2 border-white">
+                  <label 
+                    onClick={triggerFileInput}
+                    className="absolute bottom-0 right-0 w-8 h-8 sm:w-9 sm:h-9 bg-white rounded-full flex items-center justify-center cursor-pointer transition-colors shadow-md border-2 border-white hover:bg-gray-100"
+                  >
                     <HugeiconsIcon icon={PencilEdit02Icon} />
                     <input
+                      ref={fileInputRef}
                       type="file"
                       accept="image/*"
                       onChange={handleImageChange}

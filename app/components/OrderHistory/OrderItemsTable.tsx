@@ -86,7 +86,7 @@ const OrderItemsTable: React.FC<OrderItemsTableProps> = ({
 
       <div className="grid grid-cols-5 md:grid-cols-7 gap-4 mb-[16px] md:mb-[32px] items-center">
         <div className='col-span-3 md:col-span-5'><p className="font-semibold text-[16px] leading-6 tracking-normal">Discount</p></div> 
-        <div className='col-span-1 text-right md:text-center'><p className="text-sm text-gray-900 font-medium text-center ">{discount}%</p></div>
+        <div className='col-span-1 text-right md:text-center'><p className="text-sm text-gray-900 font-medium text-center ">{discount.toFixed(2)}%</p></div>
         <div className='col-span-1 md:col-span-1 text-right '><p className="text-sm text-gray-900 font-medium">-${((discount/100)*subTotal).toFixed(2)}</p></div>
       </div>
     

@@ -125,7 +125,7 @@ export default function Slider() {
   if (slides.length === 1) {
     return (
       <div className="relative w-full mx-auto overflow-hidden">
-        <div className="lg:h-[700px] md:h-[450px] h-[300px] relative">
+        <div className="lg:h-[700px] md:h-[450px] h-[300px]  relative">
           <Image
             src={slides[0]}
             alt="Slide 1"

@@ -3,6 +3,7 @@ import OrderItemsTable, { OrderItem } from './OrderItemsTable';
 import { useOrderStore } from '@/app/store/orderStore';
 
 export interface Order {
+  orderid:string;
   id: string;
   status: 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
   placedDate: string;
@@ -45,7 +46,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
       {/* Header */}
       <div className="flex justify-between items-start mb-6">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Order #{order.id}</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Order {order.orderid}</h2>
           <p className="text-sm text-gray-600">Placed on {order.placedDate}</p>
         </div>
         <div className="text-right">

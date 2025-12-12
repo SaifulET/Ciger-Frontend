@@ -31,6 +31,7 @@ export default function OrderHistoryPage() {
     
     return orders.map((apiOrder) => ({
       id: apiOrder._id,
+      orderid: apiOrder.orderid,
       status: apiOrder.state,
       placedDate: new Date(apiOrder.createdAt).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -56,7 +57,7 @@ export default function OrderHistoryPage() {
 
   const filteredOrders = useMemo(() => {
     return transformedOrders.filter((order) => {
-      const matchesSearch = order.id.toLowerCase().includes(searchId.toLowerCase());
+      const matchesSearch = order.orderid.toLowerCase().includes(searchId.toLowerCase());
       const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
       return matchesSearch && matchesStatus;
     });

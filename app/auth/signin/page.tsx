@@ -5,7 +5,7 @@ import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { NextPage } from "next";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import logo from "@/public/logo1.svg";
+import logo from "@/public/logo2.png";
 import useUserStore from "@/app/store/userStore";
 import { useCartStore } from "@/app/store/cartStore";
 
@@ -83,7 +83,7 @@ const SignInPage: NextPage = () => {
                 alt="logo"
                 width={200}
                 height={200}
-                className="rounded-full"
+                className=""
                 priority
               />
             </div>

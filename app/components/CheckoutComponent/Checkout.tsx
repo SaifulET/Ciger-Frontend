@@ -195,16 +195,23 @@ interface TaxCacheData {
   timestamp: number;
   expiresIn: number;
 }
+interface DiscountResponse {
+  success: boolean;
+  percentage?: number;
+  message?: string;
+}
 
 const CheckoutPage = () => {
   const { user } = useUserStore();
-  const { guestId } = useCartStore();
+  const { guestId,initializeCart } = useCartStore();
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [servicePricing, setServicePricing] = useState<ServicePricing | null>(
     null
   );
   const [loading, setLoading] = useState(true);
+  const[transactionid,setTransactionid]=useState(0);
+  const [orderFailed,setOrderFailed]=useState(false);
   const [formData, setFormData] = useState<FormData>({
     email: "",
     firstName: "",
@@ -228,10 +235,17 @@ const CheckoutPage = () => {
     discountCode: "",
   });
 
-  const [errors, setErrors] = useState<Errors>({});
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
+
   const [discountApplied, setDiscountApplied] = useState(false);
   const [discountPercent, setDiscountPercent] = useState(0);
+  const [discountLoading, setDiscountLoading] = useState(false);
+  const [discountError, setDiscountError] = useState<string | null>(null);
+
+
+
+  const [errors, setErrors] = useState<Errors>({});
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+
   const [taxMessage, setTaxMessage] = useState("");
   const [tax, setTax] = useState(0);
   const [taxRate, setTaxRate] = useState(0);
@@ -243,6 +257,7 @@ const CheckoutPage = () => {
   const [paymentToken, setPaymentToken] = useState<string | null>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [collectJSError, setCollectJSError] = useState<string | null>(null);
+
 
   const collectJSConfiguredRef = useRef(false);
   const COLLECT_JS_TOKENIZATION_KEY = "kys4zk-Gg5DDh-35QMup-h39wNz";
@@ -427,7 +442,10 @@ const CheckoutPage = () => {
         alert(`Cannot submit order:\n${validationErrors.join("\n")}`);
         return;
       }
-
+      if(!isCalculatingTax)
+{
+  alert("Wrong address provided for tax calculation. Please check your address details.");
+}
       console.log("All validation passed, creating order data...");
 
       const orderData: OrderData = {
@@ -471,20 +489,24 @@ const CheckoutPage = () => {
         success: boolean;
         message?: string;
         orderid?: string;
+        transactionid?:number;
       }>("/payment/payment", orderData);
       console.log("Order submission response:", response.data);
 
       if (response.data.success) {
         console.log("Order placed successfull", response.data);
-        alert(`Order placed successfully! Order ID: ${response.data.orderid}`);
+        setTransactionid(response.data.transactionid || 0);
+        
       } else {
-        alert(`Order failed: ${response.data.message || "Unknown error"}`);
+        setOrderFailed(true);
+        
+      
       }
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
-      console.error("Order processing error:", errorMessage);
-      alert("Failed to process order. Please try again.");
+      
+       setOrderFailed(true);
     } finally {
       setIsProcessingPayment(false);
     }
@@ -622,6 +644,63 @@ const CheckoutPage = () => {
       : servicePricing.shippingCost;
   }, [servicePricing, subtotal]);
 
+
+
+
+const handleApplyDiscount = async (): Promise<void> => {
+    const code = formData.discountCode.trim();
+    
+    if (!code) {
+      setDiscountApplied(false);
+      setDiscountPercent(0);
+      setDiscountError(null);
+      return;
+    }
+
+    setDiscountLoading(true);
+    setDiscountError(null);
+
+    try {
+      const response = await api.get<DiscountResponse>(`/discount/getDiscountByCode/${code}`);
+      
+      console.log("Discount API response:", response.data);
+      
+      if (response.data.success && response.data.percentage !== undefined) {
+        setDiscountApplied(true);
+        setDiscountPercent(response.data.percentage);
+        setDiscountError(null);
+       
+      } else {
+        setDiscountApplied(false);
+        setDiscountPercent(0);
+        setDiscountError(response.data.message || "Invalid discount code");
+        
+      }
+    } catch (error: unknown) {
+      console.error("Error applying discount:", error);
+      setDiscountApplied(false);
+      setDiscountPercent(0);
+      setDiscountError("Failed to apply discount. Please try again.");
+      
+      // Check if it's an axios error
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as any;
+        if (axiosError.response?.data?.message) {
+          setDiscountError(axiosError.response.data.message);
+        }
+      }
+      
+      alert("Failed to apply discount. Please try again.");
+    } finally {
+      setDiscountLoading(false);
+    }
+  };
+
+
+
+
+
+
   // Calculate discount from applied code
   const discount = useMemo((): number => {
     return discountApplied ? subtotal * (discountPercent / 100) : 0;
@@ -700,7 +779,7 @@ const CheckoutPage = () => {
       } catch (error: unknown) {
         const errorMessage =
           error instanceof Error ? error.message : "Unknown error";
-        console.error("Tax calculation failed:", errorMessage);
+       
         setTax(0);
         setTaxRate(0);
         setTaxMessage("Unable to calculate tax. Please verify your address.");
@@ -834,21 +913,21 @@ const CheckoutPage = () => {
     return isValid;
   };
 
-  const handleApplyDiscount = (): void => {
-    if (formData.discountCode.trim() !== "") {
-      if (formData.discountCode.toUpperCase() === "SAVE10") {
-        setDiscountApplied(true);
-        setDiscountPercent(10);
-      } else {
-        setDiscountApplied(false);
-        setDiscountPercent(0);
-        alert("Invalid discount code. Try 'SAVE10' for 10% off.");
-      }
-    } else {
-      setDiscountApplied(false);
-      setDiscountPercent(0);
-    }
-  };
+  // const handleApplyDiscount = (): void => {
+  //   if (formData.discountCode.trim() !== "") {
+  //     if (formData.discountCode.toUpperCase() === "SAVE10") {
+  //       setDiscountApplied(true);
+  //       setDiscountPercent(10);
+  //     } else {
+  //       setDiscountApplied(false);
+  //       setDiscountPercent(0);
+  //       alert("Invalid discount code. Try 'SAVE10' for 10% off.");
+  //     }
+  //   } else {
+  //     setDiscountApplied(false);
+  //     setDiscountPercent(0);
+  //   }
+  // };
 
   // Modified handleSubmit to use Collect.js
   const handleSubmit = async (
@@ -981,7 +1060,69 @@ const CheckoutPage = () => {
       </div>
     );
   }
+  if(orderFailed==true){
+ return (
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+      <div className="max-w-md w-full text-center">
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+          Sorry! 
+        </h1>
+        
+        <p className="text-gray-600 text-base md:text-lg mb-6">
+          Your order could not be processed.<br></br>
+         
+        </p>
+        
+        <div className="text-sm text-gray-600 mb-6">
+          Please try again or
+          <a 
+            href="/pages/contact" 
+            className="text-blue-500 hover:text-blue-600 underline"
+          >
+            Contact us
+          </a>
+        </div>
+        
+        <a href="/pages" className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-6 py-2.5 rounded transition-colors duration-200">
+          Continue to homepage
+        </a>
+      </div>
+    </div>
+  );
 
+  }
+  if(transactionid!==0 && orderFailed==false){
+ 
+    return (
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+      <div className="max-w-md w-full text-center">
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+          Thank You!
+        </h1>
+        
+        <p className="text-gray-600 text-base md:text-lg mb-6">
+          Your order has been successfully processed.<br></br>
+          Your transaction ID is <span className="font-mono font-semibold">{transactionid}</span>
+        </p>
+        
+        <div className="text-sm text-gray-600 mb-6">
+          Having trouble?{' '}
+          <a 
+            href="/pages/contact" 
+            className="text-blue-500 hover:text-blue-600 underline"
+          >
+            Contact us
+          </a>
+        </div>
+        
+        <a href="/pages" className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-6 py-2.5 rounded transition-colors duration-200">
+          Continue to homepage
+        </a>
+      </div>
+    </div>
+  );
+  }
+if(transactionid===0 && orderFailed==false)
   return (
     <div className="min-h-screen p-[16px] md:p-[32px]">
       <noscript>
@@ -1194,15 +1335,15 @@ const CheckoutPage = () => {
             </div>
             <div>
               <button
-                id="checkout-button"
-                className="bg-white text-white py-4 w-full rounded-md hover:bg-blue-200 transition-colors"
-              >
-                {isAgeChecked ? (
-                  <p style={{ color: "green" }}>Age verification passed ✅</p>
-                ) : (
-                  <p style={{ color: "black" }}>Please verify your age</p>
-                )}
-              </button>
+            id="checkout-button"
+            className={`${isAgeChecked?"bg-green-600 hover:bg-green-700":"bg-yellow-600 hover:bg-yellow-700"} py-3 w-full rounded-md  transition-colors`}
+          >
+            {isAgeChecked ? (
+              <p className="text-gray-50  font-medium">Age verification passed ✅</p>
+            ) : (
+              <p className="text-gray-900  font-medium">Please verify your age</p>
+            )}
+          </button>
             </div>
           </div>
 
@@ -1433,7 +1574,7 @@ const CheckoutPage = () => {
                   !validateForm() ||
                   !isCollectJSLoaded ||
                   isProcessingPayment ||
-                  cartItems.length === 0
+                  cartItems.length === 0 || !isAgeChecked
                 }
               >
                 {isProcessingPayment
@@ -1644,14 +1785,14 @@ const CheckoutPage = () => {
           </div>
 
           {/* Age Checker Button */}
-          <button
+             <button
             id="checkout-button"
-            className="bg-white text-white py-4 w-full rounded-md hover:bg-blue-200 transition-colors"
+            className={`${isAgeChecked?"bg-green-600 hover:bg-green-700":"bg-yellow-600 hover:bg-yellow-700"} py-3 w-full rounded-md  transition-colors`}
           >
             {isAgeChecked ? (
-              <p style={{ color: "green" }}>Age verification passed ✅</p>
+              <p className="text-gray-50  font-medium">Age verification passed ✅</p>
             ) : (
-              <p style={{ color: "black" }}>Please verify your age</p>
+              <p className="text-gray-900  font-medium">Please verify your age</p>
             )}
           </button>
 

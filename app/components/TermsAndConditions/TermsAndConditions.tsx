@@ -6,7 +6,7 @@ function TermsAndConditions() {
       {/* Header */}
       <div className="bg-white shadow-sm rounded-lg p-[16px] md:p-[32px] mb-[16px] md:mb-[32px]">
         <h1 className="text-[28px] font-semibold text-gray-900 text-center mb-4">
-          Privacy Policy
+          Terms and Conditions
         </h1>
        
       </div>

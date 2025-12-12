@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Search, ChevronDown, Menu, X, User } from "lucide-react";
-import logo from "@/public/logol.png";
+import logo from "@/public/logo2.png";
 import menuData from "@/Data/MenuItems.json";
 import CartPage from "../Drawer/cartCount";
 import Cookies from "js-cookie";
@@ -54,21 +54,25 @@ const Navbar: React.FC = () => {
   const [mobileCartOpen, setMobileCartOpen] = useState<boolean>(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState<boolean>(false);
   const [desktopProfileOpen, setDesktopProfileOpen] = useState<boolean>(false);
-  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
+    {}
+  );
   const [isClient, setIsClient] = useState<boolean>(false);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
-  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState<number>(-1);
-  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState<boolean>(false);
-  
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] =
+    useState<number>(-1);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] =
+    useState<boolean>(false);
+
   const { ClearStorage } = useCartStore();
   const { user, isLogin, UserLogoutRequest, userInfo } = useUserStore();
   const { products, fetchAllProducts } = useProductStore();
-  
+
   const router = useRouter();
   const pathname = usePathname();
-  
+
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
@@ -79,34 +83,36 @@ const Navbar: React.FC = () => {
   }, [fetchAllProducts]);
 
   // Filter suggestions based on input - SHOW ALL PRODUCTS
-  const filterSuggestions = useCallback((searchTerm: string): SearchSuggestion[] => {
-    if (products.length === 0) return [];
-    
-    const lowerCaseTerm = searchTerm.toLowerCase().trim();
-    
-    if (!lowerCaseTerm) {
-      // Show ALL products when search input is empty
-      return products.map(product => ({
-        id: product.id,
-        name: product.name,
-        brand: product.brand,
-        image: product.image,
-        category: product.category,
-      }));
-    }
-    
-    // Filter products by name, brand, or category when there's a search term
-    const filtered = products
-      .filter(product => {
+  const filterSuggestions = useCallback(
+    (searchTerm: string): SearchSuggestion[] => {
+      if (products.length === 0) return [];
+
+      const lowerCaseTerm = searchTerm.toLowerCase().trim();
+
+      if (!lowerCaseTerm) {
+        // Show ALL products when search input is empty
+        return products.map((product) => ({
+          id: product.id,
+          name: product.name,
+          brand: product.brand,
+          image: product.image,
+          category: product.category,
+        }));
+      }
+
+      // Filter products by name, brand, or category when there's a search term
+      const filtered = products.filter((product) => {
         return (
           product.name.toLowerCase().includes(lowerCaseTerm) ||
           product.brand.toLowerCase().includes(lowerCaseTerm) ||
           product.category.toLowerCase().includes(lowerCaseTerm)
         );
       });
-    
-    return filtered;
-  }, [products]);
+
+      return filtered;
+    },
+    [products]
+  );
 
   // Update suggestions when input changes or when focused
   useEffect(() => {
@@ -118,7 +124,7 @@ const Navbar: React.FC = () => {
         setSelectedSuggestionIndex(-1);
         setIsLoadingSuggestions(false);
       }, 300); // Debounce for 300ms
-      
+
       return () => clearTimeout(timer);
     } else {
       setSuggestions([]);
@@ -128,11 +134,14 @@ const Navbar: React.FC = () => {
   // Close suggestions when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target as Node)
+      ) {
         setShowSuggestions(false);
       }
     };
-    
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -145,17 +154,17 @@ const Navbar: React.FC = () => {
       }
       return;
     }
-    
+
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
-        setSelectedSuggestionIndex(prev => 
+        setSelectedSuggestionIndex((prev) =>
           prev < suggestions.length - 1 ? prev + 1 : prev
         );
         break;
       case "ArrowUp":
         e.preventDefault();
-        setSelectedSuggestionIndex(prev => prev > 0 ? prev - 1 : prev);
+        setSelectedSuggestionIndex((prev) => (prev > 0 ? prev - 1 : prev));
         break;
       case "Enter":
         e.preventDefault();
@@ -177,11 +186,13 @@ const Navbar: React.FC = () => {
   // Scroll selected suggestion into view
   useEffect(() => {
     if (selectedSuggestionIndex >= 0 && suggestionsRef.current) {
-      const selectedElement = suggestionsRef.current.children[selectedSuggestionIndex] as HTMLElement;
+      const selectedElement = suggestionsRef.current.children[
+        selectedSuggestionIndex
+      ] as HTMLElement;
       if (selectedElement) {
         selectedElement.scrollIntoView({
           block: "nearest",
-          behavior: "smooth"
+          behavior: "smooth",
         });
       }
     }
@@ -335,7 +346,7 @@ const Navbar: React.FC = () => {
       Brands: BrandfetchIcon,
       Products: PackageIcon,
       "Contact Us": Mail01FreeIcons,
-      "COA": SecurityValidationIcon,
+      COA: SecurityValidationIcon,
       Blogs: File01Icon,
       Discounts: Discount01FreeIcons,
     };
@@ -359,7 +370,7 @@ const Navbar: React.FC = () => {
         <Link href="/pages/">
           <div className="flex-shrink-0">
             <Image
-              className="object-cover scale-150  w-0  lg:w-[220px] lg:h-[60px]"
+              className="object-fit  w-0  lg:w-[220px] lg:h-[60px]"
               src={logo}
               alt="Logo"
             />
@@ -368,7 +379,10 @@ const Navbar: React.FC = () => {
 
         {/* Desktop: search + buttons + cart */}
         <div className="hidden lg:flex items-center justify-between gap-3 md:gap-4 w-full flex-nowrap">
-          <div ref={searchRef} className="relative flex-grow ml-0 md:ml-0 max-h-[48px]">
+          <div
+            ref={searchRef}
+            className="relative flex-grow ml-0 md:ml-0 max-h-[48px]"
+          >
             <input
               ref={inputRef}
               type="text"
@@ -392,10 +406,7 @@ const Navbar: React.FC = () => {
             {/* Desktop Search Suggestions - SHOW ALL PRODUCTS */}
             {showSuggestions && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-96 overflow-hidden">
-                <div 
-                  ref={suggestionsRef}
-                  className="max-h-96 overflow-y-auto"
-                >
+                <div ref={suggestionsRef} className="max-h-96 overflow-y-auto">
                   {isLoadingSuggestions ? (
                     <div className="p-4 text-center text-gray-500">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-800 mx-auto"></div>
@@ -405,21 +416,31 @@ const Navbar: React.FC = () => {
                     <>
                       <div className="p-3 bg-gray-50 border-b">
                         <p className="text-sm font-medium text-gray-600">
-                          {value.trim() ? `Found ${suggestions.length} products matching "${value}"` : `Showing all ${suggestions.length} products`}
+                          {value.trim()
+                            ? `Found ${suggestions.length} products matching "${value}"`
+                            : `Showing all ${suggestions.length} products`}
                         </p>
                       </div>
                       {suggestions.map((suggestion, index) => (
                         <div
                           key={suggestion.id}
                           className={`flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
-                            index === selectedSuggestionIndex ? "bg-gray-100" : ""
-                          } ${index < suggestions.length - 1 ? "border-b border-gray-100" : ""}`}
+                            index === selectedSuggestionIndex
+                              ? "bg-gray-100"
+                              : ""
+                          } ${
+                            index < suggestions.length - 1
+                              ? "border-b border-gray-100"
+                              : ""
+                          }`}
                           onClick={() => handleSuggestionClick(suggestion)}
                           onMouseEnter={() => setSelectedSuggestionIndex(index)}
                         >
                           <div className="w-10 h-10 relative flex-shrink-0">
                             <Image
-                              src={suggestion.image || '/placeholder-product.png'}
+                              src={
+                                suggestion.image || "/placeholder-product.png"
+                              }
                               alt={suggestion.name}
                               fill
                               className="object-cover rounded"
@@ -427,10 +448,17 @@ const Navbar: React.FC = () => {
                             />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-800 truncate">{suggestion.name}</p>
-                            <p className="text-sm text-gray-500 truncate">{suggestion.brand} • {suggestion.category}</p>
+                            <p className="font-medium text-gray-800 truncate">
+                              {suggestion.name}
+                            </p>
+                            <p className="text-sm text-gray-500 truncate">
+                              {suggestion.brand} • {suggestion.category}
+                            </p>
                           </div>
-                          <ChevronDown size={16} className="transform -rotate-90 text-gray-400" />
+                          <ChevronDown
+                            size={16}
+                            className="transform -rotate-90 text-gray-400"
+                          />
                         </div>
                       ))}
                     </>
@@ -447,7 +475,7 @@ const Navbar: React.FC = () => {
           {/* Buttons */}
           <div className="flex flex-row justify-end items-center gap-2 md:gap-4 flex-shrink-0">
             {/* FIXED: Use isLoggedIn from Zustand store */}
-            {!Cookies.get('token') ? (
+            {!Cookies.get("token") ? (
               <>
                 <Link href="/auth/signup">
                   <button
@@ -477,12 +505,10 @@ const Navbar: React.FC = () => {
                         alt={`profile`}
                         width={40}
                         height={40}
-                        className="object-fit"
+                        className="object-cover w-8 h-8 rounded-full"
                       />
                     )}
-                    {!userInfo?.image && (
-                      <User size={20} />
-                    )}
+                    {!userInfo?.image && <User size={20} />}
                   </div>
                   <span>{userInfo?.firstName}</span>
                   <ChevronDown
@@ -582,7 +608,7 @@ const Navbar: React.FC = () => {
                     <Link href="/pages/">
                       <div className="flex justify-center items-center">
                         <Image
-                         className="object-cover w-[220px] h-[50px] flex item-center mb-[10px]"
+                          className="object-fit w-[150px]  flex item-center mb-[10px]"
                           src={logo}
                           alt="Logo"
                         />
@@ -638,7 +664,7 @@ const Navbar: React.FC = () => {
                         {mobileProfileOpen && (
                           <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 shadow-lg rounded-md z-50 p-3 animate-fadeIn">
                             {/* FIXED: Use isLoggedIn from Zustand store */}
-                            {user.length==0 ? (
+                            {user.length == 0 ? (
                               <div className="flex flex-col gap-2">
                                 <Link href="/auth/signin">
                                   <button
@@ -653,7 +679,8 @@ const Navbar: React.FC = () => {
                                     className="flex gap-2 w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
                                     onClick={() => setMobileProfileOpen(false)}
                                   >
-                                    <HugeiconsIcon icon={SquareLock02Icon} /> Signup
+                                    <HugeiconsIcon icon={SquareLock02Icon} />{" "}
+                                    Signup
                                   </button>
                                 </Link>
                               </div>
@@ -672,7 +699,8 @@ const Navbar: React.FC = () => {
                                   onClick={() => setMobileProfileOpen(false)}
                                 >
                                   <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
-                                    <HugeiconsIcon icon={PackageIcon} /> Tracking Number
+                                    <HugeiconsIcon icon={PackageIcon} />{" "}
+                                    Tracking Number
                                   </div>
                                 </Link>
                                 <Link
@@ -680,7 +708,8 @@ const Navbar: React.FC = () => {
                                   onClick={() => setMobileProfileOpen(false)}
                                 >
                                   <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
-                                    <HugeiconsIcon icon={Notification01Icon} /> Notification
+                                    <HugeiconsIcon icon={Notification01Icon} />{" "}
+                                    Notification
                                   </div>
                                 </Link>
                                 <Link
@@ -688,7 +717,8 @@ const Navbar: React.FC = () => {
                                   onClick={() => setMobileProfileOpen(false)}
                                 >
                                   <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
-                                    <HugeiconsIcon icon={Clock05Icon} /> Order History
+                                    <HugeiconsIcon icon={Clock05Icon} /> Order
+                                    History
                                   </div>
                                 </Link>
                                 <button
@@ -731,7 +761,7 @@ const Navbar: React.FC = () => {
                 {/* Mobile Search Suggestions - SHOW ALL PRODUCTS */}
                 {showSuggestions && (
                   <div className="absolute left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-96 overflow-hidden">
-                    <div 
+                    <div
                       ref={suggestionsRef}
                       className="max-h-96 overflow-y-auto"
                     >
@@ -744,21 +774,34 @@ const Navbar: React.FC = () => {
                         <>
                           <div className="p-3 bg-gray-50 border-b">
                             <p className="text-sm font-medium text-gray-600">
-                              {value.trim() ? `Found ${suggestions.length} products matching "${value}"` : `Showing all ${suggestions.length} products`}
+                              {value.trim()
+                                ? `Found ${suggestions.length} products matching "${value}"`
+                                : `Showing all ${suggestions.length} products`}
                             </p>
                           </div>
                           {suggestions.map((suggestion, index) => (
                             <div
                               key={suggestion.id}
                               className={`flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
-                                index === selectedSuggestionIndex ? "bg-gray-100" : ""
-                              } ${index < suggestions.length - 1 ? "border-b border-gray-100" : ""}`}
+                                index === selectedSuggestionIndex
+                                  ? "bg-gray-100"
+                                  : ""
+                              } ${
+                                index < suggestions.length - 1
+                                  ? "border-b border-gray-100"
+                                  : ""
+                              }`}
                               onClick={() => handleSuggestionClick(suggestion)}
-                              onMouseEnter={() => setSelectedSuggestionIndex(index)}
+                              onMouseEnter={() =>
+                                setSelectedSuggestionIndex(index)
+                              }
                             >
                               <div className="w-10 h-10 relative flex-shrink-0">
                                 <Image
-                                  src={suggestion.image || '/placeholder-product.png'}
+                                  src={
+                                    suggestion.image ||
+                                    "/placeholder-product.png"
+                                  }
                                   alt={suggestion.name}
                                   fill
                                   className="object-cover rounded"
@@ -766,10 +809,17 @@ const Navbar: React.FC = () => {
                                 />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="font-medium text-gray-800 truncate">{suggestion.name}</p>
-                                <p className="text-sm text-gray-500 truncate">{suggestion.brand} • {suggestion.category}</p>
+                                <p className="font-medium text-gray-800 truncate">
+                                  {suggestion.name}
+                                </p>
+                                <p className="text-sm text-gray-500 truncate">
+                                  {suggestion.brand} • {suggestion.category}
+                                </p>
                               </div>
-                              <ChevronDown size={16} className="transform -rotate-90 text-gray-400" />
+                              <ChevronDown
+                                size={16}
+                                className="transform -rotate-90 text-gray-400"
+                              />
                             </div>
                           ))}
                         </>
@@ -815,7 +865,7 @@ const Navbar: React.FC = () => {
                   <Link href="/pages/">
                     <div className="flex justify-center items-center">
                       <Image
-                        className="object-cover w-[220px] h-[50px] flex item-center mb-[10px]"
+                        className="object-fit w-[150px] h-[50px] flex item-center mb-[10px]"
                         src={logo}
                         alt="Logo"
                       />
@@ -864,14 +914,23 @@ const Navbar: React.FC = () => {
                           setShowSuggestions(false);
                         }}
                       >
-                        <HugeiconsIcon icon={UserIcon} />
+                        {userInfo?.image && (
+                          <Image
+                            src={userInfo?.image}
+                            alt={`profile`}
+                            width={40}
+                            height={40}
+                            className="object-cover w-8 h-8 rounded-full"
+                          />
+                        )}
+                        {!userInfo?.image && <HugeiconsIcon icon={UserIcon} />}
                       </button>
 
                       {/* Mobile profile dropdown */}
                       {mobileProfileOpen && (
                         <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 shadow-lg rounded-md z-50 p-3 animate-fadeIn">
                           {/* FIXED: Use isLoggedIn from Zustand store */}
-                          {!Cookies.get('token') ? (
+                          {!Cookies.get("token") ? (
                             <div className="flex flex-col gap-2">
                               <Link href="/auth/signin">
                                 <button
@@ -886,7 +945,8 @@ const Navbar: React.FC = () => {
                                   className="flex gap-2 w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors"
                                   onClick={() => setMobileProfileOpen(false)}
                                 >
-                                  <HugeiconsIcon icon={SquareLock02Icon} /> Signup
+                                  <HugeiconsIcon icon={SquareLock02Icon} />{" "}
+                                  Signup
                                 </button>
                               </Link>
                             </div>
@@ -905,7 +965,8 @@ const Navbar: React.FC = () => {
                                 onClick={() => setMobileProfileOpen(false)}
                               >
                                 <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
-                                  <HugeiconsIcon icon={PackageIcon} /> Tracking Number
+                                  <HugeiconsIcon icon={PackageIcon} /> Tracking
+                                  Number
                                 </div>
                               </Link>
                               <Link
@@ -913,7 +974,8 @@ const Navbar: React.FC = () => {
                                 onClick={() => setMobileProfileOpen(false)}
                               >
                                 <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
-                                  <HugeiconsIcon icon={Notification01Icon} /> Notification
+                                  <HugeiconsIcon icon={Notification01Icon} />{" "}
+                                  Notification
                                 </div>
                               </Link>
                               <Link
@@ -921,7 +983,8 @@ const Navbar: React.FC = () => {
                                 onClick={() => setMobileProfileOpen(false)}
                               >
                                 <div className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded transition-colors">
-                                  <HugeiconsIcon icon={Clock05Icon} /> Order History
+                                  <HugeiconsIcon icon={Clock05Icon} /> Order
+                                  History
                                 </div>
                               </Link>
                               <button
