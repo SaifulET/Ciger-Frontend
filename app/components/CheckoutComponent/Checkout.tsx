@@ -1363,6 +1363,7 @@ if(transactionid===0 && orderFailed==false)
             <div>
               <button
             id="checkout-button"
+            onClick={() => setIsAgeChecked(true)}
             className={`${isAgeChecked?"bg-green-600 hover:bg-green-700":"bg-yellow-600 hover:bg-yellow-700"} py-3 w-full rounded-md  transition-colors`}
           >
             {isAgeChecked ? (
