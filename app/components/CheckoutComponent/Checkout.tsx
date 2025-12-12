@@ -247,8 +247,8 @@ const CheckoutPage = () => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const [taxMessage, setTaxMessage] = useState("");
-  const [tax, setTax] = useState(0);
-  const [taxRate, setTaxRate] = useState(0);
+  const [tax, setTax] = useState(1);
+  const [taxRate, setTaxRate] = useState(10.25);
   const [isCalculatingTax, setIsCalculatingTax] = useState(false);
   const [isAgeChecked, setIsAgeChecked] = useState(false);
 
