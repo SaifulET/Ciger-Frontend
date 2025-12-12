@@ -297,7 +297,7 @@ const CheckoutPage = () => {
   script.async = true;
 
   script.onload = () => {
-    setIsAgeChecked(true);
+    
     console.log("Age checker script loaded successfully");
   };
 
