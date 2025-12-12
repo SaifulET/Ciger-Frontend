@@ -11,7 +11,7 @@ function TermsAndConditions() {
       </div>
 
       {/* Content */}
-      <div className="bg-white shadow-sm rounded-lg p-4 md:p-8 space-y-6 text-gray-800 leading-relaxed">
+      <div className="bg-white shadow-sm rounded-lg p-[32px] space-y-6 text-gray-800 leading-relaxed">
         {/* Introduction */}
         <section>
           <p className="text-base md:text-lg md:text-center">
@@ -32,32 +32,25 @@ function TermsAndConditions() {
             1. AGE RESTRICTION & LEGAL COMPLIANCE
           </h2>
           <p className="mt-3 text-base md:text-lg">
-           Smokenza sells products that are strictly restricted to adults.
-
+            Smokenza sells products that are strictly restricted to adults.
           </p>
           <ul className="list-disc ml-5 mt-3 space-y-1.5 text-sm md:text-base">
             <li>
-             You must be at least 21 years of age (or the minimum legal age in your jurisdiction, whichever is higher) to access or purchase from this Site.
-
-
-
+              You must be at least 21 years of age (or the minimum legal age in
+              your jurisdiction, whichever is higher) to access or purchase from
+              this Site.
             </li>
             <li>
-           By using this Site, you affirm and verify that you are legally permitted to purchase tobacco and/or vape products.
-
-
-
+              By using this Site, you affirm and verify that you are legally
+              permitted to purchase tobacco and/or vape products.
             </li>
             <li>
-              We utilize age-verification systems and reserve the right to request additional proof of age at any time.
-
-
-
+              We utilize age-verification systems and reserve the right to
+              request additional proof of age at any time.
             </li>
             <li>
-             
-
-Any attempt to falsify age information will result in immediate account termination and order cancellation without refund.
+              Any attempt to falsify age information will result in immediate
+              account termination and order cancellation without refund.
             </li>
           </ul>
         </section>
@@ -79,25 +72,28 @@ Any attempt to falsify age information will result in immediate account terminat
             Health Disclaimer:
           </p>
           <p className="mt-1.5 text-sm md:text-base">
-            Tobacco and nicotine products contain nicotine, an addictive chemical. These products are not safe and may cause serious health risks. By purchasing, you acknowledge and accept all associated risks.
-
+            Tobacco and nicotine products contain nicotine, an addictive
+            chemical. These products are not safe and may cause serious health
+            risks. By purchasing, you acknowledge and accept all associated
+            risks.
           </p>
         </section>
 
         {/* 3. ACCOUNT REGISTRATION */}
         <section>
           <h2 className="text-xl font-semibold">3. ACCOUNT REGISTRATION</h2>
-          <p className="mt-3 text-sm md:text-base">To place an order, you may be required to create an account.
-You agree to:
-</p>
+          <p className="mt-3 text-sm md:text-base">
+            To place an order, you may be required to create an account. You
+            agree to:
+          </p>
           <ul className="list-disc ml-5 mt-3 space-y-1.5 text-sm md:text-base">
             <li>Provide accurate and complete information</li>
             <li>Maintain confidentiality of your login credentials</li>
             <li>Accept responsibility for all activities under your account</li>
           </ul>
           <p className="mt-3 text-sm md:text-base">
-          We reserve the right to suspend or terminate accounts suspected of fraud, abuse, or violation of these Terms.
-
+            We reserve the right to suspend or terminate accounts suspected of
+            fraud, abuse, or violation of these Terms.
           </p>
         </section>
 
@@ -110,8 +106,8 @@ You agree to:
             All orders are subject to acceptance by Smokenza.
           </p>
           <p className="mt-3 text-sm md:text-base">
-            We reserve the right to cancel or refuse any order for any reason, including but not limited to:
-
+            We reserve the right to cancel or refuse any order for any reason,
+            including but not limited to:
           </p>
           <ul className="list-disc ml-5 mt-3 space-y-1.5 text-sm md:text-base">
             <li>Failed age verification</li>
@@ -120,8 +116,8 @@ You agree to:
             <li>Regulatory restrictions</li>
           </ul>
           <p className="mt-3 text-sm md:text-base">
-          If an order is canceled after payment, a refund will be issued to the original payment method.
-
+            If an order is canceled after payment, a refund will be issued to
+            the original payment method.
           </p>
         </section>
 
@@ -129,38 +125,44 @@ You agree to:
         <section>
           <h2 className="text-xl font-semibold">5. PRICING & PAYMENT</h2>
           <ul className="list-disc ml-5 mt-3 space-y-1.5 text-sm md:text-base">
-            <li>All prices are listed in U.S. Dollars (USD) unless otherwise stated.
-</li>
+            <li>
+              All prices are listed in U.S. Dollars (USD) unless otherwise
+              stated.
+            </li>
             <li>Prices may change at any time without notice.</li>
-            <li>You are responsible for all applicable taxes, excise duties, and fees imposed by your state or locality</li>
+            <li>
+              You are responsible for all applicable taxes, excise duties, and
+              fees imposed by your state or locality
+            </li>
             <li>Accepted payment methods are displayed at checkout.</li>
-            
           </ul>
-          <p className="mt-3 text-sm md:text-base">Smokenza does not accept payments on behalf of minors or third parties.
-</p>
+          <p className="mt-3 text-sm md:text-base">
+            Smokenza does not accept payments on behalf of minors or third
+            parties.
+          </p>
         </section>
 
         {/* 6. SHIPPING */}
         <section>
           <h2 className="text-xl font-semibold">6. SHIPPING & DELIVERY</h2>
-<ul className="list-disc ml-5 mt-3 space-y-1.5 text-sm md:text-base">
-<li>We ship only to locations where our products are legal to sell and receive.
-</li>
-<li>Adult signature may be required upon delivery.</li>
-<li className="mt-3 text-sm md:text-base">
-            We are not responsible for:
-         
           <ul className="list-disc ml-5 mt-3 space-y-1.5 text-sm md:text-base">
-            <li>Delays caused by carriers</li>
-            <li>Seized or confiscated packages due to local laws</li>
-            <li>Incorrect addresses provided by the customer</li>
-          </ul> </li>
-          <li className="mt-3 text-sm md:text-base">
-            Title and risk of loss pass to you upon delivery to the carrier.
-          </li>
-  
-</ul>
-          
+            <li>
+              We ship only to locations where our products are legal to sell and
+              receive.
+            </li>
+            <li>Adult signature may be required upon delivery.</li>
+            <li className="mt-3 text-sm md:text-base">
+              We are not responsible for:
+              <ul className="list-disc ml-5 mt-3 space-y-1.5 text-sm md:text-base">
+                <li>Delays caused by carriers</li>
+                <li>Seized or confiscated packages due to local laws</li>
+                <li>Incorrect addresses provided by the customer</li>
+              </ul>{" "}
+            </li>
+            <li className="mt-3 text-sm md:text-base">
+              Title and risk of loss pass to you upon delivery to the carrier.
+            </li>
+          </ul>
         </section>
 
         {/* 7. RETURNS */}
@@ -269,44 +271,64 @@ You agree to:
         <section>
           <h2 className="text-xl font-semibold">13. INDEMNIFICATION</h2>
           <p className="mt-3 text-sm md:text-base">
-            You agree to indemnify Smokenza from claims resulting from misuse or
-            violations.
+            You agree to indemnify and hold harmless Smokenza, its owners,
+            officers, employees, and affiliates from any claims, damages,
+            liabilities, or expenses arising from:
+            <ul className="list-disc ml-5 mt-3 space-y-1.5 text-sm md:text-base">
+              <li>Your misuse of the Site</li>
+              <li>Violation of these Terms</li>
+              <li>Violation of any law or regulation</li>
+            </ul>
           </p>
         </section>
 
         <section>
           <h2 className="text-xl font-semibold">14. TERMINATION</h2>
           <p className="mt-3 text-sm md:text-base">
-            We may restrict or terminate access for violations.
+           We reserve the right to terminate or restrict access to the Site or your account at any time, without notice, for violation of these Terms.
+
           </p>
         </section>
 
         <section>
           <h2 className="text-xl font-semibold">15. GOVERNING LAW</h2>
           <p className="mt-3 text-sm md:text-base">
-            Illinois law governs these Terms.
+           These Terms are governed by and construed in accordance with the laws of the State of Illinois, without regard to conflict-of-law principles.
+
           </p>
         </section>
 
         <section>
           <h2 className="text-xl font-semibold">16. DISPUTE RESOLUTION</h2>
           <p className="mt-3 text-sm md:text-base">
-            Disputes may be resolved through arbitration or Illinois courts.
-            Class actions are waived.
+         Any dispute arising from these Terms or use of the Site shall be resolved through:
+<ul className="list-disc ml-5 mt-3 space-y-1.5 text-sm md:text-base">
+  <li>Binding arbitration or
+</li>
+  <li>Courts located in Illinois, at our sole discretion</li>
+  
+</ul>
           </p>
+          <p>
+
+You waive the right to participate in class actions
+</p>
+
         </section>
 
         <section>
           <h2 className="text-xl font-semibold">17. CHANGES TO TERMS</h2>
           <p className="mt-3 text-sm md:text-base">
-            Updates may occur at any time. Continued use means acceptance.
+            We may update these Terms at any time. Continued use of the Site after changes constitutes acceptance of the revised Terms.
+
           </p>
         </section>
 
         <section>
           <h2 className="text-xl font-semibold">18. CONTACT INFORMATION</h2>
           <p className="mt-3 text-sm md:text-base">
-            Email: support@smokenza.com
+           For questions or legal inquiries, contact: support@smokenza.com
+
           </p>
         </section>
 
