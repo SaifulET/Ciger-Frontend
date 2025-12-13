@@ -1358,6 +1358,28 @@ amount_to_collect || 0;
                 ) : (
                   <>
                     <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
+                        <div
+                      
+                            className="flex justify-between text-sm font-semibold"
+                          >
+                            <div className="flex-1">
+                              <p className="text-gray-700">
+                                Product Name
+                              </p>
+                            </div>
+                            <div className="flex gap-8 ml-4">
+                              <span className="text-gray-600 w-32 text-right">
+                                Unit Price
+                              </span>
+                              <span className="text-gray-600 w-8 text-center">
+                                Quantity
+                              </span>
+                              <span className="font-medium w-16 text-right">
+                                Price
+                              </span>
+                            </div>
+                          </div>
+
                       {cartItems.map((item: CartItem) => {
                         const price: number = item.productId.price || 0;
                         const discount: number = item.productId.discount || 0;
@@ -1414,16 +1436,16 @@ amount_to_collect || 0;
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Sales Tax</span>
-                        <span className="font-medium">
+                        <span className="text-gray-600">Sales Tax <span className="font-semibold">({taxRate.toFixed(2)}%)</span></span>
+                        {/* <span className="font-medium">
                           {taxRate.toFixed(2)}%
-                        </span>
+                        </span> */}
                         <span className="font-medium">${tax.toFixed(2)}</span>
                       </div>
                       {discountApplied && (
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Discount Code</span>
-                          <span className="font-medium">{discountPercent}%</span>
+                          <span className="text-gray-600">Discount Code <span className="font-semibold">({discountPercent}%)</span></span>
+                          {/* <span className="font-medium">{discountPercent}%</span> */}
                           <span className="font-medium text-red-500">
                             -${discount.toFixed(2)}
                           </span>
@@ -1801,33 +1823,62 @@ amount_to_collect || 0;
               ) : (
                 <>
                   <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
-                    {cartItems.map((item: CartItem) => {
-                      const price: number = item.productId.price || 0;
-                      const discount: number = item.productId.discount || 0;
-                      const discountedPrice: number =
-                        price * (1 - discount / 100);
-                      const itemTotal: number = discountedPrice * item.quantity;
-
-                      return (
+                    <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
                         <div
-                          key={item._id}
-                          className="flex justify-between text-sm"
-                        >
-                          <div className="flex-1">
-                            <p className="text-gray-700">{item.productId.name}</p>
+                      
+                            className="flex justify-between text-sm font-semibold"
+                          >
+                            <div className="flex-1">
+                              <p className="text-gray-700">
+                                Product Name
+                              </p>
+                            </div>
+                            <div className="flex gap-8 ml-4">
+                              <span className="text-gray-600 w-32 text-right">
+                                Unit Price
+                              </span>
+                              <span className="text-gray-600 w-8 text-center">
+                                Quantity
+                              </span>
+                              <span className="font-medium w-16 text-right">
+                                Price
+                              </span>
+                            </div>
                           </div>
-                          <div className="flex gap-4 ml-4">
-                            <span className="text-gray-600">
-                              ${discountedPrice.toFixed(2)}
-                            </span>
-                            <span className="text-gray-600">{item.quantity}</span>
-                            <span className="font-medium">
-                              ${itemTotal.toFixed(2)}
-                            </span>
+
+                      {cartItems.map((item: CartItem) => {
+                        const price: number = item.productId.price || 0;
+                        const discount: number = item.productId.discount || 0;
+                        const discountedPrice: number =
+                          price ;
+                        const itemTotal: number = discountedPrice * item.quantity;
+
+                        return (
+                          <div
+                            key={item._id}
+                            className="flex justify-between text-sm"
+                          >
+                            <div className="">
+                              <p className="text-gray-700">
+                                {item.productId.name}
+                              </p>
+                            </div>
+                            <div className="flex gap-8 ml-4">
+                              <span className="text-gray-600 w-16 text-right">
+                                ${discountedPrice.toFixed(2)}
+                              </span>
+                              <span className="text-gray-600 w-8 text-center">
+                                {item.quantity}
+                              </span>
+                              <span className="font-medium w-16 text-right">
+                                ${itemTotal.toFixed(2)}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
+                    
                   </div>
 
                   <div className="border-t pt-3 space-y-2 text-sm">
@@ -1844,14 +1895,14 @@ amount_to_collect || 0;
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Sales Tax</span>
-                      <span className="font-medium">{taxRate.toFixed(2)}%</span>
+                      <span className="text-gray-600">Sales Tax  <span className="font-semibold">({taxRate.toFixed(2)}%)</span></span>
+                      {/* <span className="font-medium">{taxRate.toFixed(2)}%</span> */}
                       <span className="font-medium">${tax.toFixed(2)}</span>
                     </div>
                     {discountApplied && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Discount Code</span>
-                        <span className="text-gray-600">{discountPercent}%</span>
+                        <span className="text-gray-600">Discount Code  <span className="font-semibold">({discountPercent}%)</span></span>
+                        {/* <span className="text-gray-600">{discountPercent}%</span> */}
                         <span className="font-medium text-red-500">
                           -${discount.toFixed(2)}
                         </span>

@@ -84,12 +84,21 @@ const handleAddToCart = () => {
      
 
       <div className="flex gap-3 mt-4">
-        <button
+       {product.inStock && <button
           onClick={handleAddToCart}
           className="flex-1 bg-[#C9A040] hover:bg-yellow-600 text-white font-medium py-2 rounded-lg flex items-center justify-center gap-1 transition"
         >
           <Plus className="w-5 h-5" /> Cart
+        </button>} 
+        { !product.inStock && 
+        <button
+          
+          className="flex-1 bg-gray-900 text-gray-400 font-medium py-2 rounded-lg flex items-center justify-center gap-1 transition"
+        >
+          <Plus className="w-5 h-5" /> Cart
         </button>
+
+        }
        
       </div>
     </div>
