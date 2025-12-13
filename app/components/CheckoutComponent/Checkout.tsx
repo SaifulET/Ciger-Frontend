@@ -247,7 +247,7 @@ const CheckoutPage = () => {
   const [tax, setTax] = useState(0);
   const [taxRate, setTaxRate] = useState(10.25); // Fixed 10.25% tax rate
   const [isCalculatingTax, setIsCalculatingTax] = useState(false);
-  const [isAgeChecked, setIsAgeChecked] = useState(true);
+  const [isAgeChecked, setIsAgeChecked] = useState(false);
 
   // Collect.js states
   const [isCollectJSLoaded, setIsCollectJSLoaded] = useState(false);
@@ -294,7 +294,7 @@ const CheckoutPage = () => {
 
     script.onerror = () => {
       console.log("Failed to load age checker script");
-      setIsAgeChecked(false);
+      setIsAgeChecked(true);
     };
 
     document.head.appendChild(script);
@@ -1030,6 +1030,9 @@ amount_to_collect || 0;
       setIsProcessingPayment(false);
     }
   };
+  const checkedAge =()=>{
+    setIsAgeChecked(true);
+  }
 
   if (loading) {
     return (
@@ -1322,7 +1325,7 @@ amount_to_collect || 0;
               <div>
                 <button
                   id="checkout-button"
-                  onClick={() => setIsAgeChecked(true)}
+                  onClick={checkedAge}
                   className={`${
                     isAgeChecked
                       ? "bg-green-600 hover:bg-green-700"
