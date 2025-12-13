@@ -297,7 +297,7 @@ console.log("93",checkedItems,"93");
                     <div className="flex items-center justify-center w-12 h-12 md:w-[70px] md:h-[70px] bg-[#F5F5F5] border border-[#B0B0B0] rounded-xl flex-shrink-0">
                       <Image
                         src={getSafeImageSrc(item.productId.image)}
-                        alt={item.productId.name || "Product image"}
+                        alt={"I"}
                         width={30}
                         height={30}
                         className="object-contain"
