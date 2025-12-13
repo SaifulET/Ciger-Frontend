@@ -714,33 +714,79 @@ const CheckoutPage = () => {
 
   // SIMPLIFIED TAX CALCULATION - Fixed 10.25%
   // Calculate tax based on fixed rate
-  useEffect(() => {
-    const calculateTax = (): void => {
-      // If we have cart items and subtotal, calculate tax using fixed rate
-      if (cartItems.length > 0 && subtotal > 0) {
-        // Always use 10.25% tax rate
-        const calculatedTax = subtotal * (10.25 / 100);
-        setTax(calculatedTax);
-        setTaxRate(10.25);
-        setTaxMessage("Tax calculated at 10.25%");
-        setIsCalculatingTax(false);
-        
-        console.log("Tax calculated:", {
-          subtotal,
-          taxRate: 10.25,
-          tax: calculatedTax,
-          taxMessage: "Fixed 10.25% tax rate applied",
-        });
-      } else {
-        setTax(0);
-        setTaxMessage("Add items to calculate tax");
-      }
-    };
+  const [apiTax,setapiTax]=useState(false)
+useEffect(() => {
+  const calculateTax = async (): Promise<void> => {
+    // Don't calculate if we don't have required data
+    if (!cartItems.length || subtotal <= 0) {
+      setIsCalculatingTax(false);
+      return;
+    }
 
-    // Debounce tax calculation
-    const timeoutId = setTimeout(calculateTax, 300);
-    return () => clearTimeout(timeoutId);
-  }, [subtotal, cartItems.length]);
+    try {
+      // Only call API if we have zip and state
+      if (formData.zipCode && formData.state) {
+        console.log('Calling tax API with:', {
+          amount: subtotal,
+          to_zip: formData.zipCode,
+          to_state: formData.state,
+          shipping: shippingCost
+        });
+
+        const res = await api.post("/tax/calculateTax", {
+          amount: subtotal,
+          to_zip: formData.zipCode,
+          to_state: formData.state,
+          shipping: shippingCost
+        });
+        console.log(res,'final tax')
+        
+        const apiTax = res.data?.tax?.
+amount_to_collect || 0;
+        
+        if (apiTax > 0) {
+          // API returned valid tax
+          setTax(apiTax);
+          setTaxRate(res.data.tax.rate*100)
+          setapiTax(true);
+          setTaxMessage("Tax calculated via API");
+          setIsCalculatingTax(false);
+          console.log("Tax calculated via API:", apiTax);
+          return; // Exit early since we got API tax
+        }
+      }
+      
+      // If API didn't return tax or no zip/state, use fallback
+      const calculatedTax = subtotal * (10.25 / 100);
+      setTax(calculatedTax);
+      setapiTax(false); // Indicates fallback tax
+      setTaxRate(10.25);
+      setTaxMessage("Tax calculated at 10.25% (fallback)");
+      console.log("Fallback tax calculated:", calculatedTax);
+      
+    } catch (error: any) {
+      console.log('Tax API error:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      
+      // API failed, use fallback
+      const calculatedTax = subtotal * (10.25 / 100);
+      setTax(calculatedTax);
+      setapiTax(false); // Indicates fallback tax
+      setTaxRate(10.25);
+      setTaxMessage("Tax calculated at 10.25% (API unavailable)");
+      console.log("Fallback tax due to API error:", calculatedTax);
+    } finally {
+      setIsCalculatingTax(false);
+    }
+  };
+
+  // Debounce tax calculation
+  const timeoutId = setTimeout(calculateTax, 300);
+  return () => clearTimeout(timeoutId);
+}, [subtotal, cartItems.length, formData.zipCode, formData.state, shippingCost]); // Added shippingCost dependency
 
   // Calculate total
   const total = useMemo((): number => {
