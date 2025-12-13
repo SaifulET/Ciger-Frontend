@@ -203,15 +203,15 @@ interface DiscountResponse {
 
 const CheckoutPage = () => {
   const { user } = useUserStore();
-  const { guestId,initializeCart } = useCartStore();
+  const { guestId, initializeCart } = useCartStore();
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [servicePricing, setServicePricing] = useState<ServicePricing | null>(
     null
   );
   const [loading, setLoading] = useState(true);
-  const[transactionid,setTransactionid]=useState(0);
-  const [orderFailed,setOrderFailed]=useState(false);
+  const [transactionid, setTransactionid] = useState(0);
+  const [orderFailed, setOrderFailed] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     email: "",
     firstName: "",
@@ -235,20 +235,17 @@ const CheckoutPage = () => {
     discountCode: "",
   });
 
-
   const [discountApplied, setDiscountApplied] = useState(false);
   const [discountPercent, setDiscountPercent] = useState(0);
   const [discountLoading, setDiscountLoading] = useState(false);
   const [discountError, setDiscountError] = useState<string | null>(null);
-
-
 
   const [errors, setErrors] = useState<Errors>({});
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const [taxMessage, setTaxMessage] = useState("");
   const [tax, setTax] = useState(0);
-  const [taxRate, setTaxRate] = useState(10.25);
+  const [taxRate, setTaxRate] = useState(10.25); // Fixed 10.25% tax rate
   const [isCalculatingTax, setIsCalculatingTax] = useState(false);
   const [isAgeChecked, setIsAgeChecked] = useState(true);
 
@@ -258,73 +255,62 @@ const CheckoutPage = () => {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [collectJSError, setCollectJSError] = useState<string | null>(null);
 
-
   const collectJSConfiguredRef = useRef(false);
   const COLLECT_JS_TOKENIZATION_KEY = "kys4zk-Gg5DDh-35QMup-h39wNz";
- 
 
   // Age Checker
- useEffect(() => {
-  // Early return for SSR
-  if (typeof window === "undefined") return;
+  useEffect(() => {
+    // Early return for SSR
+    if (typeof window === "undefined") return;
 
-  // Check if script is already loaded to avoid duplicates
-  if (document.querySelector('script[src*="agechecker.net"]')) {
-    console.log("Age checker script already loaded");
-    return;
-  }
-
-  const onVerified = () => {
-    console.log("Age verification successful!");
-    setIsAgeChecked(true);
-    // You could also trigger checkout or other actions here
-  };
-
-  // Configure the global settings
-  window.AgeCheckerConfig = {
-    element: "#checkout-button",
-    key: "LtE6WKMhRT41WntUJhk5oiEpuYl6g6SI",
-    onVerified,
-    // Optional: Add error handling
-    // onUnverified: () => console.log("Age verification failed"),
-    // onError: (error) => console.error("Age checker error:", error)
-  };
-
-  // Load the script
-  const script = document.createElement("script");
-  script.src = "https://cdn.agechecker.net/static/popup/v1/popup.js";
-  script.crossOrigin = "anonymous";
-  script.async = true;
-
-  script.onload = () => {
-    
-    console.log("Age checker script loaded successfully");
-  };
-
-  script.onerror = () => {
-    console.log("Failed to load age checker script");
-    setIsAgeChecked(false);
-    // Optional: Handle fallback behavior here
-    // You might want to proceed without age check in development
-  };
-
-  document.head.appendChild(script);
-
-  // Cleanup function
-  return () => {
-    // Remove the script if it exists
-    if (script.parentNode) {
-      console.log("Removing age checker script");
-      script.parentNode.removeChild(script);
+    // Check if script is already loaded to avoid duplicates
+    if (document.querySelector('script[src*="agechecker.net"]')) {
+      console.log("Age checker script already loaded");
+      return;
     }
-    
-    // Clean up global variable
-    delete window.AgeCheckerConfig;
-    
-    // Optional: Reset age check state if component unmounts
-    // setIsAgeChecked(false);
-  };
-}, []);
+
+    const onVerified = () => {
+      console.log("Age verification successful!");
+      setIsAgeChecked(true);
+      // You could also trigger checkout or other actions here
+    };
+
+    // Configure the global settings
+    window.AgeCheckerConfig = {
+      element: "#checkout-button",
+      key: "LtE6WKMhRT41WntUJhk5oiEpuYl6g6SI",
+      onVerified,
+    };
+
+    // Load the script
+    const script = document.createElement("script");
+    script.src = "https://cdn.agechecker.net/static/popup/v1/popup.js";
+    script.crossOrigin = "anonymous";
+    script.async = true;
+
+    script.onload = () => {
+      console.log("Age checker script loaded successfully");
+    };
+
+    script.onerror = () => {
+      console.log("Failed to load age checker script");
+      setIsAgeChecked(false);
+    };
+
+    document.head.appendChild(script);
+
+    // Cleanup function
+    return () => {
+      // Remove the script if it exists
+      if (script.parentNode) {
+        console.log("Removing age checker script");
+        script.parentNode.removeChild(script);
+      }
+
+      // Clean up global variable
+      delete window.AgeCheckerConfig;
+    };
+  }, []);
 
   // Collect.js loading and configuration
   useEffect(() => {
@@ -347,7 +333,7 @@ const CheckoutPage = () => {
           callback: () => {
             console.log("Collect.js initialized successfully");
           },
-          paymentType: "cc"
+          paymentType: "cc",
         };
 
         console.log("Configuring Collect.js with minimal config");
@@ -469,10 +455,7 @@ const CheckoutPage = () => {
         alert(`Cannot submit order:\n${validationErrors.join("\n")}`);
         return;
       }
-      if(!isCalculatingTax)
-{
-  console.log("Wrong address provided for tax calculation. Please check your address details.");
-}
+
       console.log("All validation passed, creating order data...");
 
       const orderData: OrderData = {
@@ -516,24 +499,21 @@ const CheckoutPage = () => {
         success: boolean;
         message?: string;
         orderid?: string;
-        transactionid?:number;
+        transactionid?: number;
       }>("/payment/payment", orderData);
       console.log("Order submission response:", response.data);
 
       if (response.data.success) {
-        console.log("Order placed successfull", response.data);
+        console.log("Order placed successfully", response.data);
         setTransactionid(response.data.transactionid || 0);
-        
       } else {
         setOrderFailed(true);
-        
-      
       }
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
       console.log("Error submitting order:", errorMessage);
-       setOrderFailed(true);
+      setOrderFailed(true);
     } finally {
       setIsProcessingPayment(false);
     }
@@ -583,18 +563,23 @@ const CheckoutPage = () => {
     },
     []
   );
-
+ const subtotal = useMemo((): number => {
+    return cartItems.reduce((sum: number, item: CartItem): number => {
+      const price: number = item.productId.price || 0;
+      const discount: number = item.productId.discount || 0;
+      const discountedPrice: number = price * (1 - discount / 100);
+      return sum + discountedPrice * item.quantity;
+    }, 0);
+  }, [cartItems]);
   // Check if we should calculate tax
   const shouldCalculateTax = useCallback((): boolean => {
     return (
-      formData.zipCode !== undefined &&
-      formData.zipCode.length >= 3 &&
-      formData.state !== undefined &&
-      formData.state.length >= 2 &&
+      formData.zipCode.trim().length >= 3 &&
+      formData.state.trim().length >= 2 &&
       cartItems.length > 0 &&
       subtotal > 0
     );
-  }, [formData.zipCode, formData.state, cartItems.length]);
+  }, [formData.zipCode, formData.state, cartItems.length, subtotal]);
 
   // Fetch cart data and service pricing
   useEffect(() => {
@@ -602,7 +587,8 @@ const CheckoutPage = () => {
       try {
         console.log("fetching data for checkout");
         setLoading(true);
-console.log("user:", user, "guestId:", guestId);
+        console.log("user:", user, "guestId:", guestId);
+
         // Fetch cart items
         if (user) {
           const cartResponse = await api.get<CartApiResponse>(
@@ -610,7 +596,7 @@ console.log("user:", user, "guestId:", guestId);
           );
           console.log("Cart response:", cartResponse.data);
           if (cartResponse.data.success) {
-            console.log("Setting cart items for user",cartResponse.data);
+            console.log("Setting cart items for user", cartResponse.data);
             setCartItems(cartResponse.data.data);
           } else {
             console.error("Failed to fetch cart:", cartResponse.data);
@@ -620,7 +606,7 @@ console.log("user:", user, "guestId:", guestId);
           const cartResponse = await api.get<CartApiResponse>(
             `/cart/getUserCart/${guestId}`
           );
-          
+
           console.log("Cart response for guest:", cartResponse.data);
           if (cartResponse.data.success) {
             setCartItems(cartResponse.data.data);
@@ -655,14 +641,7 @@ console.log("user:", user, "guestId:", guestId);
   }, [user, guestId]);
 
   // Calculate cart totals
-  const subtotal = useMemo((): number => {
-    return cartItems.reduce((sum: number, item: CartItem): number => {
-      const price: number = item.productId.price || 0;
-      const discount: number = item.productId.discount || 0;
-      const discountedPrice: number = price * (1 - discount / 100);
-      return sum + discountedPrice * item.quantity;
-    }, 0);
-  }, [cartItems]);
+ 
 
   // Calculate shipping cost based on service pricing
   const shippingCost = useMemo((): number => {
@@ -673,12 +652,9 @@ console.log("user:", user, "guestId:", guestId);
       : servicePricing.shippingCost;
   }, [servicePricing, subtotal]);
 
-
-
-
-const handleApplyDiscount = async (): Promise<void> => {
+  const handleApplyDiscount = async (): Promise<void> => {
     const code = formData.discountCode.trim();
-    
+
     if (!code) {
       setDiscountApplied(false);
       setDiscountPercent(0);
@@ -690,147 +666,80 @@ const handleApplyDiscount = async (): Promise<void> => {
     setDiscountError(null);
 
     try {
-      const response = await api.get<DiscountResponse>(`/discount/getDiscountByCode/${code}`);
-      
+      const response = await api.get<DiscountResponse>(
+        `/discount/getDiscountByCode/${code}`
+      );
+
       console.log("Discount API response:", response.data);
-      
+
       if (response.data.success && response.data.percentage !== undefined) {
         setDiscountApplied(true);
         setDiscountPercent(response.data.percentage);
         setDiscountError(null);
-       
       } else {
         setDiscountApplied(false);
         setDiscountPercent(0);
         setDiscountError(response.data.message || "Invalid discount code");
-        
       }
     } catch (error: unknown) {
       console.error("Error applying discount:", error);
       setDiscountApplied(false);
       setDiscountPercent(0);
       setDiscountError("Failed to apply discount. Please try again.");
-      
+
       // Check if it's an axios error
-      if (error && typeof error === 'object' && 'response' in error) {
+      if (error && typeof error === "object" && "response" in error) {
         const axiosError = error as any;
         if (axiosError.response?.data?.message) {
           setDiscountError(axiosError.response.data.message);
         }
       }
-      
+
       alert("Failed to apply discount. Please try again.");
     } finally {
       setDiscountLoading(false);
     }
   };
 
-
-
-
-
-
   // Calculate discount from applied code
   const discount = useMemo((): number => {
-    console.log("Calculating discount:", { discountApplied, discountPercent, subtotal });
-    return discountApplied ? ((subtotal * discountPercent) / 100) : 0;
+    console.log("Calculating discount:", {
+      discountApplied,
+      discountPercent,
+      subtotal,
+    });
+    return discountApplied ? (subtotal * discountPercent) / 100 : 0;
   }, [discountApplied, discountPercent, subtotal]);
 
-  // Memoized dependencies for tax calculation
-  const taxCalculationDeps = useMemo(
-    (): { zip: string; state: string; subtotal: number; shipping: number } => ({
-      zip: formData.zipCode,
-      state: formData.state,
-      subtotal: Math.round(subtotal * 100),
-      shipping: Math.round(shippingCost * 100),
-    }),
-    [formData.zipCode, formData.state, subtotal, shippingCost]
-  );
-
-  // Smart tax calculation with caching and debouncing
-  useEffect((): (() => void) => {
-    const calculateTax = async (): Promise<void> => {
-      if (!shouldCalculateTax()) {
-        setTax(0);
-        setTaxRate(0);
-        if (!formData.zipCode || !formData.state) {
-          setTaxMessage("Enter address to calculate tax");
-        }
-        return;
-      }
-
-      // Check cache first
-      const cachedTax = getCachedTax(
-        formData.zipCode,
-        formData.state,
-        subtotal
-      );
-      if (cachedTax !== null) {
-        setTax(cachedTax);
-        setTaxRate(subtotal > 0 ? (cachedTax / subtotal) * 100 : 0);
-        setTaxMessage("");
-        return;
-      }
-
-      setIsCalculatingTax(true);
-      setTaxMessage("Calculating tax...");
-
-      try {
-        const response = await api.post<TaxResponse>("/tax/calculateTax", {
-          amount: subtotal,
-          to_zip: formData.zipCode,
-          to_state: formData.state,
-          shipping: shippingCost,
-        });
-
-        console.log("Tax API response:", response.data);
-
-        if (response.data?.tax?.amount_to_collect !== undefined) {
-          const taxAmount: number = response.data.tax.amount_to_collect;
-          setTax(taxAmount);
-
-          // Calculate tax rate percentage for display
-          const rate: number = subtotal > 0 ? (taxAmount / subtotal) * 100 : 0;
-          setTaxRate(rate);
-
-          // Cache the successful calculation
-          cacheTaxCalculation(
-            formData.zipCode,
-            formData.state,
-            subtotal,
-            taxAmount
-          );
-          setTaxMessage("");
-        } else {
-          setTax(0);
-          setTaxRate(0);
-          setTaxMessage("Unable to calculate tax. Please check your address.");
-        }
-      } catch (error: unknown) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Unknown error";
-       console.log("Error calculating tax:", errorMessage);
-        setTax(0);
-        setTaxRate(0);
-        setTaxMessage("Unable to calculate tax. Please verify your address.");
-      } finally {
+  // SIMPLIFIED TAX CALCULATION - Fixed 10.25%
+  // Calculate tax based on fixed rate
+  useEffect(() => {
+    const calculateTax = (): void => {
+      // If we have cart items and subtotal, calculate tax using fixed rate
+      if (cartItems.length > 0 && subtotal > 0) {
+        // Always use 10.25% tax rate
+        const calculatedTax = subtotal * (10.25 / 100);
+        setTax(calculatedTax);
+        setTaxRate(10.25);
+        setTaxMessage("Tax calculated at 10.25%");
         setIsCalculatingTax(false);
+        
+        console.log("Tax calculated:", {
+          subtotal,
+          taxRate: 10.25,
+          tax: calculatedTax,
+          taxMessage: "Fixed 10.25% tax rate applied",
+        });
+      } else {
+        setTax(0);
+        setTaxMessage("Add items to calculate tax");
       }
     };
 
-    const timeoutId: NodeJS.Timeout = setTimeout(calculateTax, 500);
-
-    return (): void => clearTimeout(timeoutId);
-  }, [
-    taxCalculationDeps,
-    shouldCalculateTax,
-    getCachedTax,
-    cacheTaxCalculation,
-    shippingCost,
-    subtotal,
-    formData.state,
-    formData.zipCode,
-  ]);
+    // Debounce tax calculation
+    const timeoutId = setTimeout(calculateTax, 300);
+    return () => clearTimeout(timeoutId);
+  }, [subtotal, cartItems.length]);
 
   // Calculate total
   const total = useMemo((): number => {
@@ -943,22 +852,6 @@ const handleApplyDiscount = async (): Promise<void> => {
     return isValid;
   };
 
-  // const handleApplyDiscount = (): void => {
-  //   if (formData.discountCode.trim() !== "") {
-  //     if (formData.discountCode.toUpperCase() === "SAVE10") {
-  //       setDiscountApplied(true);
-  //       setDiscountPercent(10);
-  //     } else {
-  //       setDiscountApplied(false);
-  //       setDiscountPercent(0);
-  //       alert("Invalid discount code. Try 'SAVE10' for 10% off.");
-  //     }
-  //   } else {
-  //     setDiscountApplied(false);
-  //     setDiscountPercent(0);
-  //   }
-  // };
-
   // Modified handleSubmit to use Collect.js
   const handleSubmit = async (
     e: React.FormEvent<HTMLFormElement>
@@ -1037,12 +930,16 @@ const handleApplyDiscount = async (): Promise<void> => {
 
     if (validationErrors.length > 0) {
       console.error("Validation errors:", validationErrors);
-      alert(`Please complete all required fields:\n${validationErrors.join("\n")}`);
+      alert(
+        `Please complete all required fields:\n${validationErrors.join("\n")}`
+      );
       return;
     }
 
     if (!isCollectJSLoaded) {
-      alert("Payment processor is still loading. Please try again in a moment.");
+      alert(
+        "Payment processor is still loading. Please try again in a moment."
+      );
       return;
     }
 
@@ -1068,17 +965,21 @@ const handleApplyDiscount = async (): Promise<void> => {
           setIsProcessingPayment(false);
           submitOrderWithToken(response.token);
         },
-        paymentType: "cc"
+        paymentType: "cc",
       };
 
       console.log("Configuring Collect.js for payment");
       window.CollectJS.configure(paymentConfig);
-      
+
       // This triggers the Collect.js lightbox/payment modal
       window.CollectJS.startPaymentRequest();
     } catch (error) {
       console.error("Error starting payment request:", error);
-      alert(`Failed to process payment: ${error instanceof Error ? error.message : "Unknown error"}`);
+      alert(
+        `Failed to process payment: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
       setIsProcessingPayment(false);
     }
   };
@@ -1090,105 +991,559 @@ const handleApplyDiscount = async (): Promise<void> => {
       </div>
     );
   }
-  if(orderFailed==true){
- return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4">
-      <div className="max-w-md w-full text-center">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
-          Sorry! 
-        </h1>
-        
-        <p className="text-gray-600 text-base md:text-lg mb-6">
-          Your order could not be processed.<br></br>
-         
-        </p>
-        
-        <div className="text-sm text-gray-600 mb-6">
-          Please try again or
-          <a 
-            href="/pages/contact" 
-            className="text-blue-500 hover:text-blue-600 underline"
-          >
-            Contact us
-          </a>
-        </div>
-        
-        <a href="/pages" className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-6 py-2.5 rounded transition-colors duration-200">
-          Continue to homepage
-        </a>
-      </div>
-    </div>
-  );
-
-  }
-  if(transactionid!=0 && orderFailed==false){
- 
+  if (orderFailed == true) {
     return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4">
-      <div className="max-w-md w-full text-center">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
-          Thank You!
-        </h1>
-        
-        <p className="text-gray-600 text-base md:text-lg mb-6">
-          Your order has been successfully processed.<br></br>
-          Your transaction ID is <span className="font-mono font-semibold">{transactionid}</span>
-        </p>
-        
-        <div className="text-sm text-gray-600 mb-6">
-          Having trouble?{' '}
-          <a 
-            href="/pages/contact" 
-            className="text-blue-500 hover:text-blue-600 underline"
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <div className="max-w-md w-full text-center">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+            Sorry!
+          </h1>
+
+          <p className="text-gray-600 text-base md:text-lg mb-6">
+            Your order could not be processed.<br></br>
+          </p>
+
+          <div className="text-sm text-gray-600 mb-6">
+            Please try again or
+            <a
+              href="/pages/contact"
+              className="text-blue-500 hover:text-blue-600 underline"
+            >
+              Contact us
+            </a>
+          </div>
+
+          <a
+            href="/pages"
+            className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-6 py-2.5 rounded transition-colors duration-200"
           >
-            Contact us
+            Continue to homepage
           </a>
         </div>
-        
-        <a href="/pages" className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-6 py-2.5 rounded transition-colors duration-200">
-          Continue to homepage
-        </a>
       </div>
-    </div>
-  );
+    );
   }
-if(transactionid===0 && orderFailed==false)
-  return (
-    <div className="min-h-screen p-[16px] md:p-[32px]">
-      <noscript>
-        <meta
-          httpEquiv="refresh"
-          content="0;url=https://agechecker.net/noscript"
-        />
-      </noscript>
+  if (transactionid != 0 && orderFailed == false) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <div className="max-w-md w-full text-center">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+            Thank You!
+          </h1>
 
-      {collectJSError && (
-        <div className="max-w-6xl mx-auto mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-700">{collectJSError}</p>
+          <p className="text-gray-600 text-base md:text-lg mb-6">
+            Your order has been successfully processed.<br></br>
+            Your transaction ID is{" "}
+            <span className="font-mono font-semibold">{transactionid}</span>
+          </p>
+
+          <div className="text-sm text-gray-600 mb-6">
+            Having trouble?{" "}
+            <a
+              href="/pages/contact"
+              className="text-blue-500 hover:text-blue-600 underline"
+            >
+              Contact us
+            </a>
+          </div>
+
+          <a
+            href="/pages"
+            className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-6 py-2.5 rounded transition-colors duration-200"
+          >
+            Continue to homepage
+          </a>
         </div>
-      )}
+      </div>
+    );
+  }
+  if (transactionid === 0 && orderFailed == false)
+    return (
+      <div className="min-h-screen p-[16px] md:p-[32px]">
+        <noscript>
+          <meta
+            httpEquiv="refresh"
+            content="0;url=https://agechecker.net/noscript"
+          />
+        </noscript>
 
-      {!isCollectJSLoaded && !collectJSError && (
-        <div className="max-w-6xl mx-auto mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-blue-700">Loading payment processor...</p>
-        </div>
-      )}
+        {collectJSError && (
+          <div className="max-w-6xl mx-auto mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-700">{collectJSError}</p>
+          </div>
+        )}
 
-    
-      <div className="">
-        <h1 className="bg-white rounded-lg text-[28px] font-semibold leading-[48px] text-gray-900 text-center p-[16px] md:p-[32px] mb-[16px] md:mb-[32px]">
-          Checkout
-        </h1>
+        {!isCollectJSLoaded && !collectJSError && (
+          <div className="max-w-6xl mx-auto mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-blue-700">Loading payment processor...</p>
+          </div>
+        )}
 
-        {/* Desktop Layout */}
-        <div className="hidden lg:grid lg:grid-cols-2 lg:gap-[32px]">
-          {/* LEFT COLUMN: Contact Info */}
-          <div className="space-y-6">
+        <div className="">
+          <h1 className="bg-white rounded-lg text-[28px] font-semibold leading-[48px] text-gray-900 text-center p-[16px] md:p-[32px] mb-[16px] md:mb-[32px]">
+            Checkout
+          </h1>
+
+          {/* Desktop Layout */}
+          <div className="hidden lg:grid lg:grid-cols-2 lg:gap-[32px]">
+            {/* LEFT COLUMN: Contact Info */}
+            <div className="space-y-6">
+              {/* Contact Information */}
+              <div className="bg-white rounded-lg p-[16px] md:p-[32px] mb-[16px] md:mb-[32px]">
+                <h2 className="text-lg font-semibold mb-4">
+                  Contact Information
+                </h2>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Enter email"
+                    className={`w-full px-3 py-2 border rounded-md text-sm ${
+                      errors.email ? "border-red-500" : "border-gray-300"
+                    }`}
+                    value={formData.email}
+                    onChange={handleInputChange}
+                  />
+                  {errors.email && (
+                    <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      First Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="firstName"
+                      placeholder="Enter first name"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Last Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="lastName"
+                      placeholder="Enter last name"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Country <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    name="country"
+                    className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md text-sm appearance-none"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")`,
+                      backgroundPosition: "right 0.5rem center",
+                      backgroundRepeat: "no-repeat",
+                      backgroundSize: "1.5em 1.5em",
+                    }}
+                    value={formData.country}
+                    onChange={handleInputChange}
+                  >
+                    <option value="">Select Country</option>
+                    <option value="US">United States</option>
+                    <option value="CA">Canada</option>
+                    <option value="UK">United Kingdom</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      City <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="city"
+                      placeholder="Enter city"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      State <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="state"
+                      placeholder="Enter state"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      value={formData.state}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    ZIP Code <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="zipCode"
+                    placeholder="Enter ZIP code"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    value={formData.zipCode}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Address <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="address"
+                    placeholder="Enter street address"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Apartment, suite, etc (optional)
+                  </label>
+                  <input
+                    type="text"
+                    name="apartment"
+                    placeholder="Enter apartment/suite"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    value={formData.apartment}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    placeholder="Enter phone number"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="saveInfo"
+                    name="saveInfo"
+                    checked={formData.saveInfo}
+                    onChange={handleInputChange}
+                    className="w-4 h-4 rounded border-gray-300"
+                  />
+                  <label
+                    htmlFor="saveInfo"
+                    className="ml-2 text-sm text-gray-700"
+                  >
+                    Save this information for next time
+                  </label>
+                </div>
+              </div>
+              <div>
+                <button
+                  id="checkout-button"
+                  onClick={() => setIsAgeChecked(true)}
+                  className={`${
+                    isAgeChecked
+                      ? "bg-green-600 hover:bg-green-700"
+                      : "bg-yellow-600 hover:bg-yellow-700"
+                  } py-3 w-full rounded-md  transition-colors`}
+                >
+                  {isAgeChecked ? (
+                    <p className="text-gray-50  font-medium">
+                      Age verification passed ✅
+                    </p>
+                  ) : (
+                    <p className="text-gray-900  font-medium">
+                      Please verify your age
+                    </p>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN: Order Summary + Discount + Payment */}
+            <div className="space-y-6">
+              {/* Order Summary */}
+              <div className="bg-white p-[16px] md:p-[32px] rounded-lg mb-[16px] md:mb-[32px]">
+                <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
+
+                {cartItems.length === 0 ? (
+                  <div className="text-center p-4">
+                    <p className="text-gray-500 text-sm">Your cart is empty</p>
+                    <p className="text-xs text-red-500 mt-2">
+                      Please add items to your cart before checking out
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
+                      {cartItems.map((item: CartItem) => {
+                        const price: number = item.productId.price || 0;
+                        const discount: number = item.productId.discount || 0;
+                        const discountedPrice: number =
+                          price * (1 - discount / 100);
+                        const itemTotal: number = discountedPrice * item.quantity;
+
+                        return (
+                          <div
+                            key={item._id}
+                            className="flex justify-between text-sm"
+                          >
+                            <div className="flex-1">
+                              <p className="text-gray-700">
+                                {item.productId.name}
+                              </p>
+                            </div>
+                            <div className="flex gap-8 ml-4">
+                              <span className="text-gray-600 w-16 text-right">
+                                ${discountedPrice.toFixed(2)}
+                              </span>
+                              <span className="text-gray-600 w-8 text-center">
+                                {item.quantity}
+                              </span>
+                              <span className="font-medium w-16 text-right">
+                                ${itemTotal.toFixed(2)}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="border-t pt-3 space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Sub Total</span>
+                        <span className="font-medium">
+                          ${subtotal.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Shipping Cost</span>
+                        <span className="font-medium">
+                          {shippingCost === 0
+                            ? "FREE"
+                            : `$${shippingCost.toFixed(2)}`}
+                          {servicePricing &&
+                            subtotal >= servicePricing.MinimumFreeShipping && (
+                              <span className="text-xs text-green-600 ml-1">
+                                (Free shipping over $
+                                {servicePricing.MinimumFreeShipping})
+                              </span>
+                            )}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Sales Tax</span>
+                        <span className="font-medium">
+                          {taxRate.toFixed(2)}%
+                        </span>
+                        <span className="font-medium">${tax.toFixed(2)}</span>
+                      </div>
+                      {discountApplied && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Discount Code</span>
+                          <span className="font-medium">{discountPercent}%</span>
+                          <span className="font-medium text-red-500">
+                            -${discount.toFixed(2)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="border-t mt-3 pt-3 flex justify-between font-semibold text-base">
+                      <span>Total</span>
+                      <span>${total.toFixed(2)}</span>
+                    </div>
+                  </>
+                )}
+
+                <div className="flex items-center mt-4">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    checked={agreedToTerms}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setAgreedToTerms(e.target.checked)
+                    }
+                    className="w-4 h-4 rounded border-gray-300"
+                  />
+                  <label htmlFor="terms" className="ml-2 text-sm text-gray-700">
+                    I agree to the terms and refund policy
+                  </label>
+                </div>
+              </div>
+
+              {/* Discount Code */}
+              <div className="bg-white p-6 rounded-lg">
+                <h3 className="font-semibold mb-3">Discount Code</h3>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Enter discount code"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    value={formData.discountCode}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        discountCode: e.target.value,
+                      }))
+                    }
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyDiscount}
+                    className="bg-yellow-600 hover:bg-yellow-700 text-white font-medium px-6 py-2 rounded-md text-sm"
+                  >
+                    {discountLoading ? "Applying..." : "Apply"}
+                  </button>
+                </div>
+                {discountError && (
+                  <p className="text-red-500 text-xs mt-1">{discountError}</p>
+                )}
+              </div>
+
+              {/* Payment Form */}
+              <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg">
+                <h2 className="text-lg font-semibold mb-4">Payment</h2>
+
+                {/* Collect.js Info */}
+                {!isCollectJSLoaded && (
+                  <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <p className="text-sm text-yellow-700">
+                      Payment processor loading...
+                    </p>
+                  </div>
+                )}
+
+                <div className="mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <Image
+                        src={mastercard}
+                        alt="Mastercard"
+                        width={40}
+                        height={25}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Image src={visacard} alt="Visa" width={40} height={25} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Name on Card <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="John Doe"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    value={formData.nameOnCard}
+                    onChange={handleInputChange}
+                    name="nameOnCard"
+                  />
+                </div>
+
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Country or Region <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Country code (e.g., USA)"
+                    className={`w-full px-3 py-2 border rounded-md text-sm ${
+                      errors.cardCountry ? "border-red-500" : "border-gray-300"
+                    }`}
+                    value={formData.cardCountry}
+                    onChange={handleInputChange}
+                    name="cardCountry"
+                  />
+                  {errors.cardCountry && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.cardCountry}
+                    </p>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  className={`w-full py-3 rounded-md text-white font-medium transition-colors ${
+                    "bg-green-600 hover:bg-green-700"
+                  } ${
+                    !validateForm() || !isCollectJSLoaded || isProcessingPayment
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                  disabled={
+                    !validateForm() ||
+                    !isCollectJSLoaded ||
+                    isProcessingPayment ||
+                    cartItems.length === 0 ||
+                    !isAgeChecked
+                  }
+                >
+                  {isProcessingPayment
+                    ? "Processing..."
+                    : !isCollectJSLoaded
+                    ? "Loading Payment..."
+                    : cartItems.length === 0
+                    ? "Cart is Empty"
+                    : `Pay $${total.toFixed(2)}`}
+                </button>
+
+                {!isAgeChecked && (
+                  <p className="text-sm text-red-600 mt-2 text-center">
+                    Please verify your age before proceeding
+                  </p>
+                )}
+              </form>
+            </div>
+          </div>
+
+          {/* Mobile Layout */}
+          <form onSubmit={handleSubmit} className="lg:hidden space-y-6">
+            {/* Collect.js Status */}
+            {!isCollectJSLoaded && (
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-700">
+                  Loading payment processor...
+                </p>
+              </div>
+            )}
+
             {/* Contact Information */}
-            <div className="bg-white rounded-lg p-[16px] md:p-[32px] mb-[16px] md:mb-[32px]">
-              <h2 className="text-lg font-semibold mb-4">
-                Contact Information
-              </h2>
+            <div className="bg-white p-[16px] rounded-lg">
+              <h2 className="text-lg font-semibold mb-4">Contact Information</h2>
 
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1217,7 +1572,7 @@ if(transactionid===0 && orderFailed==false)
                   <input
                     type="text"
                     name="firstName"
-                    placeholder="Enter first name"
+                    placeholder="First Name"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                     value={formData.firstName}
                     onChange={handleInputChange}
@@ -1230,7 +1585,7 @@ if(transactionid===0 && orderFailed==false)
                   <input
                     type="text"
                     name="lastName"
-                    placeholder="Enter last name"
+                    placeholder="Last Name"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                     value={formData.lastName}
                     onChange={handleInputChange}
@@ -1269,7 +1624,7 @@ if(transactionid===0 && orderFailed==false)
                   <input
                     type="text"
                     name="city"
-                    placeholder="Enter city"
+                    placeholder="City"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                     value={formData.city}
                     onChange={handleInputChange}
@@ -1282,7 +1637,7 @@ if(transactionid===0 && orderFailed==false)
                   <input
                     type="text"
                     name="state"
-                    placeholder="Enter state"
+                    placeholder="State"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                     value={formData.state}
                     onChange={handleInputChange}
@@ -1297,7 +1652,7 @@ if(transactionid===0 && orderFailed==false)
                 <input
                   type="text"
                   name="zipCode"
-                  placeholder="Enter ZIP code"
+                  placeholder="ZIP Code"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   value={formData.zipCode}
                   onChange={handleInputChange}
@@ -1311,7 +1666,7 @@ if(transactionid===0 && orderFailed==false)
                 <input
                   type="text"
                   name="address"
-                  placeholder="Enter street address"
+                  placeholder="Address"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   value={formData.address}
                   onChange={handleInputChange}
@@ -1325,7 +1680,7 @@ if(transactionid===0 && orderFailed==false)
                 <input
                   type="text"
                   name="apartment"
-                  placeholder="Enter apartment/suite"
+                  placeholder="Apartment"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   value={formData.apartment}
                   onChange={handleInputChange}
@@ -1339,7 +1694,7 @@ if(transactionid===0 && orderFailed==false)
                 <input
                   type="tel"
                   name="phone"
-                  placeholder="Enter phone number"
+                  placeholder="Phone"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   value={formData.phone}
                   onChange={handleInputChange}
@@ -1349,48 +1704,48 @@ if(transactionid===0 && orderFailed==false)
               <div className="flex items-center">
                 <input
                   type="checkbox"
-                  id="saveInfo"
+                  id="saveInfoMobile"
                   name="saveInfo"
                   checked={formData.saveInfo}
                   onChange={handleInputChange}
                   className="w-4 h-4 rounded border-gray-300"
                 />
                 <label
-                  htmlFor="saveInfo"
+                  htmlFor="saveInfoMobile"
                   className="ml-2 text-sm text-gray-700"
                 >
                   Save this information for next time
                 </label>
               </div>
             </div>
-            <div>
-              <button
-            id="checkout-button"
-            onClick={() => setIsAgeChecked(true)}
-            className={`${isAgeChecked?"bg-green-600 hover:bg-green-700":"bg-yellow-600 hover:bg-yellow-700"} py-3 w-full rounded-md  transition-colors`}
-          >
-            {isAgeChecked ? (
-              <p className="text-gray-50  font-medium">Age verification passed ✅</p>
-            ) : (
-              <p className="text-gray-900  font-medium">Please verify your age</p>
-            )}
-          </button>
-            </div>
-          </div>
 
-          {/* RIGHT COLUMN: Order Summary + Discount + Payment */}
-          <div className="space-y-6">
+            {/* Age Checker Button */}
+            <button
+              id="checkout-button"
+              onClick={() => setIsAgeChecked(true)}
+              className={`${
+                isAgeChecked
+                  ? "bg-green-600 hover:bg-green-700"
+                  : "bg-yellow-600 hover:bg-yellow-700"
+              } py-3 w-full rounded-md  transition-colors`}
+            >
+              {isAgeChecked ? (
+                <p className="text-gray-50  font-medium">
+                  Age verification passed ✅
+                </p>
+              ) : (
+                <p className="text-gray-900  font-medium">
+                  Please verify your age
+                </p>
+              )}
+            </button>
+
             {/* Order Summary */}
-            <div className="bg-white p-[16px] md:p-[32px] rounded-lg mb-[16px] md:mb-[32px]">
+            <div className="bg-white p-[16px] rounded-lg">
               <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
 
               {cartItems.length === 0 ? (
-                <div className="text-center p-4">
-                  <p className="text-gray-500 text-sm">Your cart is empty</p>
-                  <p className="text-xs text-red-500 mt-2">
-                    Please add items to your cart before checking out
-                  </p>
-                </div>
+                <p className="text-gray-500 text-sm">Your cart is empty</p>
               ) : (
                 <>
                   <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
@@ -1407,18 +1762,14 @@ if(transactionid===0 && orderFailed==false)
                           className="flex justify-between text-sm"
                         >
                           <div className="flex-1">
-                            <p className="text-gray-700">
-                              {item.productId.name}
-                            </p>
+                            <p className="text-gray-700">{item.productId.name}</p>
                           </div>
-                          <div className="flex gap-8 ml-4">
-                            <span className="text-gray-600 w-16 text-right">
+                          <div className="flex gap-4 ml-4">
+                            <span className="text-gray-600">
                               ${discountedPrice.toFixed(2)}
                             </span>
-                            <span className="text-gray-600 w-8 text-center">
-                              {item.quantity}
-                            </span>
-                            <span className="font-medium w-16 text-right">
+                            <span className="text-gray-600">{item.quantity}</span>
+                            <span className="font-medium">
                               ${itemTotal.toFixed(2)}
                             </span>
                           </div>
@@ -1430,9 +1781,7 @@ if(transactionid===0 && orderFailed==false)
                   <div className="border-t pt-3 space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Sub Total</span>
-                      <span className="font-medium">
-                        ${subtotal.toFixed(2)}
-                      </span>
+                      <span className="font-medium">${subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Shipping Cost</span>
@@ -1440,30 +1789,17 @@ if(transactionid===0 && orderFailed==false)
                         {shippingCost === 0
                           ? "FREE"
                           : `$${shippingCost.toFixed(2)}`}
-                        {servicePricing &&
-                          subtotal >= servicePricing.MinimumFreeShipping && (
-                            <span className="text-xs text-green-600 ml-1">
-                              (Free shipping over $
-                              {servicePricing.MinimumFreeShipping})
-                            </span>
-                          )}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Sales Tax</span>
-                     
-                        <>
-                          <span className="font-medium pl-[32px]">
-                            {taxRate.toFixed(2)}%
-                          </span>
-                          <span className="font-medium">${tax.toFixed(2)}</span>
-                        </>
-                   
+                      <span className="font-medium">{taxRate.toFixed(2)}%</span>
+                      <span className="font-medium">${tax.toFixed(2)}</span>
                     </div>
                     {discountApplied && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Discount Code</span>
-                        <span className="font-medium">{discountPercent}%</span>
+                        <span className="text-gray-600">{discountPercent}%</span>
                         <span className="font-medium text-red-500">
                           -${discount.toFixed(2)}
                         </span>
@@ -1481,21 +1817,24 @@ if(transactionid===0 && orderFailed==false)
               <div className="flex items-center mt-4">
                 <input
                   type="checkbox"
-                  id="terms"
+                  id="termsMobile"
                   checked={agreedToTerms}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setAgreedToTerms(e.target.checked)
                   }
                   className="w-4 h-4 rounded border-gray-300"
                 />
-                <label htmlFor="terms" className="ml-2 text-sm text-gray-700">
+                <label
+                  htmlFor="termsMobile"
+                  className="ml-2 text-sm text-gray-700"
+                >
                   I agree to the terms and refund policy
                 </label>
               </div>
             </div>
 
             {/* Discount Code */}
-            <div className="bg-white p-6 rounded-lg">
+            <div className="bg-white p-[16px] rounded-lg">
               <h3 className="font-semibold mb-3">Discount Code</h3>
               <div className="flex gap-2">
                 <input
@@ -1513,18 +1852,21 @@ if(transactionid===0 && orderFailed==false)
                 <button
                   type="button"
                   onClick={handleApplyDiscount}
-                  className="bg-yellow-600 hover:bg-yellow-700 text-white font-medium px-6 py-2 rounded-md text-sm"
+                  className="bg-yellow-600 hover:bg-yellow-700 text-white font-medium px-4 py-2 rounded-md text-sm"
                 >
-                  Apply
+                  {discountLoading ? "Applying..." : "Apply"}
                 </button>
               </div>
+              {discountError && (
+                <p className="text-red-500 text-xs mt-1">{discountError}</p>
+              )}
             </div>
 
-            {/* Payment Form */}
-            <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg">
+            {/* Payment */}
+            <div className="bg-white p-[16px] rounded-lg">
               <h2 className="text-lg font-semibold mb-4">Payment</h2>
 
-              {/* Collect.js Info */}
+              {/* Payment Status */}
               {!isCollectJSLoaded && (
                 <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                   <p className="text-sm text-yellow-700">
@@ -1533,9 +1875,10 @@ if(transactionid===0 && orderFailed==false)
                 </div>
               )}
 
-             
-
               <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Card Type
+                </label>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <Image
@@ -1588,7 +1931,9 @@ if(transactionid===0 && orderFailed==false)
 
               <button
                 type="submit"
-                className={`w-full py-3 rounded-md text-white font-medium transition-colors ${"bg-green-600 hover:bg-green-700"} ${
+                className={`w-full py-3 rounded-md text-white font-medium transition-colors ${
+                  "bg-green-600 hover:bg-green-700"
+                } ${
                   !validateForm() || !isCollectJSLoaded || isProcessingPayment
                     ? "opacity-50 cursor-not-allowed"
                     : ""
@@ -1597,7 +1942,7 @@ if(transactionid===0 && orderFailed==false)
                   !validateForm() ||
                   !isCollectJSLoaded ||
                   isProcessingPayment ||
-                  cartItems.length === 0 || !isAgeChecked
+                  cartItems.length === 0
                 }
               >
                 {isProcessingPayment
@@ -1608,437 +1953,11 @@ if(transactionid===0 && orderFailed==false)
                   ? "Cart is Empty"
                   : `Pay $${total.toFixed(2)}`}
               </button>
-
-              {!isAgeChecked && (
-                <p className="text-sm text-red-600 mt-2 text-center">
-                  Please verify your age before proceeding
-                </p>
-              )}
-            </form>
-          </div>
+            </div>
+          </form>
         </div>
-
-        {/* Mobile Layout */}
-        <form onSubmit={handleSubmit} className="lg:hidden space-y-6">
-          {/* Collect.js Status */}
-          {!isCollectJSLoaded && (
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-700">
-                Loading payment processor...
-              </p>
-            </div>
-          )}
-
-          {/* Contact Information */}
-          <div className="bg-white p-[16px] rounded-lg">
-            <h2 className="text-lg font-semibold mb-4">Contact Information</h2>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                name="email"
-                placeholder="Enter email"
-                className={`w-full px-3 py-2 border rounded-md text-sm ${
-                  errors.email ? "border-red-500" : "border-gray-300"
-                }`}
-                value={formData.email}
-                onChange={handleInputChange}
-              />
-              {errors.email && (
-                <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  First Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="firstName"
-                  placeholder="First Name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Last Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="lastName"
-                  placeholder="Last Name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                />
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Country <span className="text-red-500">*</span>
-              </label>
-              <select
-                name="country"
-                className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md text-sm appearance-none"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")`,
-                  backgroundPosition: "right 0.5rem center",
-                  backgroundRepeat: "no-repeat",
-                  backgroundSize: "1.5em 1.5em",
-                }}
-                value={formData.country}
-                onChange={handleInputChange}
-              >
-                <option value="">Select Country</option>
-                <option value="US">United States</option>
-                <option value="CA">Canada</option>
-                <option value="UK">United Kingdom</option>
-              </select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  City <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="city"
-                  placeholder="City"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                  value={formData.city}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  State <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="state"
-                  placeholder="State"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                  value={formData.state}
-                  onChange={handleInputChange}
-                />
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                ZIP Code <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="zipCode"
-                placeholder="ZIP Code"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                value={formData.zipCode}
-                onChange={handleInputChange}
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Address <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="address"
-                placeholder="Address"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                value={formData.address}
-                onChange={handleInputChange}
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Apartment, suite, etc (optional)
-              </label>
-              <input
-                type="text"
-                name="apartment"
-                placeholder="Apartment"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                value={formData.apartment}
-                onChange={handleInputChange}
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Phone <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="tel"
-                name="phone"
-                placeholder="Phone"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                value={formData.phone}
-                onChange={handleInputChange}
-              />
-            </div>
-
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="saveInfoMobile"
-                name="saveInfo"
-                checked={formData.saveInfo}
-                onChange={handleInputChange}
-                className="w-4 h-4 rounded border-gray-300"
-              />
-              <label
-                htmlFor="saveInfoMobile"
-                className="ml-2 text-sm text-gray-700"
-              >
-                Save this information for next time
-              </label>
-            </div>
-          </div>
-
-          {/* Age Checker Button */}
-             <button
-            id="checkout-button"
-            onClick={() => setIsAgeChecked(true)}
-            className={`${isAgeChecked?"bg-green-600 hover:bg-green-700":"bg-yellow-600 hover:bg-yellow-700"} py-3 w-full rounded-md  transition-colors`}
-          >
-            {isAgeChecked ? (
-              <p className="text-gray-50  font-medium">Age verification passed ✅</p>
-            ) : (
-              <p className="text-gray-900  font-medium">Please verify your age</p>
-            )}
-          </button>
-
-          {/* Order Summary */}
-          <div className="bg-white p-[16px] rounded-lg">
-            <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
-
-            {cartItems.length === 0 ? (
-              <p className="text-gray-500 text-sm">Your cart is empty</p>
-            ) : (
-              <>
-                <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
-                  {cartItems.map((item: CartItem) => {
-                    const price: number = item.productId.price || 0;
-                    const discount: number = item.productId.discount || 0;
-                    const discountedPrice: number =
-                      price * (1 - discount / 100);
-                    const itemTotal: number = discountedPrice * item.quantity;
-
-                    return (
-                      <div
-                        key={item._id}
-                        className="flex justify-between text-sm"
-                      >
-                        <div className="flex-1">
-                          <p className="text-gray-700">{item.productId.name}</p>
-                        </div>
-                        <div className="flex gap-4 ml-4">
-                          <span className="text-gray-600">
-                            ${discountedPrice.toFixed(2)}
-                          </span>
-                          <span className="text-gray-600">{item.quantity}</span>
-                          <span className="font-medium">
-                            ${itemTotal.toFixed(2)}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="border-t pt-3 space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Sub Total</span>
-                    <span className="font-medium">${subtotal.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Shipping Cost</span>
-                    <span className="font-medium">
-                      {shippingCost === 0
-                        ? "FREE"
-                        : `$${shippingCost.toFixed(2)}`}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Sales Tax</span>
-                   
-                      <>
-                        <span className="font-medium">
-                          {taxRate.toFixed(2)}%
-                        </span>
-                        <span className="font-medium">${tax.toFixed(2)}</span>
-                      </>
-                    
-                  </div>
-                  {discountApplied && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Discount Code</span>
-                      <span className="text-gray-600">{discountPercent}%</span>
-                      <span className="font-medium text-red-500">
-                        -${discount.toFixed(2)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="border-t mt-3 pt-3 flex justify-between font-semibold text-base">
-                  <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
-                </div>
-              </>
-            )}
-
-            <div className="flex items-center mt-4">
-              <input
-                type="checkbox"
-                id="termsMobile"
-                checked={agreedToTerms}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setAgreedToTerms(e.target.checked)
-                }
-                className="w-4 h-4 rounded border-gray-300"
-              />
-              <label
-                htmlFor="termsMobile"
-                className="ml-2 text-sm text-gray-700"
-              >
-                I agree to the terms and refund policy
-              </label>
-            </div>
-          </div>
-
-          {/* Discount Code */}
-          <div className="bg-white p-[16px] rounded-lg">
-            <h3 className="font-semibold mb-3">Discount Code</h3>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Enter discount code"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
-                value={formData.discountCode}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    discountCode: e.target.value,
-                  }))
-                }
-              />
-              <button
-                type="button"
-                onClick={handleApplyDiscount}
-                className="bg-yellow-600 hover:bg-yellow-700 text-white font-medium px-4 py-2 rounded-md text-sm"
-              >
-                Apply
-              </button>
-            </div>
-          </div>
-
-          {/* Payment */}
-          <div className="bg-white p-[16px] rounded-lg">
-            <h2 className="text-lg font-semibold mb-4">Payment</h2>
-
-            {/* Payment Status */}
-            {!isCollectJSLoaded && (
-              <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                <p className="text-sm text-yellow-700">
-                  Payment processor loading...
-                </p>
-              </div>
-            )}
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Card Type
-              </label>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Image
-                    src={mastercard}
-                    alt="Mastercard"
-                    width={40}
-                    height={25}
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <Image src={visacard} alt="Visa" width={40} height={25} />
-                </div>
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Name on Card <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                placeholder="John Doe"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                value={formData.nameOnCard}
-                onChange={handleInputChange}
-                name="nameOnCard"
-              />
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Country or Region <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                placeholder="Country code (e.g., USA)"
-                className={`w-full px-3 py-2 border rounded-md text-sm ${
-                  errors.cardCountry ? "border-red-500" : "border-gray-300"
-                }`}
-                value={formData.cardCountry}
-                onChange={handleInputChange}
-                name="cardCountry"
-              />
-              {errors.cardCountry && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.cardCountry}
-                </p>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              className={`w-full py-3 rounded-md text-white font-medium transition-colors ${"bg-green-600 hover:bg-green-700"} ${
-                !validateForm() || !isCollectJSLoaded || isProcessingPayment
-                  ? "opacity-50 cursor-not-allowed"
-                  : ""
-              }`}
-              disabled={
-                !validateForm() ||
-                !isCollectJSLoaded ||
-                isProcessingPayment ||
-                cartItems.length === 0
-              }
-            >
-              {isProcessingPayment
-                ? "Processing..."
-                : !isCollectJSLoaded
-                ? "Loading Payment..."
-                : cartItems.length === 0
-                ? "Cart is Empty"
-                : `Pay $${total.toFixed(2)}`}
-            </button>
-          </div>
-        </form>
       </div>
-    </div>
-  );
+    );
 };
 
 export default CheckoutPage;

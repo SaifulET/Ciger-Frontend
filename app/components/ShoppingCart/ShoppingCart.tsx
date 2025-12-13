@@ -27,12 +27,13 @@ export default function ShoppingCart() {
     getFormattedSubtotal,
     removeItem,
     clearCart,
-    initializeCart
+    initializeCart,
+    guestId
   } = useCartStore();
   
   // Get user state
   const { user } = useUserStore();
-  const userId = user || null;
+  const userId = user ||guestId|| null;
   const subprice = getFormattedSubtotal();
 
   // Initialize cart when component mounts
@@ -119,7 +120,7 @@ console.log("93",checkedItems,"93");
     };
     
     console.log("Checkout Data:", checkoutData);
-      const checkedId=await api.post("/cart/checkedid",{cartIds:checkoutData.selectedItemIds,userId:user})
+      const checkedId=await api.post("/cart/checkedid",{cartIds:checkoutData.selectedItemIds,userId:userId});
       if(checkedId.data){
          setTimeout(() => {
       window.location.href = "/pages/checkout";
