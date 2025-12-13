@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useCartStore } from "@/app/store/cartStore";
 import useUserStore from "@/app/store/userStore";
 import productImage from "@/public/product2.jpg"
+import api from "@/lib/axios";
 
 // Add a fallback image
 const FALLBACK_IMAGE = "";
@@ -127,7 +128,13 @@ export default function CartDrawer() {
     if (isOpen) setShowDrawer(true);
   }, [isOpen]);
 
-  const closeDrawer = () => {
+  const checked=async()=>{
+
+      const res= await api.get("/cart/allCheckout/"+userId);
+      console.log(res,'response')
+      closeDrawer()
+  }
+  const closeDrawer = () => {           
     setShowDrawer(false);
     setTimeout(() => setIsOpen(false), 300);
   };
@@ -182,7 +189,9 @@ export default function CartDrawer() {
                   <X className="w-5 h-5" />
                 </button>
                 <button
-                  onClick={() => {router.push("/pages/shoppingcart");setIsOpen(false)}}
+                  onClick={() => {
+                     
+                    router.push("/pages/shoppingcart");setIsOpen(false)}}
                   className="text-[14px] text-[#0C0C0C] font-openSans cursor-pointer text-left"
                 >
                   View All
@@ -339,15 +348,33 @@ export default function CartDrawer() {
                 >
                   {isSyncing ? "Clearing..." : "Clear Cart"}
                 </button>
-                <Link href="/pages/checkout" className="w-full">
+                
                   <button
-                    onClick={closeDrawer}
+                   onClick={async () => {
+    
+    try {
+    
+      
+        await checked();
+      
+      
+      // Navigate to checkout page
+      router.push("/pages/checkout");
+    } catch (error) {
+      console.error('Checkout error:', error);
+      
+    }
+  }
+
+    
+}
+                    
                     disabled={cartItems.length === 0 || !agree || isSyncing}
                     className="w-full bg-[#C9A040] rounded-xl py-3 text-[14px] md:text-[16px] font-semibold font-openSans text-white disabled:opacity-50"
                   >
                     {isSyncing ? "Processing..." : "Checkout"}
                   </button>
-                </Link>
+               
               </div>
             </div>
           </div>

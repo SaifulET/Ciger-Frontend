@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef, use } from "react";
 import mastercard from "@/public/mastercard.svg";
 import visacard from "@/public/visaelectron.svg";
 import Image from "next/image";
@@ -503,9 +503,9 @@ const CheckoutPage = () => {
       }>("/payment/payment", orderData);
       console.log("Order submission response:", response.data);
 
-      if (response.data.success) {
+      if (response.data.success && response.data.transactionid) {
         console.log("Order placed successfully", response.data);
-        setTransactionid(response.data.transactionid || 0);
+        setTransactionid(response.data.transactionid || 0 );
       } else {
         setOrderFailed(true);
       }
@@ -592,7 +592,7 @@ const CheckoutPage = () => {
         // Fetch cart items
         if (user) {
           const cartResponse = await api.get<CartApiResponse>(
-            `/cart/getUserCart/${user}`
+            `/cart/getUserCartForPayment/${user}`
           );
           console.log("Cart response:", cartResponse.data);
           if (cartResponse.data.success) {
@@ -604,7 +604,7 @@ const CheckoutPage = () => {
         } else if (guestId) {
           console.log("fetching cart for guest", guestId);
           const cartResponse = await api.get<CartApiResponse>(
-            `/cart/getUserCart/${guestId}`
+            `/cart/getUserCartForPayment/${guestId}`
           );
 
           console.log("Cart response for guest:", cartResponse.data);
@@ -638,6 +638,7 @@ const CheckoutPage = () => {
     };
 
     fetchData();
+   
   }, [user, guestId]);
 
   // Calculate cart totals
@@ -991,7 +992,12 @@ const CheckoutPage = () => {
       </div>
     );
   }
-  if (orderFailed == true) {
+  if (orderFailed == true  ) {
+   
+      (async ()=>{
+          await api.get("/cart/CheckoutFalse/"+user);
+      })()
+    
     return (
       <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="max-w-md w-full text-center">
@@ -1310,7 +1316,7 @@ const CheckoutPage = () => {
                         const price: number = item.productId.price || 0;
                         const discount: number = item.productId.discount || 0;
                         const discountedPrice: number =
-                          price * (1 - discount / 100);
+                          price ;
                         const itemTotal: number = discountedPrice * item.quantity;
 
                         return (
