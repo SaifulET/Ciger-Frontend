@@ -18,9 +18,9 @@ export default function Footer() {
       {/* Main Container */}
       <div className="w-full flex flex-col">
         {/* Top Section */}
-        <div className="flex flex-col lg:flex-row justify-around mb-[32px]">
+        <div className="flex flex-col lg:flex-row justify-around ">
           {/* Center: Quick Links */}
-          <div className="flex flex-col gap-4 justify-center mb-[32px]">
+          <div className="flex flex-col gap-4 justify-center lg:justify-start  mb-[32px]">
             <h4 className="font-montserrat font-semibold text-[18px] leading-[26px] text-white flex-none order-0 flex-grow-0">
               Quick Links
             </h4>
@@ -43,7 +43,7 @@ export default function Footer() {
           </div>
 
           {/* Center: Get in touch */}
-          <div className="flex flex-col gap-4 justify-end mb-[32px]">
+          <div className="flex flex-col gap-4 justify-end lg:justify-start mb-[32px]">
             <h4 className="font-montserrat font-semibold text-[18px] leading-[26px] text-white flex-none order-0 flex-grow-0">
               Get in touch
             </h4>
@@ -70,7 +70,7 @@ export default function Footer() {
           </div>
 
           {/* Right: Contact + Socials + Card Icons */}
-          <div className="flex flex-col gap-4 justify-start">
+          <div className="flex flex-col gap-4 justify-start mb-[32px]">
             <h4 className="font-montserrat font-semibold text-[18px] leading-[26px] text-white flex-none order-0 flex-grow-0">
               Contact Us
             </h4>

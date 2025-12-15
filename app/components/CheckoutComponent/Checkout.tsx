@@ -568,7 +568,7 @@ const CheckoutPage = () => {
       const price: number = item.productId.price || 0;
       const discount: number = item.productId.discount || 0;
       const discountedPrice: number = price * (1 - discount / 100);
-      return sum + discountedPrice * item.quantity;
+      return sum + price * item.quantity;
     }, 0);
   }, [cartItems]);
   // Check if we should calculate tax
@@ -621,6 +621,7 @@ const CheckoutPage = () => {
         );
         console.log("Service pricing:", pricingResponse.data);
         if (pricingResponse.data.success) {
+
           setServicePricing(pricingResponse.data.data);
         } else {
           console.error(
@@ -725,8 +726,9 @@ useEffect(() => {
 
     try {
       // Only call API if we have zip and state
-      if (formData.zipCode && formData.state) {
+      if (formData.zipCode && formData.state && formData.country) {
         console.log('Calling tax API with:', {
+          to_country:formData.country,
           amount: subtotal,
           to_zip: formData.zipCode,
           to_state: formData.state,
@@ -734,6 +736,7 @@ useEffect(() => {
         });
 
         const res = await api.post("/tax/calculateTax", {
+          to_country:formData.country,
           amount: subtotal,
           to_zip: formData.zipCode,
           to_state: formData.state,
@@ -757,10 +760,10 @@ amount_to_collect || 0;
       }
       
       // If API didn't return tax or no zip/state, use fallback
-      const calculatedTax = subtotal * (10.25 / 100);
+      const calculatedTax = subtotal * (0 / 100);
       setTax(calculatedTax);
       setapiTax(false); // Indicates fallback tax
-      setTaxRate(10.25);
+      setTaxRate(0);
       setTaxMessage("Tax calculated at 10.25% (fallback)");
       console.log("Fallback tax calculated:", calculatedTax);
       
@@ -775,7 +778,7 @@ amount_to_collect || 0;
       const calculatedTax = subtotal * (10.25 / 100);
       setTax(calculatedTax);
       setapiTax(false); // Indicates fallback tax
-      setTaxRate(10.25);
+      setTaxRate(0);
       setTaxMessage("Tax calculated at 10.25% (API unavailable)");
       console.log("Fallback tax due to API error:", calculatedTax);
     } finally {
@@ -1831,13 +1834,13 @@ amount_to_collect || 0;
                       
                             className="flex justify-between text-sm font-semibold"
                           >
-                            <div className="flex-1">
+                            <div className="flex-1 w-16">
                               <p className="text-gray-700">
                                 Product Name
                               </p>
                             </div>
                             <div className="flex gap-8 ml-4">
-                              <span className="text-gray-600 w-32 text-right">
+                              <span className="text-gray-600 w-8 text-right">
                                 Unit Price
                               </span>
                               <span className="text-gray-600 w-8 text-center">
@@ -1861,13 +1864,13 @@ amount_to_collect || 0;
                             key={item._id}
                             className="flex justify-between text-sm"
                           >
-                            <div className="">
+                            <div className="flex-1 w-16 line-clamp-3">
                               <p className="text-gray-700">
                                 {item.productId.name}
                               </p>
                             </div>
                             <div className="flex gap-8 ml-4">
-                              <span className="text-gray-600 w-16 text-right">
+                              <span className="text-gray-600 w-8 text-right">
                                 ${discountedPrice.toFixed(2)}
                               </span>
                               <span className="text-gray-600 w-8 text-center">

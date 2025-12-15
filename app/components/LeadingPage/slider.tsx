@@ -153,13 +153,13 @@ export default function Slider() {
         {slides.map((src, index) => (
           <div
             key={index}
-            className="min-w-full lg:h-[600px] md:h-[450px] h-[300px] relative"
+            className="min-w-full lg:h-[600px] md:h-[450px] h-[180px] relative"
           >
             <Image
               src={src}
               alt={`Slide ${index + 1}`}
               fill
-              className="object-fit"
+              className=" md:object-fit "
               priority={index === 0}
             />
           </div>
