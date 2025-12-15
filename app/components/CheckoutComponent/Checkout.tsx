@@ -245,7 +245,7 @@ const CheckoutPage = () => {
 
   const [taxMessage, setTaxMessage] = useState("");
   const [tax, setTax] = useState(0);
-  const [taxRate, setTaxRate] = useState(10.25); // Fixed 10.25% tax rate
+  const [taxRate, setTaxRate] = useState(0); // Fixed 10.25% tax rate
   const [isCalculatingTax, setIsCalculatingTax] = useState(false);
   const [isAgeChecked, setIsAgeChecked] = useState(false);
 
@@ -726,7 +726,7 @@ useEffect(() => {
 
     try {
       // Only call API if we have zip and state
-      if (formData.zipCode && formData.state && formData.country) {
+      if (formData.zipCode && formData.state && formData.country && formData.city) {
         console.log('Calling tax API with:', {
           to_country:formData.country,
           amount: subtotal,
@@ -740,7 +740,8 @@ useEffect(() => {
           amount: subtotal,
           to_zip: formData.zipCode,
           to_state: formData.state,
-          shipping: shippingCost
+          shipping: shippingCost,
+          to_city:formData.city,
         });
         console.log(res,'final tax')
         

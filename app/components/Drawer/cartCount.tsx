@@ -383,7 +383,7 @@ export default function CartDrawer() {
                               <X className="text-white w-3 h-3 md:w-3.5 md:h-3.5" />
                             </button>
 
-                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <div className="flex items-center gap-3 min-w-0 ">
                               <div
                                 className={`flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-lg flex-shrink-0 overflow-hidden ${
                                   isOutOfStock
