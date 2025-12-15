@@ -15,25 +15,25 @@ type ImageSource = string | string[] | null | undefined;
 
 export default function ShoppingCart() {
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
-  
+
   // Get cart state and actions from Zustand store
-  const { 
-    items, 
+  const {
+    items,
     isLoading,
     isSyncing,
-    getCartCount, 
-    getSubtotal, 
-    updateQuantity, 
+    getCartCount,
+    getSubtotal,
+    updateQuantity,
     getFormattedSubtotal,
     removeItem,
     clearCart,
     initializeCart,
-    guestId
+    guestId,
   } = useCartStore();
-  
+
   // Get user state
   const { user } = useUserStore();
-  const userId = user ||guestId|| null;
+  const userId = user || guestId || null;
   const subprice = getFormattedSubtotal();
 
   // Initialize cart when component mounts
@@ -44,22 +44,29 @@ export default function ShoppingCart() {
   // Helper function to get safe image source with proper typing
   const getSafeImageSrc = (image: ImageSource): string => {
     if (!image) return FALLBACK_IMAGE;
-    
+
     // If image is a string and looks like a valid URL or path
-    if (typeof image === 'string' && image.trim() !== '') {
+    if (typeof image === "string" && image.trim() !== "") {
       return image;
     }
-    
+
     // If image is an array, use the first image
-    if (Array.isArray(image) && image.length > 0 && typeof image[0] === 'string' && image[0].trim() !== '') {
+    if (
+      Array.isArray(image) &&
+      image.length > 0 &&
+      typeof image[0] === "string" &&
+      image[0].trim() !== ""
+    ) {
       return image[0];
     }
-    
+
     return FALLBACK_IMAGE;
   };
 
   // Helper function to handle image error with proper typing
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+  const handleImageError = (
+    e: React.SyntheticEvent<HTMLImageElement, Event>
+  ) => {
     const target = e.target as HTMLImageElement;
     target.src = FALLBACK_IMAGE;
   };
@@ -75,7 +82,7 @@ export default function ShoppingCart() {
   };
 
   const removeChecked = () => {
-    checkedItems.forEach(cartItemId => {
+    checkedItems.forEach((cartItemId) => {
       removeItem(cartItemId, userId);
     });
     setCheckedItems(new Set());
@@ -92,9 +99,12 @@ export default function ShoppingCart() {
     newChecked.delete(cartItemId);
     setCheckedItems(newChecked);
   };
-console.log("93",checkedItems,"93");
-  const handleUpdateQuantity = (cartItemId: string, action: "increase" | "decrease") => {
-    const item = items.find(item => item._id === cartItemId);
+  console.log("93", checkedItems, "93");
+  const handleUpdateQuantity = (
+    cartItemId: string,
+    action: "increase" | "decrease"
+  ) => {
+    const item = items.find((item) => item._id === cartItemId);
     if (!item) return;
 
     let newQuantity = item.quantity;
@@ -103,30 +113,32 @@ console.log("93",checkedItems,"93");
     } else {
       newQuantity = Math.max(1, item.quantity - 1);
     }
-    
+
     updateQuantity(cartItemId, newQuantity, userId);
   };
 
-  const handleCheckout =async () => {
+  const handleCheckout = async () => {
     if (checkedItems.size === 0) {
       alert("Please select items to checkout");
       return;
     }
-    
+
     const checkoutData = {
       selectedItemIds: Array.from(checkedItems),
       items: items.filter((item) => checkedItems.has(item._id)),
       timestamp: new Date().toISOString(),
     };
-    
+
     console.log("Checkout Data:", checkoutData);
-      const checkedId=await api.post("/cart/checkedid",{cartIds:checkoutData.selectedItemIds,userId:userId});
-      if(checkedId.data){
-         setTimeout(() => {
-      window.location.href = "/pages/checkout";
-    }, 100);
-      }
-   
+    const checkedId = await api.post("/cart/checkedid", {
+      cartIds: checkoutData.selectedItemIds,
+      userId: userId,
+    });
+    if (checkedId.data) {
+      setTimeout(() => {
+        window.location.href = "/pages/checkout";
+      }, 100);
+    }
   };
 
   // Show loading state
@@ -148,7 +160,7 @@ console.log("93",checkedItems,"93");
           <div className="px-4 md:px-8 py-4 md:py-6">
             <div className="flex flex-col md:flex-row gap-[16px] md:gap-[32px] justify-between items-start md:items-center">
               <h1 className="text-[28px] font-bold text-gray-900">
-                Shopping Cart {isSyncing && "(Syncing...)"}
+                Shopping Cart 
               </h1>
               <div className="flex flex-wrap md:flex-nowrap gap-2 md:gap-4 w-full md:w-auto">
                 <button
@@ -192,169 +204,344 @@ console.log("93",checkedItems,"93");
             </div>
 
             {/* Cart Items */}
-            {items.map((item) => (
-              <div key={item._id} className="space-y-2 md:space-y-0">
-                {/* Mobile View */}
-                <div className="md:hidden bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  {/* Top row with checkbox and delete button */}
-                  <div className="flex justify-between items-center mb-3">
-                    <div className="flex items-center gap-2">
+            {items.map((item) => {
+              const isOutOfStock = item.productId.available === 0;
+              const isQuantityExceeded =
+                item.productId.available > 0 &&
+                item.productId.available < item.quantity;
+
+              return (
+                <div key={item._id} className="space-y-2 md:space-y-0 relative">
+                  {/* Mobile View */}
+                  <div className="md:hidden bg-gray-50 p-4 rounded-lg border border-gray-200 relative">
+                    {/* Out of Stock Overlay */}
+                    {isOutOfStock && (
+                      <div className="absolute inset-0 bg-black/60 rounded-lg flex items-center justify-center z-10">
+                        <button
+                          onClick={() => {
+                            handleRemoveItem(item._id);
+                          }}
+                          className="bg-white px-6 py-3 rounded-lg shadow-lg"
+                        >
+                          <p className="text-lg font-bold text-red-600">
+                            OUT OF STOCK
+                          </p>
+                        </button>
+                      </div>
+                    )}
+                    {/* Quantity Exceeded Warning */}
+                    {isQuantityExceeded && (
+                      <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded-md">
+                        <p className="text-sm text-red-600 font-medium">
+                          ⚠️ Your quantity exceeds available stock (
+                          {item.productId.available})
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Top row with checkbox and delete button */}
+                    <div className="flex justify-between items-center mb-3">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={checkedItems.has(item._id)}
+                          onChange={() => toggleCheck(item._id)}
+                          className="w-5 h-5 cursor-pointer"
+                          disabled={isSyncing || isOutOfStock}
+                        />
+                        <div
+                          className={`flex items-center justify-center w-12 h-12 md:w-[70px] md:h-[70px] border rounded-xl flex-shrink-0 ${
+                            isOutOfStock
+                              ? "bg-gray-100 border-gray-300"
+                              : "bg-[#F5F5F5] border-[#B0B0B0]"
+                          }`}
+                        >
+                          <Image
+                            src={getSafeImageSrc(item.productId.image)}
+                            alt={"Blank"}
+                            width={30}
+                            height={30}
+                            className={`object-contain ${
+                              isOutOfStock ? "opacity-50" : ""
+                            }`}
+                            onError={handleImageError}
+                          />
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleRemoveItem(item._id)}
+                        disabled={isSyncing}
+                        className="text-red-500 hover:text-red-700 disabled:opacity-50"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    {/* Content in column layout */}
+                    <div className="flex flex-col text-left space-y-3">
+                      <div>
+                        <p
+                          className={`font-semibold text-base leading-6 ${
+                            isOutOfStock ? "text-gray-500" : "text-gray-900"
+                          }`}
+                        >
+                          {item.productId.name}
+                        </p>
+                        <p
+                          className={`text-sm mt-1 ${
+                            isOutOfStock ? "text-gray-400" : "text-gray-600"
+                          }`}
+                        >
+                          {item.productId.description || "Product description"}
+                        </p>
+                        <p
+                          className={`text-xs mt-1 ${
+                            isOutOfStock
+                              ? "text-red-500 font-bold"
+                              : item.productId.isInStock
+                              ? "text-green-600"
+                              : "text-red-500"
+                          }`}
+                        >
+                          {isOutOfStock
+                            ? "Out of Stock"
+                            : item.productId.isInStock
+                            ? "In Stock"
+                            : "Out of Stock"}
+                        </p>
+                      </div>
+
+                      {/* Price, Quantity, Total in column */}
+                      <div className="flex flex-col space-y-2">
+                        <div className="flex justify-between items-center border-b pb-1 ">
+                          <p className="text-gray-600">Price</p>
+                          <p
+                            className={`font-semibold ${
+                              isOutOfStock ? "text-gray-400" : "text-gray-900"
+                            }`}
+                          >
+                            ${(item.productId.price || 0).toFixed(2)}
+                          </p>
+                        </div>
+
+                        <div className="flex justify-between items-center border-b pb-1">
+                          <p className="text-gray-600">Quantity</p>
+                          <div className="flex gap-0 border rounded-lg overflow-hidden">
+                            <button
+                              onClick={() =>
+                                handleUpdateQuantity(item._id, "decrease")
+                              }
+                              disabled={
+                                isSyncing || item.quantity <= 1 || isOutOfStock
+                              }
+                              className={`w-8 h-8 rounded-lg text-sm font-bold disabled:opacity-50 ${
+                                isOutOfStock
+                                  ? "bg-gray-300"
+                                  : "bg-[#C9A040] hover:bg-[#9b7a2f]"
+                              }`}
+                            >
+                              −
+                            </button>
+                            <span
+                              className={`w-8 text-center font-semibold text-sm border-gray-300 flex justify-center items-center ${
+                                isOutOfStock ? "text-gray-400" : ""
+                              }`}
+                            >
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() =>
+                                handleUpdateQuantity(item._id, "increase")
+                              }
+                              disabled={
+                                isSyncing ||
+                                item.quantity >= item.productId.available ||
+                                isOutOfStock
+                              }
+                              className={`w-8 h-8 text-sm font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed overflow:hidden ${
+                                isOutOfStock
+                                  ? "bg-gray-300"
+                                  : "bg-[#C9A040] hover:bg-[#a78435]"
+                              }`}
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-between items-center">
+                          <p className="text-gray-600">Total</p>
+                          <p
+                            className={`font-semibold ${
+                              isOutOfStock ? "text-gray-400" : "text-gray-900"
+                            }`}
+                          >
+                            $
+                            {(
+                              (item.productId.price || 0) * item.quantity
+                            ).toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Desktop View */}
+                  <div className="hidden md:grid grid-cols-12 gap-4 py-4 px-2 border-b border-gray-200 items-center hover:bg-gray-50 relative">
+                    {/* Out of Stock Overlay */}
+                    {isOutOfStock && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
+                        <button  onClick={() => {
+                            handleRemoveItem(item._id);
+                          }} className="bg-white px-8 py-4 rounded-lg shadow-xl">
+                          <p className="text-xl font-bold text-red-600">
+                            OUT OF STOCK
+                          </p>
+                        </button>
+                      </div>
+                    )}
+
+                    <div className="col-span-1">
                       <input
                         type="checkbox"
                         checked={checkedItems.has(item._id)}
                         onChange={() => toggleCheck(item._id)}
                         className="w-5 h-5 cursor-pointer"
-                        disabled={isSyncing}
+                        disabled={isSyncing || isOutOfStock}
                       />
-                      <div className="flex items-center justify-center w-12 h-12 md:w-[70px] md:h-[70px] bg-[#F5F5F5] border border-[#B0B0B0] rounded-xl flex-shrink-0">
+                    </div>
+                    <div className="col-span-1 flex justify-start">
+                      <div
+                        className={`flex items-center justify-center w-12 h-12 md:w-[70px] md:h-[70px] border rounded-xl flex-shrink-0 ${
+                          isOutOfStock
+                            ? "bg-gray-100 border-gray-300"
+                            : "bg-[#F5F5F5] border-[#B0B0B0]"
+                        }`}
+                      >
                         <Image
                           src={getSafeImageSrc(item.productId.image)}
-                          alt={ "Blank"}
+                          alt={"I"}
                           width={30}
                           height={30}
-                          className="object-contain"
+                          className={`object-contain ${
+                            isOutOfStock ? "opacity-50" : ""
+                          }`}
                           onError={handleImageError}
                         />
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleRemoveItem(item._id)}
-                      disabled={isSyncing}
-                      className="text-red-500 hover:text-red-700 disabled:opacity-50"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  {/* Content in column layout */}
-                  <div className="flex flex-col text-left space-y-3">
-                    <div>
-                      <p className="font-semibold text-base leading-6">
+                    <div className="col-span-3">
+                      <p
+                        className={`font-semibold text-sm ${
+                          isOutOfStock ? "text-gray-500" : "text-gray-900"
+                        }`}
+                      >
                         {item.productId.name}
                       </p>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p
+                        className={`text-xs ${
+                          isOutOfStock ? "text-gray-400" : "text-gray-600"
+                        }`}
+                      >
                         {item.productId.description || "Product description"}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {item.productId.isInStock ? "In Stock" : "Out of Stock"}
+                      <p
+                        className={`text-xs mt-1 ${
+                          isOutOfStock
+                            ? "text-red-500 font-bold"
+                            : item.productId.isInStock
+                            ? "text-green-600"
+                            : "text-red-500"
+                        }`}
+                      >
+                        {isOutOfStock
+                          ? "Out of Stock"
+                          : item.productId.isInStock
+                          ? "In Stock"
+                          : "Out of Stock"}
                       </p>
-                    </div>
 
-                    {/* Price, Quantity, Total in column */}
-                    <div className="flex flex-col space-y-2">
-                      <div className="flex justify-between items-center border-b pb-1">
-                        <p className="text-gray-600">Price</p>
-                        <p className="font-semibold text-gray-900">
-                          ${(item.productId.price || 0).toFixed(2)}
-                        </p>
-                      </div>
-                      
-                      <div className="flex justify-between items-center border-b pb-1">
-                        <p className="text-gray-600">Quantity</p>
-                        <div className="flex gap-0 border rounded-lg">
-                          <button
-                            onClick={() => handleUpdateQuantity(item._id, "decrease")}
-                            disabled={isSyncing || item.quantity <= 1}
-                            className="w-8 h-8 bg-[#C9A040] rounded-lg hover:bg-[#9b7a2f] text-sm font-bold disabled:opacity-50"
-                          >
-                            −
-                          </button>
-                          <span className="w-8 text-center font-semibold text-sm border-gray-300 flex justify-center items-center">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() => handleUpdateQuantity(item._id, "increase")}
-                            disabled={isSyncing}
-                            className="w-8 h-8 bg-[#C9A040] hover:bg-[#a78435] disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold rounded-lg"
-                          >
-                            +
-                          </button>
+                      {/* Quantity Exceeded Warning for Desktop */}
+                      {isQuantityExceeded && (
+                        <div className="mt-2 p-1.5 bg-red-50 border border-red-200 rounded-md">
+                          <p className="text-xs text-red-600 font-medium">
+                            ⚠️ Quantity exceeds available (
+                            {item.productId.available})
+                          </p>
                         </div>
-                      </div>
-                      
-                      <div className="flex justify-between items-center">
-                        <p className="text-gray-600">Total</p>
-                        <p className="font-semibold text-gray-900">
-                          ${((item.productId.price || 0) * item.quantity).toFixed(2)}
-                        </p>
-                      </div>
+                      )}
                     </div>
-                  </div>
-                </div>
-
-                {/* Desktop View */}
-                <div className="hidden md:grid grid-cols-12 gap-4 py-4 px-2 border-b border-gray-200 items-center hover:bg-gray-50">
-                  <div className="col-span-1">
-                    <input
-                      type="checkbox"
-                      checked={checkedItems.has(item._id)}
-                      onChange={() => toggleCheck(item._id)}
-                      className="w-5 h-5 cursor-pointer"
-                      disabled={isSyncing}
-                    />
-                  </div>
-                  <div className="col-span-1 flex justify-start">
-                    <div className="flex items-center justify-center w-12 h-12 md:w-[70px] md:h-[70px] bg-[#F5F5F5] border border-[#B0B0B0] rounded-xl flex-shrink-0">
-                      <Image
-                        src={getSafeImageSrc(item.productId.image)}
-                        alt={"I"}
-                        width={30}
-                        height={30}
-                        className="object-contain"
-                        onError={handleImageError}
-                      />
-                    </div>
-                  </div>
-                  <div className="col-span-3">
-                    <p className="font-semibold text-gray-900 text-sm">
-                      {item.productId.name}
-                    </p>
-                    <p className="text-xs text-gray-600">
-                      {item.productId.description || "Product description"}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {item.productId.isInStock ? "In Stock" : "Out of Stock"}
-                    </p>
-                  </div>
-                  <div className="col-span-2 text-center text-sm font-semibold text-gray-900">
-                    ${(item.productId.price || 0).toFixed(2)}
-                  </div>
-                  <div className="col-span-2 flex justify-center items-center">
-                    <div className="flex items-center gap-0 border border-gray-300 rounded-full font-semibold text-base text-center">
-                      <button
-                        onClick={() => handleUpdateQuantity(item._id, "decrease")}
-                        disabled={isSyncing || item.quantity <= 1}
-                        className="w-12 h-12 bg-[#C9A040] hover:bg-[#ab8938] font-semibold text-base rounded-lg disabled:opacity-50"
-                      >
-                        −
-                      </button>
-                      <span className="w-12 text-center font-semibold text-base border-l border-r border-gray-300">
-                        {item.quantity}
-                      </span>
-                      <button
-                        onClick={() => handleUpdateQuantity(item._id, "increase")}
-                        disabled={isSyncing}
-                        className="w-12 h-12 bg-[#C9A040] hover:bg-[#ab8938] disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-base rounded-lg"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                  <div className="col-span-2 text-center text-sm font-semibold text-gray-900">
-                    ${((item.productId.price || 0) * item.quantity).toFixed(2)}
-                  </div>
-                  <div className="col-span-1 text-center">
-                    <button
-                      onClick={() => handleRemoveItem(item._id)}
-                      disabled={isSyncing}
-                      className="text-red-600 hover:text-red-800 disabled:opacity-50"
+                    <div
+                      className={`col-span-2 text-center text-sm font-semibold ${
+                        isOutOfStock ? "text-gray-400" : "text-gray-900"
+                      }`}
                     >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
+                      ${(item.productId.price || 0).toFixed(2)}
+                    </div>
+                    <div className="col-span-2 flex justify-center items-center">
+                      <div className="flex items-center gap-0 border border-gray-300 rounded-full font-semibold text-base text-center">
+                        <button
+                          onClick={() =>
+                            handleUpdateQuantity(item._id, "decrease")
+                          }
+                          disabled={
+                            isSyncing || item.quantity <= 1 || isOutOfStock
+                          }
+                          className={`w-12 h-12 font-semibold text-base rounded-lg disabled:opacity-50 ${
+                            isOutOfStock
+                              ? "bg-gray-300"
+                              : "bg-[#C9A040] hover:bg-[#ab8938]"
+                          }`}
+                        >
+                          −
+                        </button>
+                        <span
+                          className={`w-12 text-center font-semibold text-base border-l border-r border-gray-300 ${
+                            isOutOfStock ? "text-gray-400" : ""
+                          }`}
+                        >
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() =>
+                            handleUpdateQuantity(item._id, "increase")
+                          }
+                          disabled={
+                            isSyncing ||
+                            item.quantity >= item.productId.available ||
+                            isOutOfStock
+                          }
+                          className={`w-12 h-12 font-semibold text-base rounded-lg disabled:opacity-50 disabled:cursor-not-allowed ${
+                            isOutOfStock
+                              ? "bg-gray-300"
+                              : "bg-[#C9A040] hover:bg-[#ab8938]"
+                          }`}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                    <div
+                      className={`col-span-2 text-center text-sm font-semibold ${
+                        isOutOfStock ? "text-gray-400" : "text-gray-900"
+                      }`}
+                    >
+                      $
+                      {((item.productId.price || 0) * item.quantity).toFixed(2)}
+                    </div>
+                    <div className="col-span-1 text-center">
+                      <button
+                        onClick={() => handleRemoveItem(item._id)}
+                        disabled={isSyncing}
+                        className="text-red-600 hover:text-red-800 disabled:opacity-50"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {/* Total Summary */}
             <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 mt-8">
@@ -368,12 +555,8 @@ console.log("93",checkedItems,"93");
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-gray-900">
-                    {subprice}
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Subtotal
-                  </p>
+                  <p className="text-2xl font-bold text-gray-900">{subprice}</p>
+                  <p className="text-sm text-gray-600 mt-1">Subtotal</p>
                 </div>
               </div>
             </div>

@@ -3,9 +3,7 @@ import { Product } from "./product";
 import Link from "next/link";
 import { useCartStore } from "@/app/store/cartStore"; // Import from cartStore
 import useUserStore from "@/app/store/userStore"; // Import userStore to get userId
-
-
-
+import { Divide } from "lucide-react";
 
 interface Props {
   product: Product;
@@ -13,80 +11,86 @@ interface Props {
   setSelectedColor: (color: string) => void;
 }
 
-export default function ProductInfo({ product, selectedColor, setSelectedColor }: Props) {
+export default function ProductInfo({
+  product,
+  selectedColor,
+  setSelectedColor,
+}: Props) {
   const { user } = useUserStore();
-  const [count,setCount] = useState(1)
-  const [msg,setMsg] = useState("")
-  const userId = user || null;
-  
+  const { guestId } = useCartStore();
+  const [count, setCount] = useState(1);
+  const [msg, setMsg] = useState("");
+  const userId = user || guestId || null;
+
   // Get cart state and actions from cartStore
-  const { 
-    items: cartItems, 
-    getItemQuantity, 
-    addItem, 
-    updateQuantity, 
+  const {
+    items: cartItems,
+    getItemQuantity,
+    addItem,
+    updateQuantity,
     removeItem,
     getCartCount,
     isLoading,
-    isSyncing
+    isSyncing,
   } = useCartStore();
 
   // Get current quantity of this product in cart
-  const currentQuantity = getItemQuantity(product._id);
+  const currentQuantity = getItemQuantity(product._id.toString());
 
   // Generate color styles dynamically
   const getColorStyle = (color: string) => {
     const colorMap: { [key: string]: string } = {
-      'red': 'bg-red-500',
-      'black': 'bg-black',
-      'brown': 'bg-amber-900',
-      'blue': 'bg-blue-500',
-      'silver': 'bg-gray-300',
-      'white': 'bg-white border border-gray-300'
+      red: "bg-red-500",
+      black: "bg-black",
+      brown: "bg-amber-900",
+      blue: "bg-blue-500",
+      silver: "bg-gray-300",
+      white: "bg-white border border-gray-300",
     };
-    
-    return colorMap[color.toLowerCase()] || 'bg-gray-200';
-  };
 
+    return colorMap[color.toLowerCase()] || "bg-gray-200";
+  };
+  const [exceed, setExceed] = useState("");
   // Handle add to cart
   const handleAddToCart = async () => {
-    if (!product.available) return;
-    if(product.available>count){
+    if (!product.available) return setExceed("⚠️ Applied isn't available");
+    if (product.available >= count) {
+      try {
+        const temp = getCartCount();
+        setExceed("");
+        await addItem(
+          {
+            _id: product._id.toString(),
+            name: product.name,
+            image: product.images,
+            price: product.currentPrice || product.price,
+            brand: product.brand,
+            available: product.available,
+          },
+          userId,
+          count
+        );
 
-      for(let i=1;i<=count;i++){
-         try {
-      await addItem(
-        {
-          _id: product._id ,
-          name: product.name,
-          image: product.images,
-          price: product.currentPrice || product.price,
-          discount: product.discount,
-          description: product.description,
-          isInStock: product.inStock,
-          brand: product.brand,
-          available: product.available
-        },
-        userId
-      );
-    } catch (error) {
-      console.error('Failed to add to cart:', error);
-    }
+        const temp2 = getCartCount();
+        if (temp2 === temp) {
+          setExceed("⚠️ Your quantity exceeds available stock");
+        }
+      } catch (error) {
+        console.log("Failed to add to cart:", error);
       }
-
-    }
-    
-   
+    } else return setExceed("⚠️ Your quantity exceeds available stock");
   };
 
   // Handle quantity increase
   const handleIncreaseQuantity = async () => {
-    const cartItem = cartItems.find(item => item.productId._id === product._id);
+    const cartItem = cartItems.find(
+      (item) => item.productId._id === product._id
+    );
     if (cartItem) {
       try {
         await updateQuantity(cartItem._id, currentQuantity + 1, userId);
       } catch (error) {
-        console.error('Failed to increase quantity:', error);
+        console.error("Failed to increase quantity:", error);
       }
     } else {
       // If item not in cart, add it
@@ -96,21 +100,23 @@ export default function ProductInfo({ product, selectedColor, setSelectedColor }
 
   // Handle quantity decrease
   const handleDecreaseQuantity = async () => {
-    const cartItem = cartItems.find(item => item.productId._id === product._id);
+    const cartItem = cartItems.find(
+      (item) => item.productId._id === product._id
+    );
     if (!cartItem) return;
 
     if (currentQuantity > 1) {
       try {
         await updateQuantity(cartItem._id, currentQuantity - 1, userId);
       } catch (error) {
-        console.error('Failed to decrease quantity:', error);
+        console.error("Failed to decrease quantity:", error);
       }
     } else {
       // If quantity is 1, remove the item from cart
       try {
         await removeItem(cartItem._id, userId);
       } catch (error) {
-        console.error('Failed to remove item:', error);
+        console.error("Failed to remove item:", error);
       }
     }
   };
@@ -121,10 +127,10 @@ export default function ProductInfo({ product, selectedColor, setSelectedColor }
   return (
     <div className="space-y-6 bg-white p-[16px] md:p-[32px] rounded-lg shadow-sm ">
       {/* Badges */}
-      
-      
 
-      <h1 className="text-[40px] font-semibold leading-[48px]">{product.title}</h1>
+      <h1 className="text-[40px] font-semibold leading-[48px]">
+        {product.title}
+      </h1>
       <p className="text-[40px] font-semibold leading-[48px]">{product.name}</p>
 
       {/* Color Variants */}
@@ -136,17 +142,24 @@ export default function ProductInfo({ product, selectedColor, setSelectedColor }
               <button
                 key={color}
                 onClick={() => setSelectedColor(color)}
-                className={`w-8 h-8 rounded-full border-2 transition ${selectedColor === color ? "border-yellow-600 w-9 h-9" : "border-gray-300"}`}
+                className={`w-8 h-8 rounded-full border-2 transition ${
+                  selectedColor === color
+                    ? "border-yellow-600 w-9 h-9"
+                    : "border-gray-300"
+                }`}
               >
-                <div className={`w-full h-full rounded-full ${getColorStyle(color)}`} />
+                <div
+                  className={`w-full h-full rounded-full ${getColorStyle(
+                    color
+                  )}`}
+                />
               </button>
             ))}
           </div>
         </div>
       )}
 
-
-<div className="flex gap-2 justify-start">
+      <div className="flex gap-2 justify-start">
         {product.bestSeller && (
           <span className="flex justify-center items-center px-4 py-2 bg-[#cf2626] rounded-full text-white text-xs font-semibold">
             Best Seller
@@ -157,11 +170,13 @@ export default function ProductInfo({ product, selectedColor, setSelectedColor }
             New Arrivals
           </span>
         )}
-        <span className={`flex justify-center items-center px-4 py-2 rounded-full text-xs font-semibold gap-1.5 ${
-          product.inStock 
-            ? "text-green-700 bg-green-50 border-2 border-green-200" 
-            : "bg-red-50 text-red-600"
-        }`}>
+        <span
+          className={`flex justify-center items-center px-4 py-2 rounded-full text-xs font-semibold gap-1.5 ${
+            product.inStock
+              ? "text-green-700 bg-green-50 border-2 border-green-200"
+              : "bg-red-50 text-red-600"
+          }`}
+        >
           {product.inStock ? (
             <>
               In Stock
@@ -179,19 +194,25 @@ export default function ProductInfo({ product, selectedColor, setSelectedColor }
       <div>
         <label className="block mb-2 font-bold text-gray-800">Quantity</label>
         <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden w-40">
-          <button 
-            onClick={()=>{if(count>1 ){setCount(count-1)}}}
+          <button
+            onClick={() => {
+              if (count > 1) {
+                setExceed("");
+                setCount(count - 1);
+              }
+            }}
             disabled={!product.available}
             className="px-4 py-2 text-gray-600 bg-[#C9A040] hover:bg-[#b59853] disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
             −
           </button>
-          <span className="flex-1 text-center font-bold">
-            {count}
-          </span>
-          <button 
-            onClick={()=>setCount(count+1)}
-            disabled={!product.available}
+          <span className="flex-1 text-center font-bold">{count}</span>
+          <button
+            onClick={() => {
+              setExceed("");
+              setCount(count + 1);
+            }}
+            disabled={!product.available || count >= product.available}
             className="px-4 py-2 text-gray-600 bg-[#C9A040] hover:bg-[#b59853] disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
             +
@@ -207,37 +228,47 @@ export default function ProductInfo({ product, selectedColor, setSelectedColor }
       {/* Price */}
       <div className="flex items-baseline justify-start gap-1">
         <span className="text-[28px] font-bold text-gray-900">
-          ${(product.currentPrice || product.price).toFixed(2) }
+          ${(product.currentPrice || product.price).toFixed(2)}
         </span>
         {/* {product.originalPrice && product.originalPrice > product.price && (
           <span className="text-xl text-gray-500 line-through">
             ${product.originalPrice}
           </span>
         )} */}
-        {product.discount!=undefined && product.discount > 0 && (
+        {product.discount != undefined && product.discount > 0 && (
           <span className="text-[18px] font-semibold text-gray-600 line-through">
-             ${(product.price *100/product.discount).toFixed(2)}
+            ${((product.price * 100) / product.discount).toFixed(2)}
           </span>
         )}
-        
       </div>
 
       {/* Add to Cart / Cart Actions */}
-     
-        <button 
-          onClick={handleAddToCart} 
-          disabled={!product.inStock || isSyncing}
-          className="w-full bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 rounded-lg transition-colors"
-        >
-          {isSyncing ? "Adding..." : product.inStock ? "Add To Cart" : "Out of Stock"}
-        </button>
-     
-      
+
+      <button
+        onClick={handleAddToCart}
+        disabled={!product.inStock || isSyncing}
+        className="w-full bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 rounded-lg transition-colors"
+      >
+        {isSyncing
+          ? "Adding..."
+          : product.inStock
+          ? "Add To Cart"
+          : "Out of Stock"}
+      </button>
+
       <Link href="/pages/shoppingcart">
         <button className="w-full font-bold py-3 rounded-lg transition bg-gray-200 hover:bg-gray-300">
           View Cart ({getCartCount()})
         </button>
       </Link>
+
+      {exceed === "" ? (
+        <div></div>
+      ) : (
+        <div className="mb-3 p-2 mt-[16px] text-center bg-red-50 border border-red-200 rounded-md">
+          <p className="text-sm text-red-600 font-medium">{exceed}</p>
+        </div>
+      )}
     </div>
   );
 }

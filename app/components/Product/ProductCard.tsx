@@ -24,15 +24,16 @@ export default function ProductCard({ product, onAddCart}: ProductCardProps) {
   
   const currentQuantity = getItemQuantity(product.id.toString());
 const handleAddToCart = () => {
+  console.log(product.available,product.name,product.inStock,"27")
     addItem({
       _id:product.id.toString(),
       brand: product.brandId?.name,
       name: product.name,
       price: product.currentPrice,
-      available: product.available,
+      available: product.available || 0,
       image: product.image,
 
-    }, userId);
+    }, userId,1);
   };
 
 
@@ -73,7 +74,7 @@ const handleAddToCart = () => {
             <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
             <span className="text-xs text-gray-500">({(product.available)})</span>
           </div>
-          <h3 className="font-semibold text-gray-900 text-[16px] line-clamp-2 h-[48px]">{product?.name}</h3>
+          <h3 className="font-semibold text-gray-900 text-[16px] overflow-hidden h-[104px] md:h-[96px]  xl:h-[64px]">{product?.name}</h3>
           <div className="flex-col md:flex-row flex items-baseline gap-0 md:gap-1">
             <span className="text-[24px] font-semibold text-gray-900">${(product?.currentPrice).toFixed(2)   }</span>
             {product?.originalPrice !== undefined && product.originalPrice > 0   && <span className="text-[14px] font-semibold text-gray-400 line-through">${(product?.originalPrice).toFixed(2)   }</span>}
@@ -84,21 +85,18 @@ const handleAddToCart = () => {
      
 
       <div className="flex gap-3 mt-4">
-       {product.inStock && <button
+       {product.available ? <button
           onClick={handleAddToCart}
           className="flex-1 bg-[#C9A040] hover:bg-yellow-600 text-white font-medium py-2 rounded-lg flex items-center justify-center gap-1 transition"
         >
           <Plus className="w-5 h-5" /> Cart
-        </button>} 
-        { !product.inStock && 
-        <button
-          
+        </button>: <button
+        
           className="flex-1 bg-gray-900 text-gray-400 font-medium py-2 rounded-lg flex items-center justify-center gap-1 transition"
         >
           <Plus className="w-5 h-5" /> Cart
         </button>
-
-        }
+} 
        
       </div>
     </div>

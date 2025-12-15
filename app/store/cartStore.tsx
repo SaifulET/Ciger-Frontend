@@ -25,7 +25,7 @@ export interface Product {
   brandId?: {
     name: string;
   };
-  available?: number;
+  available: number;
   images?: string | string[];
 }
 
@@ -44,10 +44,11 @@ interface CartState {
   items: CartItem[];
   isLoading: boolean;
   isSyncing: boolean;
+  isAvailable: boolean;
  guestId: string;
   // Actions
   initializeCart: (userId: string | null) => Promise<void>;
-  addItem: (product: Product, userId: string | null) => Promise<void>;
+  addItem: (product: Product, userId: string | null,quantity:number) => Promise<void>;
 
   updateQuantity: (
     cartItemId: string,
@@ -74,6 +75,7 @@ export const useCartStore = create<CartState>()(
       isLoading: false,
 
       isSyncing: false,
+      isAvailable:true,
 
       // Initialize cart based on auth status
       initializeCart: async (userId: string | null) => {
@@ -86,6 +88,7 @@ export const useCartStore = create<CartState>()(
             if (result.success) {
               const backendItems: CartItem[] = result.data.map(
                 (item: CartItem) => {
+                  console.log(item,'89')
                   const price = item.productId?.price;
                   const quantity = Number(item.quantity) || 1;
                   const total = price * quantity;
@@ -100,6 +103,7 @@ export const useCartStore = create<CartState>()(
                         item.productId?.image ||
                         item.productId?.images?.[0] ||
                         "",
+                        available:item.productId?.available||0
                     },
 
                     quantity: quantity,
@@ -123,94 +127,150 @@ export const useCartStore = create<CartState>()(
       },
 
       // Add item to cart
-      addItem: async (product: Product, userId: string | null) => {
-        const { items, getItemQuantity } = get();
-
-        if (userId) {
-          set({ isSyncing: true });
-          try {
-            const response = await api.post("/cart/createCart", {
-              userId: userId,
-              productId: product._id,
-              quantity: 1,
-            });
-
-            const result = await response.data;
-
-            if (result.success) {
-              await get().initializeCart(userId);
-            }
-          } catch (error) {
-            console.error("Failed to add item:", error);
-          } finally {
-            set({ isSyncing: false });
-          }
-        } else {
-          let userId;
-          let guestId = get().guestId;
-          if (!guestId) {
-            guestId = new ObjectId().toHexString();
-            set({ guestId: guestId });
-          }
-          const existingItem = items.find(
-            (item) => item.productId._id === product._id
-          );
-          const price = product.price;
-
-          if (existingItem) {
-            const newQuantity = existingItem.quantity + 1;
-            const updatedItems = items.map((item) =>
-              item.productId._id === product._id
-                ? {
-                    ...item,
-                    quantity: newQuantity,
-                    total: price * newQuantity,
-                  }
-                : item
-            );
-            set({ items: updatedItems });
-            userId = updatedItems[0].userId;
-          } else {
-            const newItem: CartItem = {
-              _id: `${Date.now()}${Math.random().toString(36).substr(2, 9)}`,
-              userId: guestId,
-              productId: {
-                ...product,
-                price: price,
-                image: product?.image || "",
-              },
-              quantity: 1,
-              isSelected: true,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              total: price,
-            };
-            set({ items: [...items, newItem] });
-            userId = newItem?.userId;
-          }
-
-          try {
-            console.log("abc");
-            console.log(userId);
-            console.log(product._id);
-            const response = await api.post("/cart/createCart", {
-              userId: userId,
-              productId: product._id,
-              quantity: 1,
-            });
-
-            const result = await response.data;
-
-            if (result.success) {
-              await get().initializeCart(userId);
-            }
-          } catch (error) {
-            console.error("Failed to add item:", error);
-          } finally {
-            set({ isSyncing: false });
-          }
+      addItem: async (product: Product, userId: string | null, quantity: number = 1) => {
+  const { items } = get();
+  
+  if (userId) {
+    // Authenticated user flow
+    set({ isSyncing: true });
+    
+    try {
+      // Check if user already has this product in cart
+      const existingCartItem = items.find(
+        item => item.userId === userId && item.productId._id === product._id
+      );
+      
+      if (existingCartItem) {
+        // Update existing cart item
+        const newQuantity = existingCartItem.quantity + quantity;
+        
+        // Update on server
+        if(newQuantity<=product.available){
+          set({ isAvailable: true });
+          const response = await api.put(
+          `/cart/updateCart/${existingCartItem._id}`,
+          { quantity: newQuantity },
+          { headers: { "Content-Type": "application/json" } }
+        );
+        
+        console.log("Updated existing item:", response.data);
         }
-      },
+        else{
+           set({ isAvailable: false });
+        }
+      } else {
+        // Create new cart item
+        
+        const response = await api.post("/cart/createCart", {
+          userId: userId,
+          productId: product._id,
+          quantity: quantity,
+        });
+        
+        console.log("Created new cart item:", response.data);
+      }
+      
+      // Refresh cart from server
+      await get().initializeCart(userId);
+      
+    } catch (error) {
+      console.error("Failed to add/update item:", error);
+    } finally {
+      set({ isSyncing: false });
+    }
+  } else {
+    // Guest user flow
+    set({ isSyncing: true });
+    
+    try {
+      // Get or create guest ID
+      let guestId = get().guestId;
+      if (!guestId) {
+        guestId = new ObjectId().toHexString();
+        set({ guestId: guestId });
+      }
+      
+      // Check if guest already has this product in local cart
+      const existingCartItem = items.find(
+        item => item.userId === guestId && item.productId._id === product._id
+      );
+      
+      let targetCartItemId: string;
+      let finalQuantity: number;
+      
+      if (existingCartItem) {
+        // Update existing local item
+        targetCartItemId = existingCartItem._id;
+        finalQuantity = existingCartItem.quantity + quantity;
+        
+        const updatedItems = items.map(item => 
+          item._id === targetCartItemId
+            ? {
+                ...item,
+                quantity: finalQuantity,
+                total: product.price * finalQuantity,
+                updatedAt: new Date().toISOString(),
+              }
+            : item
+        );
+        
+        set({ items: updatedItems });
+        
+        // Update on server
+        await api.put(
+          `/cart/updateCart/${targetCartItemId}`,
+          { quantity: finalQuantity },
+          { headers: { "Content-Type": "application/json" } }
+        );
+        
+      } else {
+        // Create new local item
+        finalQuantity = quantity;
+        targetCartItemId = `${Date.now()}${Math.random().toString(36).substr(2, 9)}`;
+        
+        const newItem: CartItem = {
+          _id: targetCartItemId,
+          userId: guestId,
+          productId: {
+            ...product,
+            price: product.price,
+            image: product?.image || "",
+          },
+          quantity: finalQuantity,
+          isSelected: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          total: product.price * finalQuantity,
+        };
+        
+        if(finalQuantity<=product.available){
+          set({ isAvailable: true });
+          set({ items: [...items, newItem] });
+        
+        // Create on server
+        await api.post("/cart/createCart", {
+          userId: guestId,
+          productId: product._id,
+          quantity: finalQuantity,
+        });
+      }
+      else{
+        set({ isAvailable: false });
+      }
+        }
+
+        
+      
+      // Refresh cart from server (for consistency)
+      await get().initializeCart(guestId);
+      
+    } catch (error) {
+      console.error("Failed to add/update guest item:", error);
+    } finally {
+      set({ isSyncing: false });
+    }
+  }
+},
 
       // Update item quantity - FIXED THIS FUNCTION
       updateQuantity: async (
