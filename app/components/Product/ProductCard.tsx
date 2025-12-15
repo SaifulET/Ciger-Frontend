@@ -15,9 +15,9 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, onAddCart}: ProductCardProps) {
- const { addItem, getItemQuantity } = useCartStore();
+ const { addItem, getItemQuantity,guestId } = useCartStore();
   const { user } = useUserStore();
-  const userId = user || null;
+  const userId = user ||guestId || null;
   
 
   

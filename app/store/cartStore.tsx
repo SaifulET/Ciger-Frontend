@@ -129,7 +129,7 @@ export const useCartStore = create<CartState>()(
       // Add item to cart
       addItem: async (product: Product, userId: string | null, quantity: number = 1) => {
   const { items } = get();
-  
+  console.log(userId,"132")
   if (userId) {
     // Authenticated user flow
     set({ isSyncing: true });
@@ -143,9 +143,10 @@ export const useCartStore = create<CartState>()(
       if (existingCartItem) {
         // Update existing cart item
         const newQuantity = existingCartItem.quantity + quantity;
-        
+        console.log(newQuantity,product.available,"146")
         // Update on server
         if(newQuantity<=product.available){
+          console.log("149")
           set({ isAvailable: true });
           const response = await api.put(
           `/cart/updateCart/${existingCartItem._id}`,
