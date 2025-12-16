@@ -742,6 +742,7 @@ useEffect(() => {
           to_state: formData.state,
           shipping: shippingCost,
           to_city:formData.city,
+          to_street:formData.address
         });
         console.log(res,'final tax')
         
