@@ -82,6 +82,7 @@ export default function NotificationsPage() {
         const result = response.data;
         console.log(result)
         if (result.success && Array.isArray(result.data)) {
+          console.log(result.data)
           const transformedNotifications: Notification[] = result.data.map((item: ApiNotification) => ({
             id: item._id,
             userId: item.userId,
@@ -89,13 +90,7 @@ export default function NotificationsPage() {
             orderId: item.orderId,
             status: item.status,
             message: item.message,
-            timestamp: new Date(item.createdAt || item.timestamp || '').toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            }),
+            timestamp: (item.createdAt || item.timestamp || ''),
             isRead: item.isRead
           }));
           
@@ -183,11 +178,7 @@ export default function NotificationsPage() {
                     Order ID: {notification.orderId} | {notification.message}
                   </p>
                   <p className="text-xs text-gray-400 mt-1">{notification.timestamp}</p>
-                  {!notification.isRead && (
-                    <span className="inline-block mt-1 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
-                      New
-                    </span>
-                  )}
+                  
                 </div>
               </div>
             );
