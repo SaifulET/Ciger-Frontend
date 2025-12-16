@@ -5,7 +5,10 @@ import { useState, useEffect } from "react";
 import { X, Minus, Plus, ChevronRight, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ShoppingCart02FreeIcons, ShoppingCart02Icon } from "@hugeicons/core-free-icons";
+import {
+  ShoppingCart02FreeIcons,
+  ShoppingCart02Icon,
+} from "@hugeicons/core-free-icons";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/app/store/cartStore";
 import useUserStore from "@/app/store/userStore";
@@ -139,7 +142,6 @@ export default function CartDrawer() {
     try {
       await updateQuantity(cartItemId, newQuantity, userId);
     } catch (error) {
-      
       setShowExceededMessage("Failed to update quantity. Please try again.");
     }
   };
@@ -156,7 +158,6 @@ export default function CartDrawer() {
     try {
       await clearCart(userId);
     } catch (error) {
-
       setShowExceededMessage("Failed to clear cart. Please try again.");
     }
   };
@@ -171,10 +172,9 @@ export default function CartDrawer() {
   const checked = async () => {
     try {
       const res = await api.get("/cart/allCheckout/" + userId);
-      
+
       closeDrawer();
     } catch (error) {
-      
       setShowExceededMessage("Checkout failed. Please try again.");
     }
   };
@@ -194,9 +194,15 @@ export default function CartDrawer() {
       (item) => !isProductOutOfStock(item) && hasExceededStock(item)
     );
   };
+  
   // Check if quantity exceeds available stock
   const hasExceededStock = (item: any) => {
     return item.quantity > item.productId.available;
+  };
+
+  // Check if any out of stock items exist in cart
+  const hasOutOfStockItems = () => {
+    return cartItems.some(item => isProductOutOfStock(item));
   };
 
   return (
@@ -209,8 +215,8 @@ export default function CartDrawer() {
         aria-label="Open cart"
       >
         <div className="relative flex items-center justify-center gap-2 text-sm md:text-base font-semibold leading-6 px-3 md:px-6 py-2 md:py-3 rounded-lg lg:bg-[#F5F5F5] hover:bg-gray-400 transition text-[#0C0C0C] flex-shrink-0">
-          <HugeiconsIcon 
-            icon={ShoppingCart02Icon} 
+          <HugeiconsIcon
+            icon={ShoppingCart02Icon}
             className="w-6 h-6 md:w-6 md:h-6 lg:w-8 lg:md:h-8"
           />
           {(cartCount > 0 || isLoading) && (
@@ -225,14 +231,20 @@ export default function CartDrawer() {
       {showExceededMessage && (
         <div className="fixed top-4 left-4 right-4 z-[100] bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-lg animate-fade-in md:left-1/2 md:transform md:-translate-x-1/2 md:max-w-md">
           <div className="flex items-start gap-2">
-            <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <svg
+              className="w-5 h-5 flex-shrink-0 mt-0.5"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
               <path
                 fillRule="evenodd"
                 d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
                 clipRule="evenodd"
               />
             </svg>
-            <span className="text-sm md:text-base break-words">{showExceededMessage}</span>
+            <span className="text-sm md:text-base break-words">
+              {showExceededMessage}
+            </span>
           </div>
         </div>
       )}
@@ -352,7 +364,7 @@ export default function CartDrawer() {
                       onChange={(e) => setAgree(e.target.checked)}
                       className="w-4 h-4 md:w-5 md:h-5 border border-[#B0B0B0] rounded-md bg-[#F5F5F5] mt-0.5 flex-shrink-0"
                     />
-                    <label 
+                    <label
                       htmlFor="terms-checkbox"
                       className="text-xs md:text-sm text-[#0C0C0C] font-openSans cursor-pointer select-none"
                     >
@@ -386,9 +398,9 @@ export default function CartDrawer() {
                         key={item._id}
                         className="relative border-t border-gray-100 pt-4 pb-3"
                       >
-                        {/* Out of Stock Overlay */}
+                        {/* Out of Stock Overlay - FIXED: Added pointer-events-none */}
                         {isOutOfStock && (
-                          <div className="absolute inset-0 bg-gray-100/90 backdrop-blur-[2px] z-10 rounded-xl flex items-center justify-center">
+                          <div className="absolute inset-0 bg-gray-100/90 backdrop-blur-[2px] z-10 rounded-xl flex items-center justify-center pointer-events-none">
                             <div className="bg-red-500 text-white px-3 py-1.5 rounded-lg font-semibold text-sm">
                               Out of Stock
                             </div>
@@ -400,13 +412,15 @@ export default function CartDrawer() {
                           <div className="flex items-center justify-between gap-2">
                             {/* Left side: X, Image, Brand info */}
                             <div className="flex items-center gap-3 flex-1 min-w-0">
-                              {/* X Button */}
+                              {/* X Button - ALWAYS ACTIVE even for out of stock items */}
                               <button
                                 onClick={() => handleRemove(item._id)}
-                                disabled={isSyncing || isOutOfStock}
+                                disabled={isSyncing}
                                 className={`flex-shrink-0 w-6 h-6 md:w-7 md:h-7 rounded-lg flex justify-center items-center disabled:opacity-50 ${
-                                  isOutOfStock ? "bg-gray-400" : "bg-[#DD2C2C] hover:bg-red-600"
-                                } transition-colors`}
+                                  isOutOfStock
+                                    ? "bg-[#DD2C2C] hover:bg-red-600"
+                                    : "bg-[#DD2C2C] hover:bg-red-600"
+                                } transition-colors relative z-20`}
                                 aria-label={`Remove ${productName}`}
                               >
                                 <X className="text-white w-3 h-3 md:w-3.5 md:h-3.5" />
@@ -415,9 +429,7 @@ export default function CartDrawer() {
                               {/* Image */}
                               <div
                                 className={`flex-shrink-0 w-14 h-14 md:w-16 md:h-16 rounded-lg overflow-hidden ${
-                                  isOutOfStock
-                                    ? "bg-gray-100"
-                                    : "bg-[#F5F5F5]"
+                                  isOutOfStock ? "bg-gray-100" : "bg-[#F5F5F5]"
                                 }`}
                               >
                                 {safeImageSrc ? (
@@ -496,7 +508,9 @@ export default function CartDrawer() {
                                     handleQuantityChange(item._id, "dec")
                                   }
                                   disabled={
-                                    isSyncing || item.quantity <= 1 || isOutOfStock
+                                    isSyncing ||
+                                    item.quantity <= 1 ||
+                                    isOutOfStock
                                   }
                                   className={`flex justify-center items-center w-8 h-8 md:w-9 md:h-9 rounded-lg disabled:opacity-50 ${
                                     isOutOfStock
@@ -542,24 +556,36 @@ export default function CartDrawer() {
                             <div className="pl-25 md:pl-28">
                               <p
                                 className={`text-sm md:text-base font-semibold font-openSans ${
-                                  isOutOfStock ? "text-gray-500" : "text-[#0C0C0C]"
+                                  isOutOfStock
+                                    ? "text-gray-500"
+                                    : "text-[#0C0C0C]"
                                 }`}
                               >
-                                Total: <span className="text-[#C9A040]">${itemTotal.toFixed(2)}</span>
+                                Total:{" "}
+                                <span className="text-[#C9A040]">
+                                  ${itemTotal.toFixed(2)}
+                                </span>
                               </p>
                             </div>
 
                             {/* Right side: Exceeded Stock Warning */}
                             {hasExceeded && !isOutOfStock && (
                               <div className="inline-flex items-center gap-1 bg-red-50 text-red-700 text-xs px-3 py-1.5 rounded-lg">
-                                <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <svg
+                                  className="w-3 h-3 flex-shrink-0"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
                                   <path
                                     fillRule="evenodd"
                                     d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
                                     clipRule="evenodd"
                                   />
                                 </svg>
-                                <span>Exceeds stock ({item.productId.available} available)</span>
+                                <span>
+                                  Exceeds stock ({item.productId.available}{" "}
+                                  available)
+                                </span>
                               </div>
                             )}
                           </div>
@@ -573,8 +599,12 @@ export default function CartDrawer() {
                       <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
                         <ShoppingCart className="w-10 h-10 text-gray-400" />
                       </div>
-                      <p className="text-gray-500 text-base md:text-lg mb-2">Your cart is empty</p>
-                      <p className="text-gray-400 text-sm mb-6">Add items to get started</p>
+                      <p className="text-gray-500 text-base md:text-lg mb-2">
+                        Your cart is empty
+                      </p>
+                      <p className="text-gray-400 text-sm mb-6">
+                        Add items to get started
+                      </p>
                       <button
                         onClick={closeDrawer}
                         className="px-6 py-3 bg-[#C9A040] text-white font-semibold text-base rounded-lg hover:bg-[#a78435] transition-colors"
@@ -604,36 +634,47 @@ export default function CartDrawer() {
                     </button>
 
                     <button
-  onClick={async () => {
-    try {
-      await checked(); // First call checked()
-      
-      // Check if we're already on the checkout page
-      const isCheckoutPage = window.location.pathname.includes('/checkout');
-      
-      if (isCheckoutPage) {
-        // If already on checkout page, fully reload the page
-        window.location.reload(); // true forces a reload from server
-      } else {
-        // If not on checkout page, navigate to it
-        router.push("/pages/checkout");
-      }
-    } catch (error) {
-      // Handle errors if needed
-      console.error("Error during checkout:", error);
-    }
-  }}
-  disabled={
-    cartItems.length === 0 ||
-    !agree ||
-    isSyncing ||
-    hasExceededStockItems()
-  }
-  className="w-full bg-[#C9A040] rounded-xl py-4 text-sm md:text-base font-semibold font-openSans text-white disabled:opacity-50 hover:bg-[#a78435] transition-colors active:bg-[#95742e]"
->
-  {isSyncing ? "Processing..." : "Checkout"}
-</button>
+                      onClick={async () => {
+                        try {
+                          await checked(); // First call checked()
+
+                          // Check if we're already on the checkout page
+                          const isCheckoutPage =
+                            window.location.pathname.includes("/checkout");
+
+                          if (isCheckoutPage) {
+                            // If already on checkout page, fully reload the page
+                            window.location.reload(); // true forces a reload from server
+                          } else {
+                            // If not on checkout page, navigate to it
+                            router.push("/pages/checkout");
+                          }
+                        } catch (error) {
+                          // Handle errors if needed
+                          console.error("Error during checkout:", error);
+                        }
+                      }}
+                      disabled={
+                        cartItems.length === 0 ||
+                        !agree ||
+                        isSyncing ||
+                        hasExceededStockItems() ||
+                        hasOutOfStockItems() // Disable checkout if any out of stock items exist
+                      }
+                      className="w-full bg-[#C9A040] rounded-xl py-4 text-sm md:text-base font-semibold font-openSans text-white disabled:opacity-50 hover:bg-[#a78435] transition-colors active:bg-[#95742e]"
+                    >
+                      {isSyncing ? "Processing..." : "Checkout"}
+                    </button>
                   </div>
+                  
+                  {/* Out of stock checkout warning */}
+                  {hasOutOfStockItems() && (
+                    <div className="mt-3 text-center">
+                      <p className="text-sm text-red-600 font-medium">
+                        Please remove out of stock items before checkout
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -656,7 +697,7 @@ export default function CartDrawer() {
         .animate-fade-in {
           animation: fade-in 0.3s ease-out;
         }
-        
+
         /* For tablets and desktops */
         @media (min-width: 768px) {
           @keyframes fade-in {
@@ -670,7 +711,7 @@ export default function CartDrawer() {
             }
           }
         }
-        
+
         /* Line clamp for product name */
         .line-clamp-2 {
           display: -webkit-box;

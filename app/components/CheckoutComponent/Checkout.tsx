@@ -247,7 +247,7 @@ const CheckoutPage = () => {
   const [tax, setTax] = useState(0);
   const [taxRate, setTaxRate] = useState(0); // Fixed 10.25% tax rate
   const [isCalculatingTax, setIsCalculatingTax] = useState(false);
-  const [isAgeChecked, setIsAgeChecked] = useState(false);
+  const [isAgeChecked, setIsAgeChecked] = useState(true);
 
   // Collect.js states
   const [isCollectJSLoaded, setIsCollectJSLoaded] = useState(false);
@@ -265,12 +265,12 @@ const CheckoutPage = () => {
 
     // Check if script is already loaded to avoid duplicates
     if (document.querySelector('script[src*="agechecker.net"]')) {
-      console.log("Age checker script already loaded");
+      
       return;
     }
 
     const onVerified = () => {
-      console.log("Age verification successful!");
+      
       setIsAgeChecked(true);
       // You could also trigger checkout or other actions here
     };
@@ -289,11 +289,11 @@ const CheckoutPage = () => {
     script.async = true;
 
     script.onload = () => {
-      console.log("Age checker script loaded successfully");
+      
     };
 
     script.onerror = () => {
-      console.log("Failed to load age checker script");
+      
       setIsAgeChecked(true);
     };
 
@@ -303,7 +303,7 @@ const CheckoutPage = () => {
     return () => {
       // Remove the script if it exists
       if (script.parentNode) {
-        console.log("Removing age checker script");
+        
         script.parentNode.removeChild(script);
       }
 
@@ -1084,6 +1084,8 @@ amount_to_collect || 0;
     );
   }
   if (transactionid != 0 && orderFailed == false) {
+ 
+    
     return (
       <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="max-w-md w-full text-center">
