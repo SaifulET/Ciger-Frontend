@@ -1,7 +1,12 @@
 "use client";
 import { useEffect, useState, useMemo, useCallback, useRef, use } from "react";
-import mastercard from "@/public/mastercard.svg";
-import visacard from "@/public/visaelectron.svg";
+
+import American from "@/public/american.svg";
+import paypal from "@/public/paypal.svg";
+import discover from "@/public/discover.svg";
+import master from "@/public/master.svg";
+import visa from "@/public/visa.svg";
+
 import Image from "next/image";
 import api from "@/lib/axios";
 import useUserStore from "@/app/store/userStore";
@@ -1532,15 +1537,25 @@ amount_to_collect || 0;
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                       <Image
-                        src={mastercard}
+                        src={master}
                         alt="Mastercard"
                         width={40}
                         height={25}
                       />
                     </div>
                     <div className="flex items-center gap-2">
-                      <Image src={visacard} alt="Visa" width={40} height={25} />
+                      <Image src={visa} alt="Visa" width={40} height={25} />
                     </div>
+                    <div className="flex items-center gap-2">
+                      <Image src={American} alt="Visa" width={40} height={25} />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Image src={paypal} alt="Visa" width={40} height={25} />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Image src={discover} alt="Visa" width={40} height={25} />
+                    </div>
+
                   </div>
                 </div>
 
@@ -1995,14 +2010,23 @@ amount_to_collect || 0;
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <Image
-                      src={mastercard}
+                      src={master}
                       alt="Mastercard"
                       width={40}
                       height={25}
                     />
                   </div>
                   <div className="flex items-center gap-2">
-                    <Image src={visacard} alt="Visa" width={40} height={25} />
+                    <Image src={visa} alt="Visa" width={40} height={25} />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Image src={American} alt="american" width={40} height={25} />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Image src={discover} alt="discover" width={40} height={25} />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Image src={paypal} alt="paypal" width={40} height={25} />
                   </div>
                 </div>
               </div>
