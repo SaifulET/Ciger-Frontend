@@ -17,7 +17,7 @@ function Advertise() {
           setAdvertisingText(data.data.AdvertisingText);
         }
       } catch (error) {
-        console.error("Error fetching advertising text:", error);
+       
       } finally {
         setLoading(false);
       }

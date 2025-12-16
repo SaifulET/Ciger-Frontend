@@ -1246,7 +1246,7 @@ amount_to_collect || 0;
                     <input
                       type="text"
                       name="state"
-                      placeholder="Enter state"
+                      placeholder="e.g.,CA,NC"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                       value={formData.state}
                       onChange={handleInputChange}
@@ -1719,7 +1719,7 @@ amount_to_collect || 0;
                   <input
                     type="text"
                     name="state"
-                    placeholder="State"
+                    placeholder="e.g.,CA,NC"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                     value={formData.state}
                     onChange={handleInputChange}

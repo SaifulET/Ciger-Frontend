@@ -82,13 +82,11 @@ export const useCartStore = create<CartState>()(
         set({ isLoading: true });
         try {
           if (userId) {
-            console.log(userId, "75");
             const response = await api.get(`/cart/getUserCart/${userId}`);
             const result = await response.data;
             if (result.success) {
               const backendItems: CartItem[] = result.data.map(
                 (item: CartItem) => {
-                  console.log(item,'89')
                   const price = item.productId?.price;
                   const quantity = Number(item.quantity) || 1;
                   const total = price * quantity;
@@ -120,7 +118,6 @@ export const useCartStore = create<CartState>()(
             }
           }
         } catch (error) {
-          console.error("Failed to initialize cart:", error);
         } finally {
           set({ isLoading: false });
         }
@@ -129,7 +126,7 @@ export const useCartStore = create<CartState>()(
       // Add item to cart
       addItem: async (product: Product, userId: string | null, quantity: number = 1) => {
   const { items } = get();
-  console.log(userId,"132")
+  
   if (userId) {
     // Authenticated user flow
     set({ isSyncing: true });
@@ -143,10 +140,10 @@ export const useCartStore = create<CartState>()(
       if (existingCartItem) {
         // Update existing cart item
         const newQuantity = existingCartItem.quantity + quantity;
-        console.log(newQuantity,product.available,"146")
+        
         // Update on server
         if(newQuantity<=product.available){
-          console.log("149")
+         
           set({ isAvailable: true });
           const response = await api.put(
           `/cart/updateCart/${existingCartItem._id}`,
@@ -154,7 +151,7 @@ export const useCartStore = create<CartState>()(
           { headers: { "Content-Type": "application/json" } }
         );
         
-        console.log("Updated existing item:", response.data);
+       
         }
         else{
            set({ isAvailable: false });
@@ -168,14 +165,14 @@ export const useCartStore = create<CartState>()(
           quantity: quantity,
         });
         
-        console.log("Created new cart item:", response.data);
+        
       }
       
       // Refresh cart from server
       await get().initializeCart(userId);
       
     } catch (error) {
-      console.error("Failed to add/update item:", error);
+      
     } finally {
       set({ isSyncing: false });
     }
@@ -266,7 +263,7 @@ export const useCartStore = create<CartState>()(
       await get().initializeCart(guestId);
       
     } catch (error) {
-      console.error("Failed to add/update guest item:", error);
+      
     } finally {
       set({ isSyncing: false });
     }
@@ -386,7 +383,7 @@ export const useCartStore = create<CartState>()(
           );
           await get().initializeCart(userId);
         } catch (error) {
-          console.error("Failed to sync guest cart:", error);
+          
         } finally {
           set({ isSyncing: false });
         }

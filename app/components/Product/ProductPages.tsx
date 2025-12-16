@@ -558,7 +558,7 @@ export default function ProductsPage() {
 
         {/* Mobile Active Filters */}
         {hasActiveFilters && (
-          <div className="lg:hidden mb-4 p-3 bg-gray-50 rounded-lg">
+          <div className="lg:hidden mb-4 p-3 bg-white rounded-lg">
             <div className="flex justify-between items-center mb-2">
               <button 
                 onClick={toggleActiveFilters}

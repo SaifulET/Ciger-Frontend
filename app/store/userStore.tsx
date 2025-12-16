@@ -105,7 +105,8 @@ const useUserStore = create<UserStoreState>()(
             email,
             password,
           });
-          console.log(res.data.data,'108')
+          
+          
           Cookies.set("token", res.data.token);
           set({ user: res.data.data._id });
           set({ isLoggedIn: true });
@@ -125,7 +126,7 @@ const useUserStore = create<UserStoreState>()(
           };
         } catch (error: unknown) {
           const err = error as AxiosError<{ message?: string }>;
-          console.log(err);
+       
           return {
             status: "error",
             message: err.response?.data?.message || err.message,
@@ -144,7 +145,7 @@ const useUserStore = create<UserStoreState>()(
 
           return res.data;
         } catch (error: unknown) {
-          console.log(error);
+        
 
           const err = error as AxiosError<{ message: string }>;
 
@@ -158,7 +159,7 @@ const useUserStore = create<UserStoreState>()(
       UserForgetPasswordRequest: async (email) => {
         try {
           const res = await api.post("/auth/forget-password", { email });
-          console.log("eeee");
+          
           setEmail(email);
           return res.data;
         } catch (error: unknown) {
@@ -173,15 +174,15 @@ const useUserStore = create<UserStoreState>()(
 
       VerifyOtpRequest: async (otp) => {
         const email = getEmail();
-        console.log(email);
+        
         const res = await api.post("/auth/verifyOtp", { email, otp });
-        console.log("line173");
+        
 
         if (res.data.status === "success") {
-          console.log("dkd");
+          
           return { status: "success", message: res.data.message };
         } else {
-          console.log(res);
+          
           return { status: "error", message: res.data.message };
         }
       },
@@ -192,18 +193,18 @@ const useUserStore = create<UserStoreState>()(
           password,
           confirmPassword,
         });
-        console.log(res);
+        
         if (res.data.success === true) {
-          console.log("dkd");
+          
           return { status: "success", message: res.data.message };
         } else {
-          console.log(res);
+          
           return { status: "error", message: res.data.message };
         }
       },
 
      UserLogoutRequest: async () => {
-  console.log("logout");
+  
   
   try {
     const res = await api.post("/auth/signout");

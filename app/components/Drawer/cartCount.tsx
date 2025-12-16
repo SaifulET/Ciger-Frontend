@@ -139,7 +139,7 @@ export default function CartDrawer() {
     try {
       await updateQuantity(cartItemId, newQuantity, userId);
     } catch (error) {
-      console.error("Failed to update quantity:", error);
+      
       setShowExceededMessage("Failed to update quantity. Please try again.");
     }
   };
@@ -148,7 +148,6 @@ export default function CartDrawer() {
     try {
       await removeItem(cartItemId, userId);
     } catch (error) {
-      console.error("Failed to remove item:", error);
       setShowExceededMessage("Failed to remove item. Please try again.");
     }
   };
@@ -157,7 +156,7 @@ export default function CartDrawer() {
     try {
       await clearCart(userId);
     } catch (error) {
-      console.error("Failed to clear cart:", error);
+
       setShowExceededMessage("Failed to clear cart. Please try again.");
     }
   };
@@ -172,10 +171,10 @@ export default function CartDrawer() {
   const checked = async () => {
     try {
       const res = await api.get("/cart/allCheckout/" + userId);
-      console.log(res, "response");
+      
       closeDrawer();
     } catch (error) {
-      console.error("Checkout error:", error);
+      
       setShowExceededMessage("Checkout failed. Please try again.");
     }
   };
@@ -250,11 +249,11 @@ export default function CartDrawer() {
             aria-hidden="true"
           ></div>
 
-          {/* Drawer Content - Mobile Optimized */}
+          {/* Drawer Content - Full Screen on Mobile */}
           <div
-            className={`relative h-full w-full bg-[#F9F9F9] shadow-2xl flex flex-col overflow-y-auto transform transition-all duration-300 ease-in-out ${
+            className={`relative h-full w-full bg-[#F9F9F9] shadow-2xl flex flex-col overflow-hidden transform transition-all duration-300 ease-in-out ${
               isMobile
-                ? `fixed bottom-0 left-0 right-0 max-h-[85vh] rounded-t-2xl ${
+                ? `fixed inset-0 ${
                     showDrawer ? "translate-y-0" : "translate-y-full"
                   }`
                 : `ml-auto w-full sm:w-[500px] md:w-[700px] lg:w-[800px] ${
@@ -265,332 +264,379 @@ export default function CartDrawer() {
             aria-modal="true"
             aria-label="Shopping cart"
           >
-            {/* Mobile Swipe Indicator */}
+            {/* Mobile Header with Close Button */}
             {isMobile && (
-              <div className="sticky top-0 z-20 pt-3 pb-1 flex justify-center">
-                <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+              <div className="sticky top-0 z-20 flex items-center justify-between p-4 bg-white border-b border-gray-200 flex-shrink-0">
+                <div className="flex-1">
+                  <h2 className="text-xl font-semibold text-[#0C0C0C] font-montserrat">
+                    Your Cart
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {isSyncing ? "Updating..." : `${cartCount} items`}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => {
+                      router.push("/pages/shoppingcart");
+                      closeDrawer();
+                    }}
+                    className="flex items-center text-sm text-[#0C0C0C] font-openSans cursor-pointer hover:text-[#C9A040] transition-colors"
+                  >
+                    View All
+                    <ChevronRight className="w-4 h-4 ml-1" />
+                  </button>
+                  <button
+                    onClick={closeDrawer}
+                    className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 flex justify-center items-center transition-colors"
+                    aria-label="Close cart"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             )}
 
-            {/* Header - Mobile Optimized */}
-            <div className="flex justify-between items-center p-4 md:p-6 lg:p-8 bg-white border-b border-gray-200 sticky top-0 z-10">
-              <div className="flex-1">
-                <h2 className="text-xl md:text-2xl lg:text-[28px] font-semibold text-[#0C0C0C] font-montserrat">
-                  Your Cart
-                </h2>
-                <p className="text-xs md:text-sm text-gray-500 mt-1">
-                  {isSyncing ? "Updating..." : `${cartCount} items`}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => {
-                    router.push("/pages/shoppingcart");
-                    closeDrawer();
-                  }}
-                  className="flex items-center text-xs md:text-sm text-[#0C0C0C] font-openSans cursor-pointer hover:text-[#C9A040] transition-colors"
-                >
-                  View All
-                  <ChevronRight className="w-3 h-3 md:w-4 md:h-4 ml-1" />
-                </button>
-                <button
-                  onClick={closeDrawer}
-                  className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 flex justify-center items-center transition-colors md:rounded-xl"
-                  aria-label="Close cart"
-                >
-                  <X className="w-4 h-4 md:w-5 md:h-5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Content - Mobile Optimized */}
-            <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-8 gap-4 md:gap-6 overflow-y-auto">
-              {/* Subtotal - Mobile Optimized */}
-              <div className="flex flex-col p-4 md:p-6 gap-3 md:gap-4 bg-white rounded-xl w-full shadow-sm">
-                <div className="flex justify-between items-center">
-                  <p className="text-sm md:text-base font-semibold text-[#0C0C0C] font-openSans">
-                    Subtotal
-                  </p>
-                  <p className="text-sm md:text-base font-semibold text-[#0C0C0C] font-openSans">
-                    {subtotal}
+            {/* Desktop Header */}
+            {!isMobile && (
+              <div className="flex justify-between items-center p-6 lg:p-8 bg-white border-b border-gray-200 sticky top-0 z-10 flex-shrink-0">
+                <div className="flex-1">
+                  <h2 className="text-2xl lg:text-[28px] font-semibold text-[#0C0C0C] font-montserrat">
+                    Your Cart
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {isSyncing ? "Updating..." : `${cartCount} items`}
                   </p>
                 </div>
-
-                <div className="flex items-start gap-2 md:gap-3 pt-2 border-t border-gray-100">
-                  <input
-                    type="checkbox"
-                    id="terms-checkbox"
-                    checked={agree}
-                    onChange={(e) => setAgree(e.target.checked)}
-                    className="w-4 h-4 md:w-5 md:h-5 border border-[#B0B0B0] rounded-md bg-[#F5F5F5] mt-0.5 flex-shrink-0"
-                  />
-                  <label 
-                    htmlFor="terms-checkbox"
-                    className="text-xs md:text-sm text-[#0C0C0C] font-openSans cursor-pointer select-none"
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => {
+                      router.push("/pages/shoppingcart");
+                      closeDrawer();
+                    }}
+                    className="flex items-center text-sm text-[#0C0C0C] font-openSans cursor-pointer hover:text-[#C9A040] transition-colors"
                   >
-                    I agree to the terms and refund policy
-                  </label>
+                    View All
+                    <ChevronRight className="w-4 h-4 ml-1" />
+                  </button>
+                  <button
+                    onClick={closeDrawer}
+                    className="p-2 rounded-xl bg-gray-200 hover:bg-gray-300 flex justify-center items-center transition-colors"
+                    aria-label="Close cart"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
+            )}
 
-              {/* Product List - Mobile Optimized */}
-              <div className="flex flex-col p-4 md:p-6 gap-4 md:gap-6 bg-white rounded-xl w-full shadow-sm">
-                <div className="flex justify-between items-center">
-                  <p className="text-base md:text-lg font-semibold text-[#0C0C0C] font-montserrat">
-                    Products
-                  </p>
-                  <p className="text-base md:text-lg font-semibold text-[#0C0C0C] font-montserrat">
-                    Qty
-                  </p>
+            {/* Scrollable Content Area - Fixed height calculation */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="flex flex-col p-4 md:p-6 lg:p-8 gap-4 md:gap-6 min-h-full">
+                {/* Subtotal */}
+                <div className="flex flex-col p-4 md:p-6 gap-3 md:gap-4 bg-white rounded-xl w-full shadow-sm">
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm md:text-base font-semibold text-[#0C0C0C] font-openSans">
+                      Subtotal
+                    </p>
+                    <p className="text-sm md:text-base font-semibold text-[#0C0C0C] font-openSans">
+                      {subtotal}
+                    </p>
+                  </div>
+
+                  <div className="flex items-start gap-2 md:gap-3 pt-2 border-t border-gray-100">
+                    <input
+                      type="checkbox"
+                      id="terms-checkbox"
+                      checked={agree}
+                      onChange={(e) => setAgree(e.target.checked)}
+                      className="w-4 h-4 md:w-5 md:h-5 border border-[#B0B0B0] rounded-md bg-[#F5F5F5] mt-0.5 flex-shrink-0"
+                    />
+                    <label 
+                      htmlFor="terms-checkbox"
+                      className="text-xs md:text-sm text-[#0C0C0C] font-openSans cursor-pointer select-none"
+                    >
+                      I agree to the terms and refund policy
+                    </label>
+                  </div>
                 </div>
 
-                {cartItems.map((item) => {
-                  const safeImageSrc = getSafeImageSrc(item.productId.image);
-                  const productName = item.productId.name || "Product Name";
-                  const brandName = item?.productId?.brandId?.name;
-                  const unitPrice = item.productId.price || 0;
-                  const itemTotal = unitPrice * item.quantity;
-                  const isOutOfStock = isProductOutOfStock(item);
-                  const hasExceeded = hasExceededStock(item);
+                {/* Product List */}
+                <div className="flex flex-col p-4 md:p-6 gap-4 md:gap-6 bg-white rounded-xl w-full shadow-sm">
+                  <div className="flex justify-between items-center">
+                    <p className="text-base md:text-lg font-semibold text-[#0C0C0C] font-montserrat">
+                      Products
+                    </p>
+                    <p className="text-base md:text-lg font-semibold text-[#0C0C0C] font-montserrat">
+                      Qty
+                    </p>
+                  </div>
 
-                  return (
-                    <div
-                      key={item._id}
-                      className="relative border-t border-gray-100 pt-4 pb-3"
-                    >
-                      {/* Out of Stock Overlay */}
-                      {isOutOfStock && (
-                        <div className="absolute inset-0 bg-gray-100/90 backdrop-blur-[2px] z-10 rounded-xl flex items-center justify-center">
-                          <div className="bg-red-500 text-white px-3 py-1.5 rounded-lg font-semibold text-sm">
-                            Out of Stock
-                          </div>
-                        </div>
-                      )}
+                  {cartItems.map((item) => {
+                    const safeImageSrc = getSafeImageSrc(item.productId.image);
+                    const productName = item.productId.name || "Product Name";
+                    const brandName = item?.productId?.brandId?.name;
+                    const unitPrice = item.productId.price || 0;
+                    const itemTotal = unitPrice * item.quantity;
+                    const isOutOfStock = isProductOutOfStock(item);
+                    const hasExceeded = hasExceededStock(item);
 
-                      <div className="flex flex-col gap-3">
-                        {/* Top Row: X, Image, Brand, and Quantity Controls */}
-                        <div className="flex items-center justify-between gap-2">
-                          {/* Left side: X, Image, Brand info */}
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            {/* X Button */}
-                            <button
-                              onClick={() => handleRemove(item._id)}
-                              disabled={isSyncing || isOutOfStock}
-                              className={`flex-shrink-0 w-6 h-6 md:w-7 md:h-7 rounded-lg flex justify-center items-center disabled:opacity-50 ${
-                                isOutOfStock ? "bg-gray-400" : "bg-[#DD2C2C] hover:bg-red-600"
-                              } transition-colors`}
-                              aria-label={`Remove ${productName}`}
-                            >
-                              <X className="text-white w-3 h-3 md:w-3.5 md:h-3.5" />
-                            </button>
-
-                            {/* Image */}
-                            <div
-                              className={`flex-shrink-0 w-14 h-14 md:w-16 md:h-16 rounded-lg overflow-hidden ${
-                                isOutOfStock
-                                  ? "bg-gray-100"
-                                  : "bg-[#F5F5F5]"
-                              }`}
-                            >
-                              {safeImageSrc ? (
-                                <Image
-                                  src={safeImageSrc}
-                                  alt={productName}
-                                  width={56}
-                                  height={56}
-                                  className={`object-cover w-full h-full ${
-                                    isOutOfStock ? "opacity-50" : ""
-                                  }`}
-                                  onError={handleImageError}
-                                />
-                              ) : (
-                                <Image
-                                  src={productImage}
-                                  alt={productName}
-                                  width={56}
-                                  height={56}
-                                  className={`object-cover w-full h-full ${
-                                    isOutOfStock ? "opacity-50" : ""
-                                  }`}
-                                  onError={handleImageError}
-                                />
-                              )}
+                    return (
+                      <div
+                        key={item._id}
+                        className="relative border-t border-gray-100 pt-4 pb-3"
+                      >
+                        {/* Out of Stock Overlay */}
+                        {isOutOfStock && (
+                          <div className="absolute inset-0 bg-gray-100/90 backdrop-blur-[2px] z-10 rounded-xl flex items-center justify-center">
+                            <div className="bg-red-500 text-white px-3 py-1.5 rounded-lg font-semibold text-sm">
+                              Out of Stock
                             </div>
+                          </div>
+                        )}
 
-                            {/* Product Details */}
-                            <div className="flex flex-col gap-1 min-w-0 flex-1">
-                              <p className="font-semibold text-xs md:text-sm font-openSans text-[#0C0C0C] truncate">
-                                {brandName}
-                              </p>
-                              <p
-                                className={`text-xs md:text-sm font-openSans line-clamp-2 ${
+                        <div className="flex flex-col gap-3">
+                          {/* Top Row: X, Image, Brand, and Quantity Controls */}
+                          <div className="flex items-center justify-between gap-2">
+                            {/* Left side: X, Image, Brand info */}
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              {/* X Button */}
+                              <button
+                                onClick={() => handleRemove(item._id)}
+                                disabled={isSyncing || isOutOfStock}
+                                className={`flex-shrink-0 w-6 h-6 md:w-7 md:h-7 rounded-lg flex justify-center items-center disabled:opacity-50 ${
+                                  isOutOfStock ? "bg-gray-400" : "bg-[#DD2C2C] hover:bg-red-600"
+                                } transition-colors`}
+                                aria-label={`Remove ${productName}`}
+                              >
+                                <X className="text-white w-3 h-3 md:w-3.5 md:h-3.5" />
+                              </button>
+
+                              {/* Image */}
+                              <div
+                                className={`flex-shrink-0 w-14 h-14 md:w-16 md:h-16 rounded-lg overflow-hidden ${
                                   isOutOfStock
-                                    ? "text-gray-500"
-                                    : "text-[#0C0C0C]"
+                                    ? "bg-gray-100"
+                                    : "bg-[#F5F5F5]"
                                 }`}
                               >
-                                {productName}
-                              </p>
-                              <div className="flex flex-col gap-0.5">
+                                {safeImageSrc ? (
+                                  <Image
+                                    src={safeImageSrc}
+                                    alt={productName}
+                                    width={56}
+                                    height={56}
+                                    className={`object-cover w-full h-full ${
+                                      isOutOfStock ? "opacity-50" : ""
+                                    }`}
+                                    onError={handleImageError}
+                                  />
+                                ) : (
+                                  <Image
+                                    src={productImage}
+                                    alt={productName}
+                                    width={56}
+                                    height={56}
+                                    className={`object-cover w-full h-full ${
+                                      isOutOfStock ? "opacity-50" : ""
+                                    }`}
+                                    onError={handleImageError}
+                                  />
+                                )}
+                              </div>
+
+                              {/* Product Details */}
+                              <div className="flex flex-col gap-1 min-w-0 flex-1">
+                                <p className="font-semibold text-xs md:text-sm font-openSans text-[#0C0C0C] truncate">
+                                  {brandName}
+                                </p>
                                 <p
-                                  className={`text-xs md:text-sm font-semibold font-openSans ${
+                                  className={`text-xs md:text-sm font-openSans line-clamp-2 ${
+                                    isOutOfStock
+                                      ? "text-gray-500"
+                                      : "text-[#0C0C0C]"
+                                  }`}
+                                >
+                                  {productName}
+                                </p>
+                                <div className="flex flex-col gap-0.5">
+                                  <p
+                                    className={`text-xs md:text-sm font-semibold font-openSans ${
+                                      isOutOfStock ? "text-gray-500" : ""
+                                    }`}
+                                  >
+                                    ${unitPrice.toFixed(2)}
+                                  </p>
+                                  <p
+                                    className={`text-xs font-openSans ${
+                                      isOutOfStock
+                                        ? "text-red-500 font-semibold"
+                                        : "text-gray-500"
+                                    }`}
+                                  >
+                                    {isOutOfStock
+                                      ? "Out of Stock"
+                                      : `Available: ${item.productId.available}`}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Right side: Quantity Controls */}
+                            <div className="flex-shrink-0">
+                              <div
+                                className={`flex items-center justify-between border rounded-lg ${
+                                  isOutOfStock
+                                    ? "bg-gray-100 border-gray-300"
+                                    : "bg-[#F5F5F5] border-[#C9A040]"
+                                }`}
+                              >
+                                <button
+                                  onClick={() =>
+                                    handleQuantityChange(item._id, "dec")
+                                  }
+                                  disabled={
+                                    isSyncing || item.quantity <= 1 || isOutOfStock
+                                  }
+                                  className={`flex justify-center items-center w-8 h-8 md:w-9 md:h-9 rounded-lg disabled:opacity-50 ${
+                                    isOutOfStock
+                                      ? "bg-gray-300"
+                                      : "bg-[#C9A040] hover:bg-[#a78435]"
+                                  } transition-colors`}
+                                  aria-label="Decrease quantity"
+                                >
+                                  <Minus className="text-white w-3 h-3 md:w-3.5 md:h-3.5" />
+                                </button>
+                                <span
+                                  className={`text-sm md:text-base font-semibold font-openSans w-8 md:w-10 text-center ${
                                     isOutOfStock ? "text-gray-500" : ""
                                   }`}
                                 >
-                                  ${unitPrice.toFixed(2)}
-                                </p>
-                                <p
-                                  className={`text-xs font-openSans ${
+                                  {item.quantity}
+                                </span>
+                                <button
+                                  onClick={() =>
+                                    handleQuantityChange(item._id, "inc")
+                                  }
+                                  disabled={
+                                    isSyncing ||
+                                    item.quantity >= item.productId.available ||
                                     isOutOfStock
-                                      ? "text-red-500 font-semibold"
-                                      : "text-gray-500"
-                                  }`}
+                                  }
+                                  className={`flex justify-center items-center w-8 h-8 md:w-9 md:h-9 rounded-lg disabled:opacity-50 ${
+                                    isOutOfStock
+                                      ? "bg-gray-300"
+                                      : "bg-[#C9A040] hover:bg-[#a78435]"
+                                  } transition-colors`}
+                                  aria-label="Increase quantity"
                                 >
-                                  {isOutOfStock
-                                    ? "Out of Stock"
-                                    : `Available: ${item.productId.available}`}
-                                </p>
+                                  <Plus className="text-white w-3 h-3 md:w-3.5 md:h-3.5" />
+                                </button>
                               </div>
                             </div>
                           </div>
 
-                          {/* Right side: Quantity Controls */}
-                          <div className="flex-shrink-0">
-                            <div
-                              className={`flex items-center justify-between border rounded-lg ${
-                                isOutOfStock
-                                  ? "bg-gray-100 border-gray-300"
-                                  : "bg-[#F5F5F5] border-[#C9A040]"
-                              }`}
-                            >
-                              <button
-                                onClick={() =>
-                                  handleQuantityChange(item._id, "dec")
-                                }
-                                disabled={
-                                  isSyncing || item.quantity <= 1 || isOutOfStock
-                                }
-                                className={`flex justify-center items-center w-8 h-8 md:w-9 md:h-9 rounded-lg disabled:opacity-50 ${
-                                  isOutOfStock
-                                    ? "bg-gray-300"
-                                    : "bg-[#C9A040] hover:bg-[#a78435]"
-                                } transition-colors`}
-                                aria-label="Decrease quantity"
-                              >
-                                <Minus className="text-white w-3 h-3 md:w-3.5 md:h-3.5" />
-                              </button>
-                              <span
-                                className={`text-sm md:text-base font-semibold font-openSans w-8 md:w-10 text-center ${
-                                  isOutOfStock ? "text-gray-500" : ""
+                          {/* Bottom Row: Total Price and Warnings */}
+                          <div className="flex items-center justify-between">
+                            {/* Left side: Item Total */}
+                            <div className="pl-25 md:pl-28">
+                              <p
+                                className={`text-sm md:text-base font-semibold font-openSans ${
+                                  isOutOfStock ? "text-gray-500" : "text-[#0C0C0C]"
                                 }`}
                               >
-                                {item.quantity}
-                              </span>
-                              <button
-                                onClick={() =>
-                                  handleQuantityChange(item._id, "inc")
-                                }
-                                disabled={
-                                  isSyncing ||
-                                  item.quantity >= item.productId.available ||
-                                  isOutOfStock
-                                }
-                                className={`flex justify-center items-center w-8 h-8 md:w-9 md:h-9 rounded-lg disabled:opacity-50 ${
-                                  isOutOfStock
-                                    ? "bg-gray-300"
-                                    : "bg-[#C9A040] hover:bg-[#a78435]"
-                                } transition-colors`}
-                                aria-label="Increase quantity"
-                              >
-                                <Plus className="text-white w-3 h-3 md:w-3.5 md:h-3.5" />
-                              </button>
+                                Total: <span className="text-[#C9A040]">${itemTotal.toFixed(2)}</span>
+                              </p>
                             </div>
-                          </div>
-                        </div>
 
-                        {/* Bottom Row: Total Price and Warnings */}
-                        <div className="flex items-center justify-between">
-                          {/* Left side: Item Total */}
-                          <div className="pl-25 md:pl-28">
-                            <p
-                              className={`text-sm md:text-base font-semibold font-openSans ${
-                                isOutOfStock ? "text-gray-500" : "text-[#0C0C0C]"
-                              }`}
-                            >
-                              Total: <span className="text-[#C9A040]">${itemTotal.toFixed(2)}</span>
-                            </p>
+                            {/* Right side: Exceeded Stock Warning */}
+                            {hasExceeded && !isOutOfStock && (
+                              <div className="inline-flex items-center gap-1 bg-red-50 text-red-700 text-xs px-3 py-1.5 rounded-lg">
+                                <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                                <span>Exceeds stock ({item.productId.available} available)</span>
+                              </div>
+                            )}
                           </div>
-
-                          {/* Right side: Exceeded Stock Warning */}
-                          {hasExceeded && !isOutOfStock && (
-                            <div className="inline-flex items-center gap-1 bg-red-50 text-red-700 text-xs px-3 py-1.5 rounded-lg">
-                              <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                <path
-                                  fillRule="evenodd"
-                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                              <span>Exceeds stock ({item.productId.available} available)</span>
-                            </div>
-                          )}
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
 
-                {cartItems.length === 0 && (
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                      <ShoppingCart className="w-8 h-8 text-gray-400" />
+                  {cartItems.length === 0 && (
+                    <div className="text-center py-12">
+                      <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                        <ShoppingCart className="w-10 h-10 text-gray-400" />
+                      </div>
+                      <p className="text-gray-500 text-base md:text-lg mb-2">Your cart is empty</p>
+                      <p className="text-gray-400 text-sm mb-6">Add items to get started</p>
+                      <button
+                        onClick={closeDrawer}
+                        className="px-6 py-3 bg-[#C9A040] text-white font-semibold text-base rounded-lg hover:bg-[#a78435] transition-colors"
+                      >
+                        Continue Shopping
+                      </button>
                     </div>
-                    <p className="text-gray-500 text-sm md:text-base">Your cart is empty</p>
-                    <button
-                      onClick={closeDrawer}
-                      className="mt-4 text-[#C9A040] font-semibold text-sm md:text-base hover:text-[#a78435] transition-colors"
-                    >
-                      Continue Shopping
-                    </button>
-                  </div>
-                )}
+                  )}
+                </div>
+
+                {/* Spacer for when there are no action buttons */}
+                {cartItems.length === 0 && <div className="h-20"></div>}
               </div>
+            </div>
 
-              {/* Action Buttons - Mobile Optimized */}
-              {cartItems.length > 0 && (
-                <div className="sticky bottom-0 bg-[#F9F9F9] pt-4 pb-6 md:pb-8 border-t border-gray-200">
+            {/* Action Buttons - Fixed at bottom */}
+            {cartItems.length > 0 && (
+              <div className="sticky bottom-0 bg-[#F9F9F9] pt-4 pb-6 md:pb-8 border-t border-gray-200 flex-shrink-0">
+                <div className="px-4 md:px-6 lg:px-8">
                   <div className="flex flex-col sm:flex-row gap-3 w-full">
                     <button
                       onClick={handleClearCart}
                       disabled={cartItems.length === 0 || isSyncing}
-                      className="w-full bg-white rounded-xl py-3.5 text-sm md:text-base font-semibold font-openSans border border-gray-300 disabled:opacity-50 hover:bg-gray-50 transition-colors active:bg-gray-100"
+                      className="w-full bg-white rounded-xl py-4 text-sm md:text-base font-semibold font-openSans border border-gray-300 disabled:opacity-50 hover:bg-gray-50 transition-colors active:bg-gray-100"
                     >
                       {isSyncing ? "Clearing..." : "Clear Cart"}
                     </button>
 
                     <button
-                      onClick={async () => {
-                        try {
-                          await checked();
-                          router.push("/pages/checkout");
-                        } catch (error) {
-                          console.error("Checkout error:", error);
-                        }
-                      }}
-                      disabled={
-                        cartItems.length === 0 ||
-                        !agree ||
-                        isSyncing ||
-                        hasExceededStockItems()
-                      }
-                      className="w-full bg-[#C9A040] rounded-xl py-3.5 text-sm md:text-base font-semibold font-openSans text-white disabled:opacity-50 hover:bg-[#a78435] transition-colors active:bg-[#95742e]"
-                    >
-                      {isSyncing ? "Processing..." : "Checkout"}
-                    </button>
+  onClick={async () => {
+    try {
+      await checked(); // First call checked()
+      
+      // Check if we're already on the checkout page
+      const isCheckoutPage = window.location.pathname.includes('/checkout');
+      
+      if (isCheckoutPage) {
+        // If already on checkout page, fully reload the page
+        window.location.reload(); // true forces a reload from server
+      } else {
+        // If not on checkout page, navigate to it
+        router.push("/pages/checkout");
+      }
+    } catch (error) {
+      // Handle errors if needed
+      console.error("Error during checkout:", error);
+    }
+  }}
+  disabled={
+    cartItems.length === 0 ||
+    !agree ||
+    isSyncing ||
+    hasExceededStockItems()
+  }
+  className="w-full bg-[#C9A040] rounded-xl py-4 text-sm md:text-base font-semibold font-openSans text-white disabled:opacity-50 hover:bg-[#a78435] transition-colors active:bg-[#95742e]"
+>
+  {isSyncing ? "Processing..." : "Checkout"}
+</button>
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       )}

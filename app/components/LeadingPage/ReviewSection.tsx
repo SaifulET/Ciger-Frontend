@@ -73,7 +73,7 @@ export default function ReviewSection() {
         setLoading(true);
         setError(null);
         const response = await api.get<ApiResponse>('/review/getAllReview');
-        console.log(response.data.data,"76")
+       
         if (response.data.success) {
           const formattedReviews: ReviewCardData[] = response.data.data.map((review) => ({
             id: review._id,
@@ -89,7 +89,7 @@ export default function ReviewSection() {
         }
       } catch (err) {
         setError('Error fetching reviews');
-        console.error('Error fetching reviews:', err);
+        
       } finally {
         setLoading(false);
       }
@@ -299,7 +299,7 @@ export default function ReviewSection() {
       <div className="relative">
         {/* Header */}
         <div className="flex justify-center items-center pb-[32px]">
-          <h2 className="text-[28px] font-bold text-gray-900 text-center">
+          <h2 className="text-[24px] md:text-[28px] font-bold text-gray-900 text-center">
             Words of praise from others about our products
           </h2>
         </div>

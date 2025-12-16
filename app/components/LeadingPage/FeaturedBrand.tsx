@@ -285,8 +285,8 @@ export default function ProductCarousel() {
       <section className="bg-white mt-[16px] md:mt-[32px] mx-[16px] md:mx-[32px] rounded-lg">
         <div className="p-[16px] md:p-[32px] relative">
           <div className="flex pb-[32px]">
-            <h2 className="text-[28px] font-bold text-gray-900 flex-1 flex justify-center text-center pl-[48px] md:pl-[32px]">
-              Brands
+            <h2 className=" font-bold text-gray-900 flex-1 flex justify-center text-center pl-[54px] text-[24px] md:text-[28px">
+              Featured Brands
             </h2>
           </div>
           <div className="flex justify-center items-center h-40">
@@ -302,7 +302,7 @@ export default function ProductCarousel() {
       <div className=" p-[16px] md:p-[32px] relative">
         {/* Header */}
         <div className="flex pb-[32px]">
-          <h2 className=" text-2xl md:text-[28px] font-bold text-gray-900 flex-1 flex justify-center text-center pl-[48px] md:pl-[32px]">
+          <h2 className=" pl-[54px] text-[24px] md:text-[28px] font-bold text-gray-900 flex-1 flex justify-center text-center ">
             Featured Brands
           </h2>
 
@@ -311,7 +311,7 @@ export default function ProductCarousel() {
               pathname: "/pages/brand",
             }}
           >
-            <button className="text-gray-800 font-medium text-[12px] hover:text-yellow-600">
+            <button className="text-gray-800 font-medium text-[12px] md:text-[14px] hover:text-yellow-600">
               View All
             </button>
           </Link>
@@ -341,19 +341,21 @@ export default function ProductCarousel() {
                     }}
                     className="block bg-white duration-300"
                   >
-                    <div className="mb-[16px] w-[150px] h-[120px] flex items-center justify-center bg-gray-50 ">
+                    <div className="mb-[16px] w-[150px] h-[120px] flex items-center justify-center bg-white">
                       {brand.image && (
-                        <Image
-                          src={brand.image}
-                          alt={brand.name}
-                          width={150}
-                          height={120}
-                          className="object-fit w-full h-full rounded"
-                          style={{
-                            maxWidth: "150px",
-                            maxHeight: "120px",
-                          }}
-                        />
+                        <div className="w-[80px] h-[80px] flex items-center justify-center bg-white md:w-[150px] md:h-[120px]">
+                          <Image
+                            src={brand.image}
+                            alt={brand.name}
+                            width={150}
+                            height={120}
+                            className="object-contain w-full h-full rounded"
+                            style={{
+                              maxWidth: "100%",
+                              maxHeight: "100%",
+                            }}
+                          />
+                        </div>
                       )}
                     </div>
                     <div className="flex justify-center text-center font-montserrat text-[18px] font-semibold leading-[28px] md:leading-[36px]">

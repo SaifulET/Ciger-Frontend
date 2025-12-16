@@ -72,8 +72,8 @@ const handleAddToCart = () => {
   {/* Out of Stock Overlay for Image */}
   {product.available === 0 && (
     <div className="absolute inset-0 bg-black/50 z-10 flex items-center justify-center rounded-lg">
-      <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-md">
-        <span className="text-red-600 font-bold text-lg">Out of Stock</span>
+      <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-md mx-4 md:mx-0">
+        <span className="text-red-600 font-bold text-md md:text-lg">Out of Stock</span>
       </div>
     </div>
   )}

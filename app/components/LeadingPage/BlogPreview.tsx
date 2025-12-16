@@ -266,7 +266,7 @@ export default function BlogCarousal() {
       <div className="relative">
         {/* Header */}
         <div className="flex pb-[32px]">
-          <h2 className=" flex-1 text-[28px] font-bold text-gray-900 pl-[32px] flex  justify-center">
+          <h2 className=" flex-1 pl-[54px] text-[24px] md:text-[28px] font-bold text-gray-900  flex  justify-center">
             Blogs
           </h2>
           <Link
@@ -274,7 +274,7 @@ export default function BlogCarousal() {
               pathname: "/pages/blog",
             }}
           >
-            <button className="text-gray-800 font-medium text-[12px] hover:text-yellow-600">
+            <button className="text-gray-800 font-medium text-[12px] md:text-[14px] hover:text-yellow-600">
               View All
             </button>
           </Link>
