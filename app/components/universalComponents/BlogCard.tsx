@@ -74,8 +74,8 @@ const BlogCard: React.FC<BlogCardProps> = ({ product }) => {
             href={link || `/pages/blog/${_id}`}
             className="w-full"
           >
-            <button className="flex justify-center items-center w-full h-[52px] bg-[#C9A040] rounded-[12px] hover:bg-[#B78E35] transition-colors">
-              <span className="text-[16px] leading-[24px] font-semibold font-[Open_Sans] text-[#0C0C0C] w-full">
+            <button className="flex justify-center items-center w-full h-[44px] lg:h-[52px] bg-[#C9A040] rounded-[12px] hover:bg-[#B78E35] transition-colors">
+              <span className="text-[16px] leading-[24px] font-semibold text-[#ffff] w-full">
                 View
               </span>
             </button>

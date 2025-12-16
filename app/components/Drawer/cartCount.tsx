@@ -368,105 +368,94 @@ export default function CartDrawer() {
                       )}
 
                       <div className="flex flex-col gap-3">
-                        {/* Product Info Row */}
-                        <div className="flex items-start justify-between gap-2">
-                          {/* Product Info */}
-                          <div className="flex items-start gap-3 flex-1 min-w-0">
+                        {/* Top Row: X, Image, Brand, and Quantity Controls */}
+                        <div className="flex items-center justify-between gap-2">
+                          {/* Left side: X, Image, Brand info */}
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            {/* X Button */}
                             <button
                               onClick={() => handleRemove(item._id)}
                               disabled={isSyncing || isOutOfStock}
-                              className={`flex justify-center items-center w-6 h-6 md:w-7 md:h-7 rounded-lg flex-shrink-0 disabled:opacity-50 ${
+                              className={`flex-shrink-0 w-6 h-6 md:w-7 md:h-7 rounded-lg flex justify-center items-center disabled:opacity-50 ${
                                 isOutOfStock ? "bg-gray-400" : "bg-[#DD2C2C] hover:bg-red-600"
-                              } transition-colors mt-0.5`}
+                              } transition-colors`}
                               aria-label={`Remove ${productName}`}
                             >
                               <X className="text-white w-3 h-3 md:w-3.5 md:h-3.5" />
                             </button>
 
-                            <div className="flex items-center gap-3 min-w-0 ">
-                              <div
-                                className={`flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-lg flex-shrink-0 overflow-hidden ${
+                            {/* Image */}
+                            <div
+                              className={`flex-shrink-0 w-14 h-14 md:w-16 md:h-16 rounded-lg overflow-hidden ${
+                                isOutOfStock
+                                  ? "bg-gray-100"
+                                  : "bg-[#F5F5F5]"
+                              }`}
+                            >
+                              {safeImageSrc ? (
+                                <Image
+                                  src={safeImageSrc}
+                                  alt={productName}
+                                  width={56}
+                                  height={56}
+                                  className={`object-cover w-full h-full ${
+                                    isOutOfStock ? "opacity-50" : ""
+                                  }`}
+                                  onError={handleImageError}
+                                />
+                              ) : (
+                                <Image
+                                  src={productImage}
+                                  alt={productName}
+                                  width={56}
+                                  height={56}
+                                  className={`object-cover w-full h-full ${
+                                    isOutOfStock ? "opacity-50" : ""
+                                  }`}
+                                  onError={handleImageError}
+                                />
+                              )}
+                            </div>
+
+                            {/* Product Details */}
+                            <div className="flex flex-col gap-1 min-w-0 flex-1">
+                              <p className="font-semibold text-xs md:text-sm font-openSans text-[#0C0C0C] truncate">
+                                {brandName}
+                              </p>
+                              <p
+                                className={`text-xs md:text-sm font-openSans line-clamp-2 ${
                                   isOutOfStock
-                                    ? "bg-gray-100"
-                                    : "bg-[#F5F5F5]"
+                                    ? "text-gray-500"
+                                    : "text-[#0C0C0C]"
                                 }`}
                               >
-                                {safeImageSrc ? (
-                                  <Image
-                                    src={safeImageSrc}
-                                    alt={productName}
-                                    width={56}
-                                    height={56}
-                                    className={`object-cover w-full h-full ${
-                                      isOutOfStock ? "opacity-50" : ""
-                                    }`}
-                                    onError={handleImageError}
-                                  />
-                                ) : (
-                                  <Image
-                                    src={productImage}
-                                    alt={productName}
-                                    width={56}
-                                    height={56}
-                                    className={`object-cover w-full h-full ${
-                                      isOutOfStock ? "opacity-50" : ""
-                                    }`}
-                                    onError={handleImageError}
-                                  />
-                                )}
-                              </div>
-
-                              <div className="flex flex-col gap-1 min-w-0 flex-1">
-                                <p className="font-semibold text-xs md:text-sm font-openSans text-[#0C0C0C] truncate">
-                                  {brandName}
-                                </p>
+                                {productName}
+                              </p>
+                              <div className="flex flex-col gap-0.5">
                                 <p
-                                  className={`text-xs md:text-sm font-openSans line-clamp-2 ${
-                                    isOutOfStock
-                                      ? "text-gray-500"
-                                      : "text-[#0C0C0C]"
+                                  className={`text-xs md:text-sm font-semibold font-openSans ${
+                                    isOutOfStock ? "text-gray-500" : ""
                                   }`}
                                 >
-                                  {productName}
+                                  ${unitPrice.toFixed(2)}
                                 </p>
-                                <div className="flex flex-col gap-0.5">
-                                  <p
-                                    className={`text-xs md:text-sm font-semibold font-openSans ${
-                                      isOutOfStock ? "text-gray-500" : ""
-                                    }`}
-                                  >
-                                    ${unitPrice.toFixed(2)}
-                                  </p>
-                                  <p
-                                    className={`text-xs font-openSans ${
-                                      isOutOfStock
-                                        ? "text-red-500 font-semibold"
-                                        : "text-gray-500"
-                                    }`}
-                                  >
-                                    {isOutOfStock
-                                      ? "Out of Stock"
-                                      : `Available: ${item.productId.available}`}
-                                  </p>
-                                </div>
+                                <p
+                                  className={`text-xs font-openSans ${
+                                    isOutOfStock
+                                      ? "text-red-500 font-semibold"
+                                      : "text-gray-500"
+                                  }`}
+                                >
+                                  {isOutOfStock
+                                    ? "Out of Stock"
+                                    : `Available: ${item.productId.available}`}
+                                </p>
                               </div>
                             </div>
                           </div>
 
-                          {/* Total Price - Hidden on smallest screens, shown on larger mobile */}
-                          <p
-                            className={`text-sm md:text-base font-semibold font-openSans w-16 text-right flex-shrink-0 ${
-                              isOutOfStock ? "text-gray-500" : ""
-                            } hidden sm:block`}
-                          >
-                            ${itemTotal.toFixed(2)}
-                          </p>
-                        </div>
-
-                        {/* Quantity and Total Row */}
-                        <div className="flex items-center justify-between pl-9 md:pl-10">
-                          {/* Quantity Controls */}
-                          <div className="flex items-center gap-2">
+                          {/* Right side: Quantity Controls */}
+                          <div className="flex-shrink-0">
                             <div
                               className={`flex items-center justify-between border rounded-lg ${
                                 isOutOfStock
@@ -517,20 +506,23 @@ export default function CartDrawer() {
                               </button>
                             </div>
                           </div>
-
-                          {/* Total Price - Visible on small mobile, hidden on larger */}
-                          <p
-                            className={`text-sm font-semibold font-openSans ${
-                              isOutOfStock ? "text-gray-500" : ""
-                            } block sm:hidden`}
-                          >
-                            ${itemTotal.toFixed(2)}
-                          </p>
                         </div>
 
-                        {/* Exceeded Stock Warning */}
-                        {hasExceeded && !isOutOfStock && (
-                          <div className="pl-9 md:pl-10">
+                        {/* Bottom Row: Total Price and Warnings */}
+                        <div className="flex items-center justify-between">
+                          {/* Left side: Item Total */}
+                          <div className="pl-25 md:pl-28">
+                            <p
+                              className={`text-sm md:text-base font-semibold font-openSans ${
+                                isOutOfStock ? "text-gray-500" : "text-[#0C0C0C]"
+                              }`}
+                            >
+                              Total: <span className="text-[#C9A040]">${itemTotal.toFixed(2)}</span>
+                            </p>
+                          </div>
+
+                          {/* Right side: Exceeded Stock Warning */}
+                          {hasExceeded && !isOutOfStock && (
                             <div className="inline-flex items-center gap-1 bg-red-50 text-red-700 text-xs px-3 py-1.5 rounded-lg">
                               <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path
@@ -541,8 +533,8 @@ export default function CartDrawer() {
                               </svg>
                               <span>Exceeds stock ({item.productId.available} available)</span>
                             </div>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
                     </div>
                   );

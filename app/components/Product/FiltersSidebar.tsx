@@ -175,7 +175,7 @@ export default function FiltersSidebar({
       <div className="pb-2">
         <button
           onClick={() => toggleSection("All Products")}
-          className="w-full flex justify-between items-center bg-gray-50 hover:bg-gray-200 px-4 py-3 rounded-md font-medium text-gray-800 transition"
+          className="w-full flex justify-between items-center bg-white hover:bg-gray-200 px-4 py-3 rounded-md font-medium text-gray-800 transition"
         >
           <span className="font-sans text-base font-semibold leading-6">All Products</span>
           {openSection === "All Products" ? <HugeiconsIcon icon={MinusSignIcon} />: <HugeiconsIcon icon={PlusSignIcon} />}
@@ -205,7 +205,7 @@ export default function FiltersSidebar({
       <div className="pb-2">
         <button
           onClick={() => toggleSection("Product")}
-          className="w-full flex justify-between items-center bg-gray-50 hover:bg-gray-200 px-4 py-3 rounded-md font-medium text-gray-800 transition"
+          className="w-full flex justify-between items-center bg-white hover:bg-gray-200 px-4 py-3 rounded-md font-medium text-gray-800 transition"
         >
           <span className="font-sans text-base font-semibold leading-6">Product</span>
           {openSection === "Product" ? <HugeiconsIcon icon={MinusSignIcon} />: <HugeiconsIcon icon={PlusSignIcon} />}
@@ -217,7 +217,7 @@ export default function FiltersSidebar({
               <div key={category} className="border rounded-lg">
                 <button
                   onClick={() => toggleSubcategory(category)}
-                  className="w-full flex justify-between items-center bg-gray-50 hover:bg-gray-200 px-3 py-3 rounded-md font-medium text-gray-800 transition"
+                  className="w-full flex justify-between items-center bg-white hover:bg-gray-200 px-3 py-3 rounded-md font-medium text-gray-800 transition"
                 >
                   <span>{category}</span>
                   <span className="flex items-center">

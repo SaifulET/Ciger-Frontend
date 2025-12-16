@@ -63,16 +63,29 @@ const handleAddToCart = () => {
         )}
 
         <div className="aspect-square flex items-center justify-center bg-gray-100 rounded-lg mb-4 relative mt-4 overflow-hidden">
-          <img src={product?.image } alt={product?.name}  className="product Image"  />
-        
-        </div>
+  <img
+    src={product?.image}
+    alt={product?.name}
+    className="product Image"
+  />
+  
+  {/* Out of Stock Overlay for Image */}
+  {product.available === 0 && (
+    <div className="absolute inset-0 bg-black/50 z-10 flex items-center justify-center rounded-lg">
+      <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-md">
+        <span className="text-red-600 font-bold text-lg">Out of Stock</span>
+      </div>
+    </div>
+  )}
+</div>
 
         <div className="space-y-2 flex-1">
           <p className="text-sm text-gray-500">{product?.brand}</p>
+          
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold">{product.rating?product.rating:product.averageRating?product.averageRating:"0"}</span>
             <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-            <span className="text-xs text-gray-500">({(product.available)})</span>
+            <span className={`text-xs text-gray-500`}>({(product.available)})</span>
           </div>
           <h3 className="font-semibold text-gray-900 text-[16px] overflow-hidden h-[104px] md:h-[96px]  xl:h-[64px]">{product?.name}</h3>
           <div className="flex-col md:flex-row flex items-baseline gap-0 md:gap-1">
@@ -87,12 +100,12 @@ const handleAddToCart = () => {
       <div className="flex gap-3 mt-4">
        {product.available ? <button
           onClick={handleAddToCart}
-          className="flex-1 bg-[#C9A040] hover:bg-yellow-600 text-white font-medium py-2 rounded-lg flex items-center justify-center gap-1 transition"
+          className="flex-1 bg-[#C9A040] hover:bg-yellow-600 text-white font-medium  h-[44px] lg:h-[52px] rounded-lg flex items-center justify-center gap-1 transition"
         >
           <Plus className="w-5 h-5" /> Cart
         </button>: <button
         
-          className="flex-1 bg-gray-900 text-gray-400 font-medium py-2 rounded-lg flex items-center justify-center gap-1 transition"
+          className="flex-1 bg-gray-200 text-gray-400 font-medium h-[44px] lg:h-[52px] rounded-lg flex items-center justify-center gap-1 transition"
         >
           <Plus className="w-5 h-5" /> Cart
         </button>

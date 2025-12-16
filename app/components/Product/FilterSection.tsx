@@ -33,7 +33,7 @@ export default function FilterSection({
     <div className="pb-2">
       <button
         onClick={onToggleOpen}
-        className="w-full flex justify-between items-center bg-gray-50 hover:bg-gray-200 px-4 py-3 rounded-md font-medium text-gray-800 transition"
+        className="w-full flex justify-between items-center bg-white hover:bg-gray-200 px-4 py-3 rounded-md font-medium text-gray-800 transition"
       >
         <span className="font-sans text-base font-semibold leading-6">{title}</span>
         {open ? (

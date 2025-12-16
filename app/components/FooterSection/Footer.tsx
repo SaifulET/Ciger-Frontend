@@ -14,17 +14,17 @@ import american from "@/public/american.svg";
 
 export default function Footer() {
   return (
-    <footer className="bg-[#212121] w-full text-white px-[16px] lg:px-[64px] py-[16px] lg:py-[32px] flex flex-col">
+    <footer className="bg-[#212121] w-full text-white px-[16px] lg:px-[256px] py-[16px] lg:py-[32px] flex flex-col">
       {/* Main Container */}
       <div className="w-full flex flex-col">
-        {/* Top Section */}
-        <div className="flex flex-col lg:flex-row justify-around ">
-          {/* Center: Quick Links */}
-          <div className="flex flex-col gap-4 justify-center lg:justify-start  mb-[32px]">
-            <h4 className="font-montserrat font-semibold text-[18px] leading-[26px] text-white flex-none order-0 flex-grow-0">
+        {/* Top Section - Fixed alignment */}
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between w-full mb-[32px]">
+          {/* Left: Quick Links */}
+          <div className="flex flex-col gap-4 mb-[32px] lg:mb-0 lg:w-1/3">
+            <h4 className="font-montserrat font-semibold text-[18px] leading-[26px] text-white">
               Quick Links
             </h4>
-            <ul className="flex flex-col gap-2 text-[16px]">
+            <ul className="flex flex-col gap-2">
               {["Home", "Brand", "Discounts"].map((item) => (
                 <li key={item}>
                   <a
@@ -33,7 +33,7 @@ export default function Footer() {
                         ? ""
                         : item.toLowerCase().replace(/\s+/g, "")
                     }`}
-                    className="hover:text-[#C9A040] transition-colors duration-300 font-open-sans font-normal text-base leading-[24px] text-white flex-none order-3 flex-grow-0"
+                    className="hover:text-[#C9A040] transition-colors duration-300 font-open-sans font-normal text-base leading-[24px] text-white"
                   >
                     {item === "RefundPolicy" ? "Refund Policy" : item}
                   </a>
@@ -43,12 +43,12 @@ export default function Footer() {
           </div>
 
           {/* Center: Get in touch */}
-          <div className="flex flex-col gap-4 justify-end lg:justify-start mb-[32px]">
-            <h4 className="font-montserrat font-semibold text-[18px] leading-[26px] text-white flex-none order-0 flex-grow-0">
+          <div className="flex flex-col gap-4 mb-[32px] lg:mb-0 lg:w-1/3">
+            <h4 className="font-montserrat font-semibold text-[18px] leading-[26px] text-white">
               Get in touch
             </h4>
-            <ul className="flex flex-col gap-2 text-[16px]">
-              {["Contact", "RefundPolicy", "privacyPolicy","Terms & Conditions"].map((item) => (
+            <ul className="flex flex-col gap-2">
+              {["Contact", "RefundPolicy", "privacyPolicy", "Terms & Conditions"].map((item) => (
                 <li key={item}>
                   <a
                     href={`/pages/${
@@ -56,7 +56,7 @@ export default function Footer() {
                         ? ""
                         : item.toLowerCase().replace(/\s+/g, "")
                     }`}
-                    className="hover:text-[#C9A040] transition-colors duration-300 font-open-sans font-normal text-base leading-[24px] text-white flex-none order-3 flex-grow-0"
+                    className="hover:text-[#C9A040] transition-colors duration-300 font-open-sans font-normal text-base leading-[24px] text-white"
                   >
                     {item === "RefundPolicy"
                       ? "Refund Policy"
@@ -70,8 +70,8 @@ export default function Footer() {
           </div>
 
           {/* Right: Contact + Socials + Card Icons */}
-          <div className="flex flex-col gap-4 justify-start mb-[32px]">
-            <h4 className="font-montserrat font-semibold text-[18px] leading-[26px] text-white flex-none order-0 flex-grow-0">
+          <div className="flex flex-col gap-4 lg:w-1/3">
+            <h4 className="font-montserrat font-semibold text-[18px] leading-[26px] text-white">
               Contact Us
             </h4>
             
@@ -105,52 +105,49 @@ export default function Footer() {
               </a>
             </div>
 
-            {/* Payment Card Icons - New line after social media */}
+            {/* Payment Card Icons */}
             <div className="flex items-center gap-2 md:gap-4 mt-4">
-  <Image 
-    src={discover} 
-    alt="Discover" 
-    width={60} 
-    height={24}
-    className="scale-80 md:scale-100 hover:scale-105  transition-transform duration-200"
-  />
-  <Image 
-    src={master} 
-    alt="MasterCard" 
-    width={60} 
-    height={24}
-    className="scale-80 md:scale-100 hover:scale-105 transition-transform duration-200"
-  />
-  <Image 
-    src={paypal} 
-    alt="PayPal" 
-    width={60} 
-    height={24}
-    className="scale-80 md:scale-100 hover:scale-105 transition-transform duration-200"
-  />
-  <Image 
-    src={visa} 
-    alt="visa" 
-    width={60} 
-    height={24}
-    className="scale-80 md:scale-100 hover:scale-105 transition-transform duration-200"
-  />
-  
-  <Image 
-    src={american} 
-    alt="american express" 
-    width={60} 
-    height={24}
-    className="scale-80 md:scale-100 hover:scale-105 transition-transform duration-200"
-  />
-  
-  
-</div>
+              <Image 
+                src={discover} 
+                alt="Discover" 
+                width={60} 
+                height={24}
+                className="scale-80 md:scale-100 hover:scale-105 transition-transform duration-200"
+              />
+              <Image 
+                src={master} 
+                alt="MasterCard" 
+                width={60} 
+                height={24}
+                className="scale-80 md:scale-100 hover:scale-105 transition-transform duration-200"
+              />
+              <Image 
+                src={paypal} 
+                alt="PayPal" 
+                width={60} 
+                height={24}
+                className="scale-80 md:scale-100 hover:scale-105 transition-transform duration-200"
+              />
+              <Image 
+                src={visa} 
+                alt="visa" 
+                width={60} 
+                height={24}
+                className="scale-80 md:scale-100 hover:scale-105 transition-transform duration-200"
+              />
+              <Image 
+                src={american} 
+                alt="american express" 
+                width={60} 
+                height={24}
+                className="scale-80 md:scale-100 hover:scale-105 transition-transform duration-200"
+              />
+            </div>
           </div>
         </div>
 
         {/* Bottom Text */}
-        <p className="text-left lg:text-center font-semibold text-[16px] leading-[24px]">
+        <p className="text-left lg:text-center font-semibold text-[16px] leading-[24px] mt-4">
           © 2025 All rights reserved to Smokenza
         </p>
       </div>
