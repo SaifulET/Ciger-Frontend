@@ -216,6 +216,7 @@ const CheckoutPage = () => {
   );
   const [loading, setLoading] = useState(true);
   const [transactionid, setTransactionid] = useState(0);
+  const [orderid, setOrderid] = useState(0);
   const [orderFailed, setOrderFailed] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     email: "",
@@ -252,7 +253,7 @@ const CheckoutPage = () => {
   const [tax, setTax] = useState(0);
   const [taxRate, setTaxRate] = useState(0); // Fixed 10.25% tax rate
   const [isCalculatingTax, setIsCalculatingTax] = useState(false);
-  const [isAgeChecked, setIsAgeChecked] = useState(false);
+  const [isAgeChecked, setIsAgeChecked] = useState(true);
 
   // Collect.js states
   const [isCollectJSLoaded, setIsCollectJSLoaded] = useState(false);
@@ -503,7 +504,7 @@ const CheckoutPage = () => {
       const response = await api.post<{
         success: boolean;
         message?: string;
-        orderid?: string;
+        orderid?: number;
         transactionid?: number;
       }>("/payment/payment", orderData);
       console.log("Order submission response:", response.data);
@@ -511,6 +512,7 @@ const CheckoutPage = () => {
       if (response.data.success && response.data.transactionid) {
         console.log("Order placed successfully", response.data);
         setTransactionid(response.data.transactionid || 0 );
+        setOrderid(response.data.orderid || 0 );
       } else {
         setOrderFailed(true);
       }
@@ -1089,7 +1091,9 @@ amount_to_collect || 0;
     );
   }
   if (transactionid != 0 && orderFailed == false) {
- 
+    (async ()=>{
+          await api.post("/mail/orderConfirmation",{transactionId:transactionid,totalAmount:total,email:formData.email,orderId:orderid});
+      })()
     
     return (
       <div className="min-h-screen bg-white flex items-center justify-center p-4">
@@ -1821,7 +1825,7 @@ amount_to_collect || 0;
             {/* Age Checker Button */}
             <button
               id="checkout-button"
-              onClick={() => setIsAgeChecked(true)}
+               onClick={checkedAge}
               className={`${
                 isAgeChecked
                   ? "bg-green-600 hover:bg-green-700"
