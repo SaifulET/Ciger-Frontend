@@ -1634,28 +1634,6 @@ amount_to_collect || 0;
           </div>
 
           {/* Mobile Layout */}
-          <div className="py-4">
- <button
-              id="checkout-button"
-               onClick={checkedAge}
-              className={`${
-                isAgeChecked
-                  ? "bg-green-600 hover:bg-green-700"
-                  : "bg-yellow-600 hover:bg-yellow-700"
-              } py-3 w-full rounded-md  transition-colors`}
-            >
-              {isAgeChecked ? (
-                <p className="text-gray-50  font-medium">
-                  Age verification passed ✅
-                </p>
-              ) : (
-                <p className="text-gray-900  font-medium">
-                  Please verify your age
-                </p>
-              )}
-            </button>
-          </div>
-         
           <form onSubmit={handleSubmit} className="lg:hidden space-y-6">
             {/* Collect.js Status */}
             {!isCollectJSLoaded && (
@@ -1845,7 +1823,25 @@ amount_to_collect || 0;
             </div>
 
             {/* Age Checker Button */}
-            
+            <button
+              id="checkout-button"
+               onClick={checkedAge}
+              className={`${
+                isAgeChecked
+                  ? "bg-green-600 hover:bg-green-700"
+                  : "bg-yellow-600 hover:bg-yellow-700"
+              } py-3 w-full rounded-md  transition-colors`}
+            >
+              {isAgeChecked ? (
+                <p className="text-gray-50  font-medium">
+                  Age verification passed ✅
+                </p>
+              ) : (
+                <p className="text-gray-900  font-medium">
+                  Please verify your age
+                </p>
+              )}
+            </button>
 
             {/* Order Summary */}
             <div className="bg-white p-[16px] rounded-lg">

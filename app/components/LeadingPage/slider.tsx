@@ -153,7 +153,7 @@ export default function Slider() {
         {slides.map((src, index) => (
           <div
             key={index}
-            className="min-w-full lg:h-[600px] md:h-[450px] h-[180px] relative"
+            className="min-w-full lg:h-[600px] md:h-[450px] h-[230px] relative"
           >
             <Image
               src={src}
@@ -202,7 +202,7 @@ export default function Slider() {
             <button
               key={index}
               onClick={() => setCurrent(index)}
-              className={`w-3 h-3 rounded-full border ${
+              className={`w-2 md:w-3  h-2 md:h-3 rounded-full border opacity-60 ${
                 current === index ? "bg-[#C9A040]" : "bg-white"
               }`}
             ></button>

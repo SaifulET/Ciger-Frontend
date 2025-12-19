@@ -250,7 +250,7 @@ export default function ShoppingCart() {
                           disabled={isSyncing || isOutOfStock}
                         />
                         <div
-                          className={`flex items-center justify-center w-12 h-12 md:w-[70px] md:h-[70px] border rounded-xl flex-shrink-0 ${
+                          className={`flex items-center justify-center w-12 h-12 md:w-[70px] md:h-[70px] border rounded-xl flex-shrink-0 overflow-hidden ${
                             isOutOfStock
                               ? "bg-gray-100 border-gray-300"
                               : "bg-[#F5F5F5] border-[#B0B0B0]"
@@ -261,7 +261,7 @@ export default function ShoppingCart() {
                             alt={"Blank"}
                             width={30}
                             height={30}
-                            className={`object-contain ${
+                            className={`object-contain  ${
                               isOutOfStock ? "opacity-50" : ""
                             }`}
                             onError={handleImageError}

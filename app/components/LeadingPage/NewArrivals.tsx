@@ -439,7 +439,7 @@ export default function BestSeller() {
     return (
       <section className="bg-white p-4 md:p-8 mx-4 md:mx-8 mt-4 md:mt-8 rounded-lg">
         <div className="flex pb-8 items-center">
-          <h2 className="text-[18px] md:text-[28px] flex-1 font-bold text-gray-900 text-center">
+          <h2 className=" pl-[54px] text-[24px] md:text-[28px] flex-1 font-bold text-gray-900 text-center">
             New Arrivals
           </h2>
           <Link
@@ -465,7 +465,7 @@ export default function BestSeller() {
   return (
     <section className="bg-white p-4 md:p-8 mx-4 md:mx-8 mt-4 md:mt-8 rounded-lg">
       <div className="flex pb-8 items-center">
-        <h2 className=" text-[18px] md:text-[28px] flex-1 font-bold text-gray-900 text-center">
+        <h2 className="  pl-[54px] text-[24px] md:text-[28px] flex-1 font-bold text-gray-900 text-center">
           New Arrivals
         </h2>
         <Link

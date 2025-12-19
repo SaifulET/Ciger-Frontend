@@ -38,6 +38,7 @@ type URLParams = {
 export default function ProductsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [url,setUrl]=useState("")
   
   const [localFilters, setLocalFilters] = useState<LocalFilters>({
     brand: [],
@@ -68,26 +69,76 @@ export default function ProductsPage() {
     fetchAllProducts();
   }, [fetchAllProducts]);
 
-  // Extract URL parameters with proper typing
-  const urlParams = useMemo((): URLParams => {
-    const params: URLParams = {};
-    const paramKeys: (keyof URLParams)[] = [
-      'keyword', 'sub', 'subPro', 'category', 'brand', 'new', 'discount', 'best', 'search'
-    ];
-    
-    paramKeys.forEach(key => {
-      const value = searchParams.get(key);
-      if (value) {
-        params[key] = value;
-      }
-    });
+  // Extract URL parameters with manual parsing to handle & in values
 
-    return params;
-  }, [searchParams]);
+ 
+
+const urlParams = useMemo((): URLParams => {
+  const params: URLParams = {};
+  
+  // Use React Router's location instead of window.location
+  const url = window.location.origin + location.pathname + location.search;
+  console.log(window.location,'61')
+  
+  const queryStart = url.indexOf('?');
+  if (queryStart === -1) return params;
+  
+  const queryString = url.substring(queryStart + 1);
+
+  
+  // Parse query string manually (your existing logic)
+  const pairs = queryString.split('&');
+  const paramMap = new Map<string, string>();
+  
+  let i = 0;
+  while (i < pairs.length) {
+    const pair = pairs[i];
+    const equalsIndex = pair.indexOf('=');
+    
+    if (equalsIndex === -1) {
+      const key = decodeURIComponent(pair);
+      paramMap.set(key, '');
+      i++;
+    } else {
+      let key = decodeURIComponent(pair.substring(0, equalsIndex));
+      let value = pair.substring(equalsIndex + 1);
+      
+      while (i + 1 < pairs.length) {
+        const nextPair = pairs[i + 1];
+        if (nextPair.includes('=')) {
+          break;
+        }
+        i++;
+        value += '&' + nextPair;
+      }
+      
+      value = decodeURIComponent(value);
+      paramMap.set(key, value);
+      i++;
+    }
+  }
+  
+  const validKeys: (keyof URLParams)[] = [
+    'keyword', 'sub', 'subPro', 'category', 'brand', 
+    'new', 'discount', 'best', 'search'
+  ];
+  
+  paramMap.forEach((value, key) => {
+    if (validKeys.includes(key as keyof URLParams)) {
+      params[key as keyof URLParams] = value;
+    }
+  });
+  
+
+  return params;
+}, [location.search]); // React Router updates this instantly // Still depend on searchParams to trigger re-run
 
   // Handle URL params - keyword uses API, others use client-side filtering
   useEffect(() => {
+
     const { keyword, ...otherParams } = urlParams;
+
+    console.log('Processing URL params:', { keyword, otherParams });
 
     // If keyword exists, use API call
     if (keyword) {
@@ -100,7 +151,7 @@ export default function ProductsPage() {
         feature: [],
         priceRange: [0, 1000],
         product: [],
-        allProducts: false, // Don't show all products when keyword searching
+        allProducts: false,
       };
 
       // Handle category/subcategory from URL
@@ -115,6 +166,7 @@ export default function ProductsPage() {
 
       // Handle brand from URL
       if (otherParams.brand) {
+        console.log('Adding brand from URL:', otherParams.brand);
         newFilters.brand.push(otherParams.brand);
       }
 
@@ -126,6 +178,7 @@ export default function ProductsPage() {
         newFilters.feature.push('New Arrival');
       }
 
+      console.log('Setting new filters for keyword search:', newFilters);
       setLocalFilters(newFilters);
     } else {
       // No keyword - use client-side filtering with full products
@@ -154,6 +207,7 @@ export default function ProductsPage() {
 
       // Handle brand from URL
       if (otherParams.brand) {
+        console.log('Adding brand from URL (no keyword):', otherParams.brand);
         newFilters.brand.push(otherParams.brand);
       }
 
@@ -165,6 +219,7 @@ export default function ProductsPage() {
         newFilters.feature.push('New Arrival');
       }
 
+      console.log('Setting new filters (no keyword):', newFilters);
       setLocalFilters(newFilters);
     }
   }, [urlParams, fetchProductsByKeyword]);
@@ -187,7 +242,6 @@ export default function ProductsPage() {
     if (filters.allProducts) return products;
 
     return products.filter(product => {
-      // Type-safe product access
       const productBrand = product.brand || '';
       const productCategory = product.category || '';
       const productSubcategory = product.subcategory || '';
@@ -196,9 +250,12 @@ export default function ProductsPage() {
       const productNewBestSeller = Boolean(product.newBestSeller);
       const productNewSeller = Boolean(product.newSeller);
 
-      // Brand filter
-      if (filters.brand.length > 0 && !filters.brand.includes(productBrand)) {
-        return false;
+      // Brand filter with case-insensitive comparison
+      if (filters.brand.length > 0) {
+        const hasMatchingBrand = filters.brand.some(filterBrand => 
+          productBrand.toLowerCase() === filterBrand.toLowerCase()
+        );
+        if (!hasMatchingBrand) return false;
       }
 
       // Feature filter
@@ -211,17 +268,15 @@ export default function ProductsPage() {
         if (!hasMatchingFeature) return false;
       }
 
-      // Category/Subcategory filter - allow multiple selections
+      // Category/Subcategory filter
       if (filters.product.length > 0) {
         const hasMatchingCategory = filters.product.some(filter => {
           const [category, subcategory] = filter.split("|");
           
           if (subcategory) {
-            // If filter has both category and subcategory
             return compareCategory(productCategory, category) && 
                    compareSubcategory(productSubcategory, subcategory);
           } else {
-            // If filter has only category
             return compareCategory(productCategory, category);
           }
         });
@@ -251,10 +306,8 @@ export default function ProductsPage() {
   const productsToFilter = useMemo(() => {
     const { keyword } = urlParams;
     if (keyword) {
-      // When keyword search is active, filter the API results
       return products;
     } else {
-      // When no keyword, use full products for client-side filtering
       return fullProducts;
     }
   }, [urlParams, products, fullProducts]);
@@ -331,6 +384,8 @@ export default function ProductsPage() {
       allProducts: true,
     });
   }, []);
+
+
 
   // Toggle active filters section
   const toggleActiveFilters = useCallback(() => {
@@ -487,8 +542,13 @@ export default function ProductsPage() {
                     </span>
                     <button 
                       onClick={() => {
-                        const newSearchParams = new URLSearchParams(searchParams);
-                        newSearchParams.delete('keyword');
+                        const newSearchParams = new URLSearchParams();
+                        // Encode all values when creating new URL
+                        Object.entries(urlParams).forEach(([key, value]) => {
+                          if (key !== 'keyword' && value) {
+                            newSearchParams.set(key, encodeURIComponent(value));
+                          }
+                        });
                         router.push(`?${newSearchParams.toString()}`);
                       }}
                       className="text-red-500 hover:text-red-700 text-lg"
@@ -646,8 +706,12 @@ export default function ProductsPage() {
                     Search: {urlParams.keyword}
                     <button 
                       onClick={() => {
-                        const newSearchParams = new URLSearchParams(searchParams);
-                        newSearchParams.delete('keyword');
+                        const newSearchParams = new URLSearchParams();
+                        Object.entries(urlParams).forEach(([key, value]) => {
+                          if (key !== 'keyword' && value) {
+                            newSearchParams.set(key, encodeURIComponent(value));
+                          }
+                        });
                         router.push(`?${newSearchParams.toString()}`);
                       }}
                       className="ml-1 text-red-500"
@@ -674,33 +738,23 @@ export default function ProductsPage() {
         />
       </main>
       <style jsx>
-        {
-          `
-         
-  
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+        {`
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+              transform: translateY(-10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
 
-.animate-fadeIn {
-  animation: fadeIn 0.4s ease-out  forwards;
-}
-
-          `
-        
-        }
-
+          .animate-fadeIn {
+            animation: fadeIn 0.4s ease-out forwards;
+          }
+        `}
       </style>
     </div>
   );
 }
-`
-
-`
