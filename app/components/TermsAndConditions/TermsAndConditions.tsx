@@ -4,8 +4,8 @@ function TermsAndConditions() {
   return (
     <div className="min-h-screen p-4 md:p-8 bg-gray-50">
       {/* Header */}
-      <div className="bg-white shadow-sm rounded-lg p-4 md:p-8 mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 text-center mb-6">
+      <div className="bg-white shadow-sm rounded-lg p-[16px] md:p-[32px] mb-[16px] md:mb-[32px]">
+        <h1 className="text-3xl font-bold text-gray-900 text-center ">
           Terms and Conditions
         </h1>
       </div>

@@ -15,6 +15,7 @@ interface ApiOrder {
   email: string;
   phone: string;
   orderId: string;
+  orderid: string;
   trackingNo: string;
   state: string;
   userId: string;
@@ -59,6 +60,7 @@ export default function TrackingPage() {
         const result: ApiResponse = await response.data;
         
         if (result.success && result.data) {
+          console.log(result)
           setUserOrders(result.data);
         } else {
           setError('Failed to fetch orders');
@@ -78,7 +80,7 @@ export default function TrackingPage() {
     if (trackingInput.trim()) {
       // Search in the API data for matching orderId or trackingNo
       const foundOrder = userOrders.find(order => 
-        order.orderId === trackingInput.trim() || 
+        order.orderid === trackingInput.trim() || 
         order.trackingNo === trackingInput.trim()
       );
 
