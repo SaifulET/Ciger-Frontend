@@ -1155,12 +1155,35 @@ amount_to_collect || 0;
             Checkout
           </h1>
 
+
+          <div className="lg:grid lg:grid-cols-2 lg:h-0 lg:gap-[32px] mb-[16px] md:mb-[32px] lg:relative lg:top-[50px]">
+                <button
+                  id="checkout-button"
+                  onClick={checkedAge}
+                  className={`${
+                    isAgeChecked
+                      ? "bg-green-600 hover:bg-green-700"
+                      : "bg-yellow-600 hover:bg-yellow-700"
+                  } py-3 w-full rounded-md  transition-colors`}
+                >
+                  {isAgeChecked ? (
+                    <p className="text-gray-50  font-medium">
+                      Age verification passed ✅
+                    </p>
+                  ) : (
+                    <p className="text-gray-900  font-medium">
+                      Please verify your age
+                    </p>
+                  )}
+                </button>
+              </div>
+
           {/* Desktop Layout */}
           <div className="hidden lg:grid lg:grid-cols-2 lg:gap-[32px]">
             {/* LEFT COLUMN: Contact Info */}
             <div className="space-y-6">
               {/* Contact Information */}
-              <div className="bg-white rounded-lg p-[16px] md:p-[32px] mb-[16px] md:mb-[32px]">
+              <div className="bg-white rounded-lg p-[16px] md:p-[32px] mb-[16px] md:mb-[32px] relative top-[100px]">
                 <h2 className="text-lg font-semibold mb-4">
                   Contact Information
                 </h2>
@@ -1321,14 +1344,14 @@ amount_to_collect || 0;
                   />
                 </div>
 
-                <div className="flex items-center">
+                <div className="flex items-center  mb-[63px]">
                   <input
                     type="checkbox"
                     id="saveInfo"
                     name="saveInfo"
                     checked={formData.saveInfo}
                     onChange={handleInputChange}
-                    className="w-4 h-4 rounded border-gray-300"
+                    className="w-4 h-4 rounded border-gray-300 "
                   />
                   <label
                     htmlFor="saveInfo"
@@ -1338,27 +1361,7 @@ amount_to_collect || 0;
                   </label>
                 </div>
               </div>
-              <div>
-                <button
-                  id="checkout-button"
-                  onClick={checkedAge}
-                  className={`${
-                    isAgeChecked
-                      ? "bg-green-600 hover:bg-green-700"
-                      : "bg-yellow-600 hover:bg-yellow-700"
-                  } py-3 w-full rounded-md  transition-colors`}
-                >
-                  {isAgeChecked ? (
-                    <p className="text-gray-50  font-medium">
-                      Age verification passed ✅
-                    </p>
-                  ) : (
-                    <p className="text-gray-900  font-medium">
-                      Please verify your age
-                    </p>
-                  )}
-                </button>
-              </div>
+            
             </div>
 
             {/* RIGHT COLUMN: Order Summary + Discount + Payment */}
@@ -1375,7 +1378,7 @@ amount_to_collect || 0;
                     </p>
                   </div>
                 ) : (
-                  <>
+                <>
                     <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
                         <div
                       
@@ -1822,26 +1825,8 @@ amount_to_collect || 0;
               </div>
             </div>
 
-            {/* Age Checker Button */}
-            <button
-              id="checkout-button"
-               onClick={checkedAge}
-              className={`${
-                isAgeChecked
-                  ? "bg-green-600 hover:bg-green-700"
-                  : "bg-yellow-600 hover:bg-yellow-700"
-              } py-3 w-full rounded-md  transition-colors`}
-            >
-              {isAgeChecked ? (
-                <p className="text-gray-50  font-medium">
-                  Age verification passed ✅
-                </p>
-              ) : (
-                <p className="text-gray-900  font-medium">
-                  Please verify your age
-                </p>
-              )}
-            </button>
+           
+            
 
             {/* Order Summary */}
             <div className="bg-white p-[16px] rounded-lg">
