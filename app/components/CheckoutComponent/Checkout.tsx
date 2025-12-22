@@ -229,7 +229,7 @@ const CheckoutPage = () => {
     address: "",
     apartment: "",
     phone: "",
-    saveInfo: false,
+    saveInfo: true,
     birthMonth: "",
     birthDay: "",
     birthYear: "",
@@ -260,6 +260,9 @@ const CheckoutPage = () => {
   const [paymentToken, setPaymentToken] = useState<string | null>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [collectJSError, setCollectJSError] = useState<string | null>(null);
+  
+  // Payment overlay state
+  const [showPaymentOverlay, setShowPaymentOverlay] = useState(false);
 
   const collectJSConfiguredRef = useRef(false);
   const COLLECT_JS_TOKENIZATION_KEY = "kys4zk-Gg5DDh-35QMup-h39wNz";
@@ -500,7 +503,7 @@ const CheckoutPage = () => {
       };
 
       console.log("Submitting order with complete data:", orderData);
-
+      setShowPaymentOverlay(true);
       const response = await api.post<{
         success: boolean;
         message?: string;
@@ -523,6 +526,7 @@ const CheckoutPage = () => {
       setOrderFailed(true);
     } finally {
       setIsProcessingPayment(false);
+      setShowPaymentOverlay(false); // Hide overlay
     }
   };
 
@@ -1012,7 +1016,10 @@ amount_to_collect || 0;
       return;
     }
 
+    // Show overlay before starting payment
+    
     setIsProcessingPayment(true);
+    
     console.log("Starting Collect.js payment request...");
 
     try {
@@ -1021,7 +1028,7 @@ amount_to_collect || 0;
         callback: (response: CollectJSResponse) => {
           console.log("Collect.js payment callback received:", response);
           setPaymentToken(response.token);
-          setIsProcessingPayment(false);
+          // Don't hide overlay yet - keep it showing while submitting order
           submitOrderWithToken(response.token);
         },
         paymentType: "cc",
@@ -1034,12 +1041,13 @@ amount_to_collect || 0;
       window.CollectJS.startPaymentRequest();
     } catch (error) {
       console.error("Error starting payment request:", error);
+      setShowPaymentOverlay(false); // Hide overlay on error
+      setIsProcessingPayment(false);
       alert(
         `Failed to process payment: ${
           error instanceof Error ? error.message : "Unknown error"
         }`
       );
-      setIsProcessingPayment(false);
     }
   };
   const checkedAge =()=>{
@@ -1130,7 +1138,7 @@ amount_to_collect || 0;
   }
   if (transactionid === 0 && orderFailed == false)
     return (
-      <div className="min-h-screen p-[16px] md:p-[32px]">
+      <div className="min-h-screen p-[16px] md:p-[32px] relative">
         <noscript>
           <meta
             httpEquiv="refresh"
@@ -1183,7 +1191,7 @@ amount_to_collect || 0;
             {/* LEFT COLUMN: Contact Info */}
             <div className="space-y-6">
               {/* Contact Information */}
-              <div className="bg-white rounded-lg p-[16px] md:p-[32px] mb-[16px] md:mb-[32px] relative top-[100px]">
+              <div className="bg-white rounded-lg p-[16px] md:p-[32px]  relative top-[100px]">
                 <h2 className="text-lg font-semibold mb-4">
                   Contact Information
                 </h2>
@@ -1344,22 +1352,7 @@ amount_to_collect || 0;
                   />
                 </div>
 
-                <div className="flex items-center  mb-[63px]">
-                  <input
-                    type="checkbox"
-                    id="saveInfo"
-                    name="saveInfo"
-                    checked={formData.saveInfo}
-                    onChange={handleInputChange}
-                    className="w-4 h-4 rounded border-gray-300 "
-                  />
-                  <label
-                    htmlFor="saveInfo"
-                    className="ml-2 text-sm text-gray-700"
-                  >
-                    Save this information for next time
-                  </label>
-                </div>
+                
               </div>
             
             </div>
@@ -1807,22 +1800,7 @@ amount_to_collect || 0;
                 />
               </div>
 
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="saveInfoMobile"
-                  name="saveInfo"
-                  checked={formData.saveInfo}
-                  onChange={handleInputChange}
-                  className="w-4 h-4 rounded border-gray-300"
-                />
-                <label
-                  htmlFor="saveInfoMobile"
-                  className="ml-2 text-sm text-gray-700"
-                >
-                  Save this information for next time
-                </label>
-              </div>
+              
             </div>
 
            
@@ -2082,6 +2060,26 @@ amount_to_collect || 0;
             </div>
           </form>
         </div>
+
+        {/* Payment Processing Overlay */}
+        {showPaymentOverlay && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-70 flex items-center justify-center z-50">
+            <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full mx-4">
+              <div className="flex flex-col items-center">
+                <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                  Processing Payment
+                </h3>
+                <p className="text-gray-600 text-center">
+                  Please wait while we process your payment...
+                </p>
+                <p className="text-sm text-gray-500 mt-2 text-center">
+                  Do not close this window or refresh the page
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
 };

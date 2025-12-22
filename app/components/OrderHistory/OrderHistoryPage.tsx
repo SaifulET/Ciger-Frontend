@@ -9,7 +9,7 @@ import {useRouter} from "next/navigation"
 export default function OrderHistoryPage() {
   const router = useRouter()
   useEffect(()=>{
-    Cookies.get("token")?"":router.push("/pages")
+    Cookies.get("token")?"":router.push("/auth/signin")
   },[Cookies.get("token")])
   const [searchId, setSearchId] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');

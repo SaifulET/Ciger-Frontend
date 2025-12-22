@@ -71,6 +71,7 @@ export default function NotificationsPage() {
         
         const response = await api.get<ApiResponse>(`/notification/getNotifications/${user}`);
      
+     
         
 
         if (!response.data) {
