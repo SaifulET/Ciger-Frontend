@@ -497,7 +497,7 @@ const CheckoutPage = () => {
           subtotal,
           shipping: shippingCost,
           tax:taxRate,
-          discount,
+          discount:discountPercent,
           total,
         },
       };
