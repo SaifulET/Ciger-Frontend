@@ -373,18 +373,17 @@ export const useProductsStore = create<ProductsState>()(
       }));
       
       try {
-        const response = await api.get('/product/getAllProduct', {
-          params: { category }
-        });
+        const response = await api.get('/product/getRelatedProduct/'+id);
         
         const result = response.data;
+        console.log(result)
         
         if (result.success) {
           
           const apiProducts: ApiProduct[] = result.data;
 const filteredProducts = apiProducts.filter(p => p._id !== id);
-console.log(filteredProducts,"386")
-const relatedProducts: RelatedProduct[] =filteredProducts.slice(0, 6).map(apiProduct => ({
+
+const relatedProducts: RelatedProduct[] =filteredProducts.map(apiProduct => ({
             id: apiProduct._id,
             brand: apiProduct.brand,
             name: apiProduct.name,
