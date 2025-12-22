@@ -253,7 +253,7 @@ const CheckoutPage = () => {
   const [tax, setTax] = useState(0);
   const [taxRate, setTaxRate] = useState(0); // Fixed 10.25% tax rate
   const [isCalculatingTax, setIsCalculatingTax] = useState(false);
-  const [isAgeChecked, setIsAgeChecked] = useState(false);
+  const [isAgeChecked, setIsAgeChecked] = useState(true);
 
   // Collect.js states
   const [isCollectJSLoaded, setIsCollectJSLoaded] = useState(false);
@@ -496,7 +496,7 @@ const CheckoutPage = () => {
         totals: {
           subtotal,
           shipping: shippingCost,
-          tax,
+          tax:taxRate,
           discount,
           total,
         },
