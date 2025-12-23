@@ -1,15 +1,84 @@
-import PriceRangeBar from '@/app/components/Product/Pricerange'
-import ProductsPage from '@/app/components/Product/ProductPages'
-import React, { Suspense } from 'react'
+import React, { Suspense } from "react";
+import ProductsPage from "@/app/components/Product/ProductPages";
+import { Metadata } from "next";
 
-function page() {
-  return (
-    <div className='md:p-8'>
-        <Suspense fallback={<div>Loading...</div>}>
-      <ProductsPage />
-    </Suspense>
-    </div>
-  )
+// Force the page to be dynamic so metadata updates per request
+export const dynamic = "force-dynamic";
+
+interface SearchParams {
+  sub?: string;
+  subPro?: string;
+  brand?: string;
+  discount?: string;
+  new?: string;
+  best?: string;
+  keyword?:string;
 }
 
-export default page
+const ProductPage = async ({ 
+  searchParams 
+}: { 
+  searchParams: Promise<SearchParams> 
+}) => {
+  const params = await searchParams;
+  
+  return (
+    <div className="md:p-8">
+      <Suspense fallback={<div>Loading...</div>}>
+        <ProductsPage />
+      </Suspense>
+    </div>
+  );
+};
+
+export default ProductPage;
+
+// Generate metadata using the `searchParams` variable
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  const { sub, subPro, brand, discount, new: isNew, best, keyword } = params;
+
+  // Build title
+  let title = "";
+  
+  if (keyword) title = `Search results for "${keyword}"`;
+  else if (sub && subPro) title = `Explore ${subPro} in ${sub}`;
+  else if (sub) title = `Shop ${sub} `;
+
+  if (brand) title += `Brand: ${brand}`;
+  if (discount === "true") title += "Discounted Product";
+  if (isNew === "true") title += "New Arrival Product";
+  if (best === "true") title += "Best Seller Product";
+title += " | Discover Amazing Products";
+  // Build description
+  let description = "Find the best products that match your needs.";
+  
+  if (keyword) description = `Results for "${keyword}" across all categories and brands.`;
+  else if (sub && subPro) description = `Browse ${subPro} in ${sub} and discover top products.`;
+  else if (sub) description = `Browse products in ${sub} and find your favorites.`;
+
+  if (brand) description += ` Featuring products by ${brand}.`;
+  if (discount === "true") description += " Enjoy special discounted prices!";
+  if (isNew === "true") description += " Check out the latest arrivals!";
+  if (best === "true") description += " See our best-selling products!";
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `/pages/product${keyword ? `?keyword=${keyword}` : ""}`,
+      type: "website",
+    },
+    twitter: {
+      title,
+      description,
+      card: "summary_large_image",
+    },
+  };
+}

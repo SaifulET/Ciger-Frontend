@@ -4,6 +4,25 @@ import Advertise from "../components/LeadingPage/Advertise";
 import Navbar from "../components/LeadingPage/Navbar2";
 import Footer from "../components/FooterSection/Footer";
 
+export const metadata = {
+  title: "Smokenza",
+  description: "Welcome to Smokenza! Buy premium cigars, hookah & vapes online with fast delivery.",
+  openGraph: {
+    title: "Smokenza | Premium Cigars & Vapes",
+    description: "Shop cigars, hookah & vapes online with fast delivery.",
+    url: "https://smokenza.com",
+    images: [
+      {
+        url: "https://smokenza.com/og-image.jpg",
+        width: 1200,
+        height: 630,
+      },
+    ],
+    type: "website",
+  },
+};
+
+
 export default function LayoutWrapper({ children }: { children: ReactNode }) {
   return (
     <>
