@@ -124,11 +124,11 @@ export const useCartStore = create<CartState>()(
       },
 
       // Add item to cart
-      addItem: async (product: Product, userId: string | null, quantity: number = 1) => {
+     addItem: async (product: Product, userId: string | null, quantity: number = 1) => {
   const { items } = get();
   
   if (userId) {
-    // Authenticated user flow
+    // Authenticated user flow - This part is correct
     set({ isSyncing: true });
     
     try {
@@ -142,42 +142,40 @@ export const useCartStore = create<CartState>()(
         const newQuantity = existingCartItem.quantity + quantity;
         
         // Update on server
-        if(newQuantity<=product.available){
-         
+        if (newQuantity <= product.available) {
           set({ isAvailable: true });
-          const response = await api.put(
-          `/cart/updateCart/${existingCartItem._id}`,
-          { quantity: newQuantity },
-          { headers: { "Content-Type": "application/json" } }
-        );
-        
-       
-        }
-        else{
-           set({ isAvailable: false });
+          await api.put(
+            `/cart/updateCart/${existingCartItem._id}`,
+            { quantity: newQuantity },
+            { headers: { "Content-Type": "application/json" } }
+          );
+        } else {
+          set({ isAvailable: false });
         }
       } else {
         // Create new cart item
-        
-        const response = await api.post("/cart/createCart", {
-          userId: userId,
-          productId: product._id,
-          quantity: quantity,
-        });
-        
-        
+        if (quantity <= product.available) {
+          set({ isAvailable: true });
+          await api.post("/cart/createCart", {
+            userId: userId,
+            productId: product._id,
+            quantity: quantity,
+          });
+        } else {
+          set({ isAvailable: false });
+        }
       }
       
       // Refresh cart from server
       await get().initializeCart(userId);
       
     } catch (error) {
-      
+      console.error("Error adding item to cart:", error);
     } finally {
       set({ isSyncing: false });
     }
   } else {
-    // Guest user flow
+    // Guest user flow - FIXED VERSION
     set({ isSyncing: true });
     
     try {
@@ -189,20 +187,27 @@ export const useCartStore = create<CartState>()(
       }
       
       // Check if guest already has this product in local cart
+      // Fixed: This should find items with the same product ID and guest ID
       const existingCartItem = items.find(
         item => item.userId === guestId && item.productId._id === product._id
       );
       
-      let targetCartItemId: string;
-      let finalQuantity: number;
+      // FIRST check availability BEFORE any creation logic
+      const finalQuantity = existingCartItem 
+        ? existingCartItem.quantity + quantity 
+        : quantity;
+      
+      if (finalQuantity > product.available) {
+        set({ isAvailable: false });
+        return; // Exit early if not available
+      }
+      
+      set({ isAvailable: true });
       
       if (existingCartItem) {
         // Update existing local item
-        targetCartItemId = existingCartItem._id;
-        finalQuantity = existingCartItem.quantity + quantity;
-        
         const updatedItems = items.map(item => 
-          item._id === targetCartItemId
+          item._id === existingCartItem._id
             ? {
                 ...item,
                 quantity: finalQuantity,
@@ -216,15 +221,15 @@ export const useCartStore = create<CartState>()(
         
         // Update on server
         await api.put(
-          `/cart/updateCart/${targetCartItemId}`,
+          `/cart/updateCart/${existingCartItem._id}`,
           { quantity: finalQuantity },
           { headers: { "Content-Type": "application/json" } }
         );
         
       } else {
         // Create new local item
-        finalQuantity = quantity;
-        targetCartItemId = `${Date.now()}${Math.random().toString(36).substr(2, 9)}`;
+        // Generate a consistent ID for this guest-product combination
+        const targetCartItemId = `${guestId}_${product._id}_${Date.now()}`;
         
         const newItem: CartItem = {
           _id: targetCartItemId,
@@ -241,9 +246,7 @@ export const useCartStore = create<CartState>()(
           total: product.price * finalQuantity,
         };
         
-        if(finalQuantity<=product.available){
-          set({ isAvailable: true });
-          set({ items: [...items, newItem] });
+        set({ items: [...items, newItem] });
         
         // Create on server
         await api.post("/cart/createCart", {
@@ -252,18 +255,12 @@ export const useCartStore = create<CartState>()(
           quantity: finalQuantity,
         });
       }
-      else{
-        set({ isAvailable: false });
-      }
-        }
-
-        
       
       // Refresh cart from server (for consistency)
       await get().initializeCart(guestId);
       
     } catch (error) {
-      
+      console.error("Error adding item to cart (guest):", error);
     } finally {
       set({ isSyncing: false });
     }

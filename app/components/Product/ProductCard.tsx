@@ -6,113 +6,132 @@ import { ProductType } from "./ProductType";
 import Link from "next/link";
 import { useCartStore } from "@/app/store/cartStore";
 import useUserStore from "@/app/store/userStore";
-import { useEffect } from "react";
+import { useState } from "react";
 
 interface ProductCardProps {
   product: ProductType;
   onAddCart?: (id: number) => void;
-  
 }
 
-export default function ProductCard({ product, onAddCart}: ProductCardProps) {
- const { addItem, getItemQuantity,guestId } = useCartStore();
+export default function ProductCard({ product, onAddCart }: ProductCardProps) {
+  const { addItem, getItemQuantity, guestId } = useCartStore();
   const { user } = useUserStore();
-  const userId = user ||guestId || null;
-  
-
-  
+  const userId = user || guestId || null;
+  const [isAdding, setIsAdding] = useState(false);
   
   const currentQuantity = getItemQuantity(product.id.toString());
-const handleAddToCart = () => {
-  console.log(product.available,product.name,product.inStock,"27")
-    addItem({
-      _id:product.id.toString(),
-      brand: product.brandId?.name,
-      name: product.name,
-      price: product.currentPrice,
-      available: product.available || 0,
-      image: product.image,
-
-    }, userId,1);
+  
+  const handleAddToCart = async () => {
+    // Don't allow multiple clicks if already adding or out of stock
+    if (isAdding || product.available === 0) return;
+    
+    setIsAdding(true);
+    
+    try {
+      await addItem({
+        _id: product.id.toString(),
+        brand: product.brandId?.name,
+        name: product.name,
+        price: product.currentPrice,
+        available: product.available || 0,
+        image: product.image,
+      }, userId, 1);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+    } finally {
+      // Reset button state after a short delay for better UX
+      setTimeout(() => setIsAdding(false), 500);
+    }
   };
 
-
-
-
   const router = useRouter();
-  const newbestSeller= product?.newBestSeller;
+  const newbestSeller = product?.newBestSeller;
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col h-full shadow-sm hover:shadow-md transition">
       <Link href={`/pages/products/${product?.id}`}>
-      
-       <div className="flex-1 flex flex-col">
-        {newbestSeller && (
-          <div className="relative">
-            <h1 className="px-1 md:px-3 py-1 md:py-1.5 absolute top-[-16px] left-[-16px] bg-[#cf2626] rounded-tl-[12px] rounded-br-[12px] z-[3] text-gray-100 text-xs md:text-sm font-semibold text-center">
-              Best Seller
-            </h1>
-          </div>
-        )}
-        {product?.newSeller && (
-          <div className="relative">
-            <h1 className="px-1 md:px-3 py-1 md:py-1.5 absolute top-[-16px] right-[-16px] bg-[#6E1E2D] rounded-tr-[12px] rounded-bl-[12px] z-[3] text-gray-100 text-xs md:text-sm font-semibold text-center">
-              New
-            </h1>
-          </div>
-        )}
+        <div className="flex-1 flex flex-col">
+          {newbestSeller && (
+            <div className="relative">
+              <h1 className="px-1 md:px-3 py-1 md:py-1.5 absolute top-[-16px] left-[-16px] bg-[#cf2626] rounded-tl-[12px] rounded-br-[12px] z-[3] text-gray-100 text-xs md:text-sm font-semibold text-center">
+                Best Seller
+              </h1>
+            </div>
+          )}
+          {product?.newSeller && (
+            <div className="relative">
+              <h1 className="px-1 md:px-3 py-1 md:py-1.5 absolute top-[-16px] right-[-16px] bg-[#6E1E2D] rounded-tr-[12px] rounded-bl-[12px] z-[3] text-gray-100 text-xs md:text-sm font-semibold text-center">
+                New
+              </h1>
+            </div>
+          )}
 
-        <div className="aspect-square flex items-center justify-center bg-gray-100 rounded-lg mb-4 relative mt-4 overflow-hidden">
-  <img
-    src={product?.image}
-    alt={product?.name}
-    className="product Image"
-  />
-  
-  {/* Out of Stock Overlay for Image */}
-  {product.available === 0 && (
-    <div className="absolute inset-0 bg-black/50 z-10 flex items-center justify-center rounded-lg">
-      <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-md mx-4 md:mx-0">
-        <span className="text-red-600 font-bold text-md md:text-lg">Out of Stock</span>
-      </div>
-    </div>
-  )}
-</div>
-
-        <div className="space-y-2 flex-1">
-          <p className="text-sm text-gray-500">{product?.brand}</p>
-          
-          <div className={`flex items-center ${product.averageRating?"gap-2":""}`}>
-            <span className="text-xs font-semibold">{product.rating?product.rating:product.averageRating?product.averageRating:""}</span>
-            {product.averageRating?<Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />:""}
-            {/* <span className={`text-xs text-gray-500`}>({(product.available)})</span> */}
+          <div className="aspect-square flex items-center justify-center bg-gray-100 rounded-lg mb-4 relative mt-4 overflow-hidden">
+            <img
+              src={product?.image}
+              alt={product?.name}
+              className="product Image"
+            />
+            
+            {/* Out of Stock Overlay for Image */}
+            {product.available === 0 && (
+              <div className="absolute inset-0 bg-black/50 z-10 flex items-center justify-center rounded-lg">
+                <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-md mx-4 md:mx-0">
+                  <span className="text-red-600 font-bold text-md md:text-lg">Out of Stock</span>
+                </div>
+              </div>
+            )}
           </div>
-          <h3 className="font-semibold text-gray-900 text-[16px] overflow-hidden h-[104px] md:h-[96px]  xl:h-[64px]">{product?.name}</h3>
-          <div className="flex-col md:flex-row flex items-baseline gap-0 md:gap-1">
-            <span className="text-[24px] font-semibold text-gray-900">${(product?.currentPrice).toFixed(2)   }</span>
-            {product?.originalPrice !== undefined && product.originalPrice > 0   && <span className="text-[14px] font-semibold text-gray-400 line-through">${(product?.originalPrice).toFixed(2)   }</span>}
+
+          <div className="space-y-2 flex-1">
+            <p className="text-sm text-gray-500">{product?.brand}</p>
+            
+            <div className={`flex items-center ${product.averageRating ? "gap-2" : ""}`}>
+              <span className="text-xs font-semibold">{product.rating ? product.rating : product.averageRating ? product.averageRating : ""}</span>
+              {product.averageRating ? <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" /> : ""}
+            </div>
+            <h3 className="font-semibold text-gray-900 text-[16px] overflow-hidden h-[104px] md:h-[96px] xl:h-[64px]">{product?.name}</h3>
+            <div className="flex-col md:flex-row flex items-baseline gap-0 md:gap-1">
+              <span className="text-[24px] font-semibold text-gray-900">${(product?.currentPrice).toFixed(2)}</span>
+              {product?.originalPrice !== undefined && product.originalPrice > 0 && <span className="text-[14px] font-semibold text-gray-400 line-through">${(product?.originalPrice).toFixed(2)}</span>}
+            </div>
           </div>
         </div>
-      </div>
       </Link>
-     
 
       <div className="flex gap-3 mt-4">
-       {product.available ? <button
-          onClick={handleAddToCart}
-          className="flex-1 bg-[#C9A040] hover:bg-yellow-600 text-white font-medium  h-[44px] lg:h-[52px] rounded-lg flex items-center justify-center gap-1 transition"
-        >
-          <Plus className="w-5 h-5" /> Cart
-        </button>: <button
-        
-          className="flex-1 bg-gray-200 text-gray-400 font-medium h-[44px] lg:h-[52px] rounded-lg flex items-center justify-center gap-1 transition"
-        >
-          <Plus className="w-5 h-5" /> Cart
-        </button>
-} 
-       
+        {product.available  ? (
+          <button
+            onClick={handleAddToCart}
+            disabled={isAdding}
+            className={`flex-1 ${
+              isAdding 
+                ? 'bg-yellow-600/70 cursor-wait' 
+                : 'bg-[#C9A040] hover:bg-yellow-600'
+            } text-white font-medium h-[44px] lg:h-[52px] rounded-lg flex items-center justify-center gap-1 transition relative`}
+          >
+            {isAdding ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                  <span>Adding...</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <Plus className="w-5 h-5" /> Cart
+              </>
+            )}
+          </button>
+        ) : (
+          <button
+            disabled
+            className="flex-1 bg-gray-200 text-gray-400 font-medium h-[44px] lg:h-[52px] rounded-lg flex items-center justify-center gap-1 transition cursor-not-allowed"
+          >
+            <Plus className="w-5 h-5" /> Out of Stock
+          </button>
+        )}
       </div>
     </div>
   );
 }
-
