@@ -6,6 +6,7 @@ export interface Review {
   date: string;
   text: string;
   userId?: string;
+  image?:string;
   createdAt?: string;
 }
 

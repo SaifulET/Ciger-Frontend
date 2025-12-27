@@ -37,6 +37,7 @@ export default function ReviewsSection({
   reviewsPerPage,
   handleAddReview,
 }: ReviewsSectionProps) {
+  console.log(product,"product")
   const isLoggedIn = !!Cookies.get("token");
   
   const totalReviewPages = Math.ceil(product.reviews.length / reviewsPerPage);
@@ -78,7 +79,7 @@ export default function ReviewsSection({
               <div className="flex gap-3 md:gap-4">
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gray-300 flex-shrink-0 overflow-hidden">
                   <img 
-                    src="https://www.selectmarket.ae/wp-content/uploads/2016/05/5ed0bc59411f1356d4fdf40b_dummy-person.png" 
+                    src={rev.image} 
                     alt="user" 
                     className="w-full h-full object-cover"
                   />

@@ -9,6 +9,7 @@ import RelatedProducts from "./RelatedProduct";
 import { useProductsStore } from "../../store/productDetailsStore";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import useUserStore from "@/app/store/userStore";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -56,12 +57,15 @@ export default function ProductDetailPage() {
     addToCart(quantity);
     setQuantity(1);
   };
+   const { user } = useUserStore();
 
   const handleAddReview = () => {
     if (reviewText.trim() && rating > 0) {
+      console.log(user,"add")
       addReview(productId, {
         text: reviewText,
         rating: rating,
+        userId:user
       });
       setShowReviewModal(false);
       setReviewText("");

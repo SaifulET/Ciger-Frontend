@@ -82,10 +82,10 @@ const handleAddToCart = () => {
         <div className="space-y-2 flex-1">
           <p className="text-sm text-gray-500">{product?.brand}</p>
           
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold">{product.rating?product.rating:product.averageRating?product.averageRating:"0"}</span>
-            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-            <span className={`text-xs text-gray-500`}>({(product.available)})</span>
+          <div className={`flex items-center ${product.averageRating?"gap-2":""}`}>
+            <span className="text-xs font-semibold">{product.rating?product.rating:product.averageRating?product.averageRating:""}</span>
+            {product.averageRating?<Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />:""}
+            {/* <span className={`text-xs text-gray-500`}>({(product.available)})</span> */}
           </div>
           <h3 className="font-semibold text-gray-900 text-[16px] overflow-hidden h-[104px] md:h-[96px]  xl:h-[64px]">{product?.name}</h3>
           <div className="flex-col md:flex-row flex items-baseline gap-0 md:gap-1">

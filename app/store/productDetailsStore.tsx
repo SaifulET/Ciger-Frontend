@@ -71,6 +71,9 @@ interface ApiReviewResponse {
   userId?: {
     _id: string;
     email: string;
+    firstName?:string;
+    lastName?:string;
+    image?:string;
   };
   productId?: {
     _id: string;
@@ -313,6 +316,7 @@ export const useProductsStore = create<ProductsState>()(
 
     // Add a new review
     addReview: async (productId: string, reviewData: Omit<Review, 'id' | 'author' | 'date'>) => {
+
       try {
         const isLoggedIn = !!document.cookie.includes('token');
         if (!isLoggedIn) {
@@ -512,11 +516,12 @@ const transformApiReviewToReview = (apiReview: ApiReviewResponse): Review => {
   
   return {
     id: apiReview._id,
-    author: authorName.charAt(0).toUpperCase() + authorName.slice(1),
+    author: apiReview.userId?.firstName|| "" + apiReview.userId?.lastName ||"" ,
     rating: apiReview.rating,
     date: displayDate,
     text: apiReview.review,
     userId: apiReview.userId?._id,
+    image:apiReview.userId?.image||"https://www.selectmarket.ae/wp-content/uploads/2016/05/5ed0bc59411f1356d4fdf40b_dummy-person.png",
     createdAt: apiReview.createdAt,
   };
 };
