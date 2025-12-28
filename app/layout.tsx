@@ -20,6 +20,10 @@ export const metadata: Metadata = {
   description:
     "Shop premium cigars, hookah, nicotine vapes & accessories online. Fast delivery & secure checkout.",
 
+  verification: {
+    google: "nSA54hsavglNY_r0oyVbzKlNph7JSkQNzlPUSTj_V1Y",
+  },
+
   icons: {
     icon: [
       {
@@ -48,6 +52,7 @@ export const metadata: Metadata = {
     type: "website",
   },
 };
+
 
 export default function RootLayout({
   children,
