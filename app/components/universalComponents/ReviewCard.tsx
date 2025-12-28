@@ -25,10 +25,10 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ Review }) => {
       <Image src={quoteIcon} alt="quote" width={24} height={24} />
 
       {/* Review Text */}
-      <p className="text-sm text-gray-700">{review}</p>
+      <p className="text-sm text-gray-700 h-[100px]">{review}</p>
 
       {/* Bottom Section */}
-      <div className="flex items-center justify-between w-full">
+      <div className="flex items-center justify-between w-full h-[33px]">
         {/* Avatar + Name */}
         <div className="flex items-center gap-2">
           <Image
@@ -36,10 +36,10 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ Review }) => {
             alt={name}
             width={32}
             height={32}
-            className="rounded-full object-cover"
+            className="rounded-full object-cover h-[33px]"
           />
           <div>
-            <p className="text-sm font-semibold">{name}</p>
+            <p className="text-sm font-semibold ">{name}</p>
             <p className="text-xs text-gray-400">{location}</p>
           </div>
         </div>

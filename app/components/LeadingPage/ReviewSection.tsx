@@ -12,6 +12,8 @@ interface User {
   _id: string;
   email: string;
   name?: string;
+  firstName:string;
+  lastName:string;
   image?: string;
   location?: string;
 }
@@ -41,6 +43,7 @@ interface ApiResponse {
 interface ReviewCardData {
   id: string;
   name: string;
+
   rating: number;
   location: string;
   review: string;
@@ -75,9 +78,10 @@ export default function ReviewSection() {
         const response = await api.get<ApiResponse>('/review/getAllReview');
        
         if (response.data.success) {
+          
           const formattedReviews: ReviewCardData[] = response.data.data.map((review) => ({
             id: review._id,
-            name: review.userId.name || review.userId.email.split('@')[0] || 'User',
+            name: review.userId.firstName || 'User',
             rating: review.rating,
             location: review.userId.location || '',
             review: review.review,
