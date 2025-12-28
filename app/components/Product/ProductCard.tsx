@@ -1,12 +1,12 @@
 "use client";
-import { Star, Plus } from "lucide-react";
+import { Star, Plus, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ProductType } from "./ProductType";
 import Link from "next/link";
 import { useCartStore } from "@/app/store/cartStore";
 import useUserStore from "@/app/store/userStore";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface ProductCardProps {
   product: ProductType;
@@ -22,13 +22,13 @@ export default function ProductCard({ product, onAddCart }: ProductCardProps) {
   const currentQuantity = getItemQuantity(product.id.toString());
   
   const handleAddToCart = async () => {
-    // Don't allow multiple clicks if already adding or out of stock
-    if (isAdding || product.available === 0) return;
+    if (isAdding) return;
     
     setIsAdding(true);
     
     try {
-      await addItem({
+      console.log(product.available, product.name, product.inStock, "27");
+      addItem({
         _id: product.id.toString(),
         brand: product.brandId?.name,
         name: product.name,
@@ -36,11 +36,18 @@ export default function ProductCard({ product, onAddCart }: ProductCardProps) {
         available: product.available || 0,
         image: product.image,
       }, userId, 1);
+      
+      // Optional: Call the onAddCart prop if provided
+      if (onAddCart) {
+        onAddCart(Number(product.id));
+      }
     } catch (error) {
-      console.error("Error adding to cart:", error);
+      
     } finally {
-      // Reset button state after a short delay for better UX
-      setTimeout(() => setIsAdding(false), 500);
+      // Keep the loading state for 1 second for better UX
+      setTimeout(() => {
+        setIsAdding(false);
+      }, 1000);
     }
   };
 
@@ -87,39 +94,48 @@ export default function ProductCard({ product, onAddCart }: ProductCardProps) {
             <p className="text-sm text-gray-500">{product?.brand}</p>
             
             <div className={`flex items-center ${product.averageRating ? "gap-2" : ""}`}>
-              <span className="text-xs font-semibold">{product.rating ? product.rating : product.averageRating ? product.averageRating : ""}</span>
+              <span className="text-xs font-semibold">
+                {product.rating ? product.rating : product.averageRating ? product.averageRating : ""}
+              </span>
               {product.averageRating ? <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" /> : ""}
             </div>
-            <h3 className="font-semibold text-gray-900 text-[16px] overflow-hidden h-[104px] md:h-[96px] xl:h-[64px]">{product?.name}</h3>
+            <h3 className="font-semibold text-gray-900 text-[16px] overflow-hidden h-[104px] md:h-[96px] xl:h-[64px]">
+              {product?.name}
+            </h3>
             <div className="flex-col md:flex-row flex items-baseline gap-0 md:gap-1">
-              <span className="text-[24px] font-semibold text-gray-900">${(product?.currentPrice).toFixed(2)}</span>
-              {product?.originalPrice !== undefined && product.originalPrice > 0 && <span className="text-[14px] font-semibold text-gray-400 line-through">${(product?.originalPrice).toFixed(2)}</span>}
+              <span className="text-[24px] font-semibold text-gray-900">
+                ${(product?.currentPrice).toFixed(2)}
+              </span>
+              {product?.originalPrice !== undefined && product.originalPrice > 0 && (
+                <span className="text-[14px] font-semibold text-gray-400 line-through">
+                  ${(product?.originalPrice).toFixed(2)}
+                </span>
+              )}
             </div>
           </div>
         </div>
       </Link>
 
       <div className="flex gap-3 mt-4">
-        {product.available  ? (
+        {product.available ? (
           <button
             onClick={handleAddToCart}
             disabled={isAdding}
             className={`flex-1 ${
               isAdding 
-                ? 'bg-yellow-600/70 cursor-wait' 
+                ? 'bg-yellow-600' 
                 : 'bg-[#C9A040] hover:bg-yellow-600'
-            } text-white font-medium h-[44px] lg:h-[52px] rounded-lg flex items-center justify-center gap-1 transition relative`}
+            } text-white font-medium h-[44px] lg:h-[52px] rounded-lg flex items-center justify-center gap-1 transition disabled:opacity-80`}
           >
             {isAdding ? (
               <>
-                <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                  <span>Adding...</span>
-                </div>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Adding...</span>
               </>
             ) : (
               <>
-                <Plus className="w-5 h-5" /> Cart
+                <Plus className="w-5 h-5" />
+                <span>Cart</span>
               </>
             )}
           </button>
@@ -128,7 +144,8 @@ export default function ProductCard({ product, onAddCart }: ProductCardProps) {
             disabled
             className="flex-1 bg-gray-200 text-gray-400 font-medium h-[44px] lg:h-[52px] rounded-lg flex items-center justify-center gap-1 transition cursor-not-allowed"
           >
-            <Plus className="w-5 h-5" /> Out of Stock
+            <Plus className="w-5 h-5" />
+            Cart
           </button>
         )}
       </div>

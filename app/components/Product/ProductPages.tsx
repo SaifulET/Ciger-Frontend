@@ -359,7 +359,11 @@ const urlParams = useMemo((): URLParams => {
     return () => window.removeEventListener('resize', updatePageSize);
   }, []);
 
-  const handleAddCart = (id: number) => alert(`Add product ${id} to cart`);
+ const handleAddCart = (id: number) => {
+  
+  console.log(`Product ${id} added to cart`);
+  
+};
   const handleView = (id: number) => router.push(`/pages/product/${id}`);
 
   // Check if any filters are active
