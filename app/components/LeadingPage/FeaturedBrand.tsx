@@ -62,7 +62,6 @@ export default function ProductCarousel() {
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load brands");
-        console.error("Error fetching brands:", err);
       } finally {
         setLoading(false);
       }

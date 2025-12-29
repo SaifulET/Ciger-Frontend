@@ -1,4 +1,5 @@
 "use client";
+import { slugify } from "@/lib/slugify";
 import Image, { StaticImageData } from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -66,7 +67,7 @@ export default function BlogPage({ blogs }: BlogPageProps) {
                 
               </div>
 
-              <Link href={`/blog/${blog.id}`}>
+              <Link href={`/blog/${blog.id}-${slugify(blog.title)}`}>
                 <button className="bg-[#D5A23E] mt-4 w-full md:w-auto py-2 px-4 rounded-md font-poppins text-white text-sm hover:opacity-90 ">
                   View
                 </button>

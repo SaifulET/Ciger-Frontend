@@ -63,14 +63,11 @@ const OTPVerification: React.FC = () => {
   const handleNext = async() => {
 
     const res = await VerifyOtpRequest(otpValues.join(""));
-    console.log(res)
 
   if (res.message ==="OTP verified successfully") {
     setErrorMessage("t");
-    console.log(res.message)
     router.push('/auth/new-password');
   } else {
-    console.log("y")
     setErrorMessage(res.message || "Something went wrong");
   }
 

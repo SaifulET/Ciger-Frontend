@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useCartStore } from "@/app/store/cartStore";
 import useUserStore from "@/app/store/userStore";
 import { useEffect, useState } from "react";
+import { slugify } from "@/lib/slugify";
 
 interface ProductCardProps {
   product: ProductType;
@@ -56,7 +57,7 @@ export default function ProductCard({ product, onAddCart }: ProductCardProps) {
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col h-full shadow-sm hover:shadow-md transition">
-      <Link href={`/pages/products/${product?.id}`}>
+      <Link href={`/products/${product?.id}-${slugify(product?.name)}`}>
         <div className="flex-1 flex flex-col">
           {newbestSeller && (
             <div className="relative">

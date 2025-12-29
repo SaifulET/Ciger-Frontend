@@ -1,5 +1,6 @@
 "use client";
 
+import { slugify } from "@/lib/slugify";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -71,7 +72,7 @@ const BlogCard: React.FC<BlogCardProps> = ({ product }) => {
         {/* Button - Fixed at bottom */}
         <div className="mt-auto w-full">
           <Link
-            href={link || `/pages/blog/${_id}`}
+            href={ `/blogs/${_id}-${slugify(title)}`}
             className="w-full"
           >
             <button className="flex justify-center items-center w-full h-[44px] lg:h-[52px] bg-[#C9A040] rounded-[12px] hover:bg-[#B78E35] transition-colors">

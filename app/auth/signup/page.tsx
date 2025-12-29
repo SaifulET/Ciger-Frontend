@@ -27,14 +27,12 @@ const SignUpPage: NextPage = () => {
     
     try {
       const res = await UserSignupRequest(email, password, firstName, lastName);
-      console.log(res)
       if(res.status !== "error"){
         router.push("/auth/signin");
       } else {
         setErrorMessage(res.message ?? "");
       }
     } catch (error) {
-      console.error('Sign up error:', error);
       setErrorMessage("An unexpected error occurred");
     } finally {
       setIsLoading(false);

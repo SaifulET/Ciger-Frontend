@@ -42,7 +42,6 @@ export default function BlogCarousal() {
       try {
         setLoading(true);
         const response = await api.get('/blog/getAllBlogs');
-        console.log(response,"ad")
         const result = await response.data;
         
        if (result.success) {
@@ -67,7 +66,6 @@ export default function BlogCarousal() {
         }
       } catch (err) {
         setError('Error fetching blogs');
-        console.error('Error fetching blogs:', err);
       } finally {
         setLoading(false);
       }
@@ -271,7 +269,7 @@ export default function BlogCarousal() {
           </h2>
           <Link
             href={{
-              pathname: "/pages/blog",
+              pathname: "/blogs",
             }}
           >
             <button className="text-gray-800 font-medium text-[12px] md:text-[14px] hover:text-yellow-600">

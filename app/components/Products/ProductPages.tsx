@@ -78,7 +78,6 @@ const urlParams = useMemo((): URLParams => {
   
   // Use React Router's location instead of window.location
   const url = window.location.origin + location.pathname + location.search;
-  console.log(window.location,'61')
   
   const queryStart = url.indexOf('?');
   if (queryStart === -1) return params;
@@ -138,7 +137,6 @@ const urlParams = useMemo((): URLParams => {
 
     const { keyword, ...otherParams } = urlParams;
 
-    console.log('Processing URL params:', { keyword, otherParams });
 
     // If keyword exists, use API call
     if (keyword) {
@@ -166,7 +164,6 @@ const urlParams = useMemo((): URLParams => {
 
       // Handle brand from URL
       if (otherParams.brand) {
-        console.log('Adding brand from URL:', otherParams.brand);
         newFilters.brand.push(otherParams.brand);
       }
 
@@ -178,7 +175,6 @@ const urlParams = useMemo((): URLParams => {
         newFilters.feature.push('New Arrival');
       }
 
-      console.log('Setting new filters for keyword search:', newFilters);
       setLocalFilters(newFilters);
     } else {
       // No keyword - use client-side filtering with full products
@@ -207,7 +203,6 @@ const urlParams = useMemo((): URLParams => {
 
       // Handle brand from URL
       if (otherParams.brand) {
-        console.log('Adding brand from URL (no keyword):', otherParams.brand);
         newFilters.brand.push(otherParams.brand);
       }
 
@@ -219,7 +214,6 @@ const urlParams = useMemo((): URLParams => {
         newFilters.feature.push('New Arrival');
       }
 
-      console.log('Setting new filters (no keyword):', newFilters);
       setLocalFilters(newFilters);
     }
   }, [urlParams, fetchProductsByKeyword]);
@@ -361,7 +355,6 @@ const urlParams = useMemo((): URLParams => {
 
  const handleAddCart = (id: number) => {
   
-  console.log(`Product ${id} added to cart`);
   
 };
   const handleView = (id: number) => router.push(`/pages/product/${id}`);

@@ -270,7 +270,7 @@ const CheckoutPage = () => {
   const [showPaymentOverlay, setShowPaymentOverlay] = useState(false);
 
   const collectJSConfiguredRef = useRef(false);
-  const COLLECT_JS_TOKENIZATION_KEY = "kys4zk-Gg5DDh-35QMup-h39wNz";
+  const COLLECT_JS_TOKENIZATION_KEY = "cKr7z9-mp86Jf-755JXH-2FptQ7";
 
   // Age Checker
   useEffect(() => {
@@ -332,12 +332,10 @@ const CheckoutPage = () => {
 
     const configureCollectJS = () => {
       if (!window.CollectJS) {
-        console.error("Collect.js not available for configuration");
         return;
       }
 
       if (collectJSConfiguredRef.current) {
-        console.log("Collect.js already configured");
         return;
       }
 
@@ -345,25 +343,20 @@ const CheckoutPage = () => {
         // Minimal configuration - just to check if Collect.js works
         const config: CollectJSConfig = {
           callback: () => {
-            console.log("Collect.js initialized successfully");
           },
           paymentType: "cc",
         };
 
-        console.log("Configuring Collect.js with minimal config");
         window.CollectJS.configure(config);
         collectJSConfiguredRef.current = true;
-        console.log("Collect.js configured successfully");
         setCollectJSError(null);
       } catch (configError) {
-        console.error("Error configuring Collect.js:", configError);
         setCollectJSError("Failed to configure payment processor.");
       }
     };
 
     // Check if Collect.js is already loaded
     if (window.CollectJS) {
-      console.log("Collect.js already loaded, configuring...");
       configureCollectJS();
       setIsCollectJSLoaded(true);
       return;
@@ -371,7 +364,6 @@ const CheckoutPage = () => {
 
     // Check if script already exists
     if (document.querySelector('script[src*="Collect.js"]')) {
-      console.log("Collect.js script already exists, waiting for load...");
       return;
     }
 
@@ -383,7 +375,6 @@ const CheckoutPage = () => {
     script.setAttribute("data-tokenization-key", COLLECT_JS_TOKENIZATION_KEY);
 
     script.onload = () => {
-      console.log("Collect.js loaded successfully");
       setIsCollectJSLoaded(true);
       setTimeout(() => {
         configureCollectJS();
@@ -391,7 +382,6 @@ const CheckoutPage = () => {
     };
 
     script.onerror = (error) => {
-      console.error("Failed to load Collect.js:", error);
       setCollectJSError(
         "Failed to load payment processor. Please refresh the page."
       );
@@ -411,7 +401,6 @@ const CheckoutPage = () => {
   // Submit order with payment token
   const submitOrderWithToken = async (token: string) => {
     try {
-      console.log("Preparing to submit order with token:", token);
 
       // Validate all required data before submission
       const validationErrors: string[] = [];
@@ -465,12 +454,10 @@ const CheckoutPage = () => {
       }
 
       if (validationErrors.length > 0) {
-        console.error("Validation errors:", validationErrors);
         alert(`Cannot submit order:\n${validationErrors.join("\n")}`);
         return;
       }
 
-      console.log("All validation passed, creating order data...");
 
       const orderData: OrderData = {
         userId: user || guestId,
@@ -507,7 +494,6 @@ const CheckoutPage = () => {
         },
       };
 
-      console.log("Submitting order with complete data:", orderData);
       setShowPaymentOverlay(true);
       const response = await api.post<{
         success: boolean;
@@ -515,10 +501,8 @@ const CheckoutPage = () => {
         orderid?: number;
         transactionid?: number;
       }>("/payment/payment", orderData);
-      console.log("Order submission response:", response.data);
 
       if (response.data.success && response.data.transactionid) {
-        console.log("Order placed successfully", response.data);
         setTransactionid(response.data.transactionid || 0 );
         setOrderid(response.data.orderid || 0 );
       } else {
@@ -527,7 +511,6 @@ const CheckoutPage = () => {
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
-      console.log("Error submitting order:", errorMessage);
       setOrderFailed(true);
     } finally {
       setIsProcessingPayment(false);
@@ -572,7 +555,6 @@ const CheckoutPage = () => {
         } catch (error: unknown) {
           const errorMessage =
             error instanceof Error ? error.message : "Unknown error";
-          console.error("Error reading tax cache:", errorMessage);
         }
       }
       return null;
@@ -601,33 +583,25 @@ const CheckoutPage = () => {
   useEffect(() => {
     const fetchData = async (): Promise<void> => {
       try {
-        console.log("fetching data for checkout");
         setLoading(true);
-        console.log("user:", user, "guestId:", guestId);
 
         // Fetch cart items
         if (user) {
           const cartResponse = await api.get<CartApiResponse>(
             `/cart/getUserCartForPayment/${user}`
           );
-          console.log("Cart response:", cartResponse.data);
           if (cartResponse.data.success) {
-            console.log("Setting cart items for user", cartResponse.data);
             setCartItems(cartResponse.data.data);
           } else {
-            console.error("Failed to fetch cart:", cartResponse.data);
           }
         } else if (guestId) {
-          console.log("fetching cart for guest", guestId);
           const cartResponse = await api.get<CartApiResponse>(
             `/cart/getUserCartForPayment/${guestId}`
           );
 
-          console.log("Cart response for guest:", cartResponse.data);
           if (cartResponse.data.success) {
             setCartItems(cartResponse.data.data);
           } else {
-            console.error("Failed to fetch guest cart:", cartResponse.data);
           }
         }
 
@@ -635,20 +609,15 @@ const CheckoutPage = () => {
         const pricingResponse = await api.get<ServicePricingApiResponse>(
           "/servicePricing/getServicePricing"
         );
-        console.log("Service pricing:", pricingResponse.data);
         if (pricingResponse.data.success) {
 
           setServicePricing(pricingResponse.data.data);
         } else {
-          console.error(
-            "Failed to fetch service pricing:",
-            pricingResponse.data
-          );
+          
         }
       } catch (error: unknown) {
         const errorMessage =
           error instanceof Error ? error.message : "Unknown error";
-        console.error("Error fetching data:", errorMessage);
       } finally {
         setLoading(false);
       }
@@ -688,7 +657,6 @@ const CheckoutPage = () => {
         `/discount/getDiscountByCode/${code}`
       );
 
-      console.log("Discount API response:", response.data);
 
       if (response.data.success && response.data.percentage !== undefined) {
         setDiscountApplied(true);
@@ -700,7 +668,6 @@ const CheckoutPage = () => {
         setDiscountError(response.data.message || "Invalid discount code");
       }
     } catch (error: unknown) {
-      console.error("Error applying discount:", error);
       setDiscountApplied(false);
       setDiscountPercent(0);
       setDiscountError("Failed to apply discount. Please try again.");
@@ -721,11 +688,7 @@ const CheckoutPage = () => {
 
   // Calculate discount from applied code
   const discount = useMemo((): number => {
-    console.log("Calculating discount:", {
-      discountApplied,
-      discountPercent,
-      subtotal,
-    });
+    
     return discountApplied ? (subtotal * discountPercent) / 100 : 0;
   }, [discountApplied, discountPercent, subtotal]);
 
@@ -743,13 +706,7 @@ useEffect(() => {
     try {
       // Only call API if we have zip and state
       if (formData.zipCode && formData.state && formData.country && formData.city) {
-        console.log('Calling tax API with:', {
-          to_country:formData.country,
-          amount: subtotal,
-          to_zip: formData.zipCode,
-          to_state: formData.state,
-          shipping: shippingCost
-        });
+        
 
         const res = await api.post("/tax/calculateTax", {
           to_country:formData.country,
@@ -760,7 +717,6 @@ useEffect(() => {
           to_city:formData.city,
           to_street:formData.address
         });
-        console.log(res,'final tax')
         
         const apiTax = res.data?.tax?.
 amount_to_collect || 0;
@@ -772,7 +728,6 @@ amount_to_collect || 0;
           setapiTax(true);
           setTaxMessage("Tax calculated via API");
           setIsCalculatingTax(false);
-          console.log("Tax calculated via API:", apiTax);
           return; // Exit early since we got API tax
         }
       }
@@ -783,14 +738,9 @@ amount_to_collect || 0;
       setapiTax(false); // Indicates fallback tax
       setTaxRate(0);
       setTaxMessage("Tax calculated at 10.25% (fallback)");
-      console.log("Fallback tax calculated:", calculatedTax);
       
     } catch (error: any) {
-      console.log('Tax API error:', {
-        status: error.response?.status,
-        data: error.response?.data,
-        message: error.message
-      });
+     
       
       // API failed, use fallback
       const calculatedTax = subtotal * (10.25 / 100);
@@ -798,7 +748,6 @@ amount_to_collect || 0;
       setapiTax(false); // Indicates fallback tax
       setTaxRate(0);
       setTaxMessage("Tax calculated at 10.25% (API unavailable)");
-      console.log("Fallback tax due to API error:", calculatedTax);
     } finally {
       setIsCalculatingTax(false);
     }
@@ -926,16 +875,6 @@ amount_to_collect || 0;
   ): Promise<void> => {
     e.preventDefault();
 
-    console.log("Submit clicked", {
-      isCollectJSLoaded,
-      windowCollectJS: !!window.CollectJS,
-      validateFormResult: validateForm(),
-      cartItems: cartItems.length,
-      email: formData.email,
-      agreedToTerms,
-      isAgeChecked,
-      errors,
-    });
 
     if (!validateForm()) {
       let errorMessage = "Please complete the following:\n";
@@ -997,7 +936,6 @@ amount_to_collect || 0;
     }
 
     if (validationErrors.length > 0) {
-      console.error("Validation errors:", validationErrors);
       alert(
         `Please complete all required fields:\n${validationErrors.join("\n")}`
       );
@@ -1025,13 +963,11 @@ amount_to_collect || 0;
     
     setIsProcessingPayment(true);
     
-    console.log("Starting Collect.js payment request...");
 
     try {
       // Reconfigure Collect.js with the actual payment callback
       const paymentConfig: CollectJSConfig = {
         callback: (response: CollectJSResponse) => {
-          console.log("Collect.js payment callback received:", response);
           setPaymentToken(response.token);
           // Don't hide overlay yet - keep it showing while submitting order
           submitOrderWithToken(response.token);
@@ -1039,13 +975,11 @@ amount_to_collect || 0;
         paymentType: "cc",
       };
 
-      console.log("Configuring Collect.js for payment");
       window.CollectJS.configure(paymentConfig);
 
       // This triggers the Collect.js lightbox/payment modal
       window.CollectJS.startPaymentRequest();
     } catch (error) {
-      console.error("Error starting payment request:", error);
       setShowPaymentOverlay(false); // Hide overlay on error
       setIsProcessingPayment(false);
       alert(

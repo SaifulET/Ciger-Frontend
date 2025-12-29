@@ -19,15 +19,11 @@ const NewPassword: React.FC = () => {
 
 
   const handleNext = async() => {
-    console.log("h")
    const res = await UserNewPassword(newPassword,confirmPassword);
-   console.log(res)
    if (res.status==="success") {
     setErrorMessage("t");
-    console.log(res.message)
     router.push('/auth/welcome');
   } else {
-    console.log("y")
     setErrorMessage(res.message || "Something went wrong");
   }
   };

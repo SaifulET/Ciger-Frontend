@@ -33,7 +33,6 @@ export default function BlogDetails() {
           setError("Failed to fetch blog");
         }
       } catch (err) {
-        console.error("Error fetching blog:", err);
         setError("Error loading blog. Please try again.");
       } finally {
         setLoading(false);

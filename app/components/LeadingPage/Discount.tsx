@@ -1,13 +1,20 @@
 "use client";
-import React, { useState, useEffect, useRef, useCallback, useMemo, memo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  memo,
+} from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Image from "next/image";
 import rightArrow from "@/public/rightArrow.svg";
 import Leftarrow from "@/public/leftArrow.svg";
 import Link from "next/link";
 import api from "@/lib/axios";
-import ProductCard from "../Product/ProductCard";
-import { ProductType } from "../Product/ProductType";
+import ProductCard from "../Products/ProductCard";
+import { ProductType } from "../Products/ProductType";
 
 // TYPES
 type ProductApiItem = {
@@ -53,30 +60,38 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 // UTILS - Move outside component
 const validateImageUrl = (url: string | null | undefined): string => {
-  if (!url || url === 'null' || url === 'undefined' || url === '' || url.startsWith('null')) {
+  if (
+    !url ||
+    url === "null" ||
+    url === "undefined" ||
+    url === "" ||
+    url.startsWith("null")
+  ) {
     return DEFAULT_IMAGE;
   }
-  
-  if (url.startsWith('http') || url.startsWith('/')) {
+
+  if (url.startsWith("http") || url.startsWith("/")) {
     return url;
   }
-  
+
   return `/${url}`;
 };
 
 const formatProductData = (item: ProductApiItem): Product => {
-  const imageUrl = item.images?.[0] 
+  const imageUrl = item.images?.[0]
     ? validateImageUrl(item.images[0])
     : DEFAULT_IMAGE;
 
-  const originalPrice = item.discount > 0 && item.price > 0 
-    ? Math.round(item.price * 100 / item.discount)
-    : undefined;
+  const originalPrice =
+    item.discount > 0 && item.price > 0
+      ? Math.round((item.price * 100) / item.discount)
+      : undefined;
 
   const currentPriceValue = item.currentPrice || item.price || 0;
-  const currentPrice = typeof currentPriceValue === 'number' 
-    ? currentPriceValue 
-    : parseFloat(currentPriceValue) || 0;
+  const currentPrice =
+    typeof currentPriceValue === "number"
+      ? currentPriceValue
+      : parseFloat(currentPriceValue) || 0;
 
   return {
     id: item._id || `product-${Math.random().toString(36).substr(2, 9)}`,
@@ -88,7 +103,7 @@ const formatProductData = (item: ProductApiItem): Product => {
     newBestSeller: Boolean(item.newBestSeller || item.isBest),
     newSeller: Boolean(item.newSeller || item.isNew),
     available: item.available,
-    rating: item.averageRating
+    rating: item.averageRating,
   };
 };
 
@@ -98,7 +113,7 @@ const MemoizedProductCard = memo(({ product }: { product: Product }) => (
     <ProductCard product={product as ProductType} />
   </div>
 ));
-MemoizedProductCard.displayName = 'MemoizedProductCard';
+MemoizedProductCard.displayName = "MemoizedProductCard";
 
 // Loading Skeleton Component
 const LoadingSkeleton = () => (
@@ -111,7 +126,10 @@ const LoadingSkeleton = () => (
     <div className="animate-pulse">
       <div className="flex gap-4 overflow-hidden">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="flex-shrink-0 w-[calc(50%-8px)] sm:w-[calc(50%-8px)] md:w-[calc(33.333%-11px)] lg:w-[calc(25%-12px)]">
+          <div
+            key={i}
+            className="flex-shrink-0 w-[calc(50%-8px)] sm:w-[calc(50%-8px)] md:w-[calc(33.333%-11px)] lg:w-[calc(25%-12px)]"
+          >
             <div className="bg-gray-200 h-64 rounded-lg mb-2"></div>
             <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
             <div className="h-4 bg-gray-200 rounded w-1/2"></div>
@@ -140,7 +158,7 @@ export default function BestSeller() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Refs for cleanup
   const mountedRef = useRef(true);
   const scrollRafRef = useRef<number | null>(null);
@@ -149,11 +167,11 @@ export default function BestSeller() {
   // Optimized scroll handler with RAF
   const onScroll = useCallback(() => {
     if (!emblaApi || isDraggingThumb || !mountedRef.current) return;
-    
+
     if (scrollRafRef.current) {
       cancelAnimationFrame(scrollRafRef.current);
     }
-    
+
     scrollRafRef.current = requestAnimationFrame(() => {
       if (!emblaApi || !mountedRef.current) return;
       const progress = Math.max(0, Math.min(1, emblaApi.scrollProgress()));
@@ -162,42 +180,52 @@ export default function BestSeller() {
   }, [emblaApi, isDraggingThumb]);
 
   // Optimized scrollToProgress
-  const scrollToProgress = useCallback((progress: number) => {
-    if (!emblaApi) return;
+  const scrollToProgress = useCallback(
+    (progress: number) => {
+      if (!emblaApi) return;
 
-    requestAnimationFrame(() => {
-      const engine = emblaApi.internalEngine();
-      const { limit, location, target, offsetLocation, scrollBody, translate } = engine;
+      requestAnimationFrame(() => {
+        const engine = emblaApi.internalEngine();
+        const {
+          limit,
+          location,
+          target,
+          offsetLocation,
+          scrollBody,
+          translate,
+        } = engine;
 
-      const targetPosition = limit.max + (limit.min - limit.max) * progress;
+        const targetPosition = limit.max + (limit.min - limit.max) * progress;
 
-      scrollBody.useDuration(0);
-      scrollBody.useFriction(0);
+        scrollBody.useDuration(0);
+        scrollBody.useFriction(0);
 
-      offsetLocation.set(targetPosition);
-      location.set(targetPosition);
-      target.set(targetPosition);
-      translate.to(targetPosition);
-      translate.toggleActive(true);
-      
-      setTimeout(() => {
-        if (!mountedRef.current) return;
-        scrollBody.useDuration(25);
-        scrollBody.useFriction(0.68);
-      }, 0);
-    });
-  }, [emblaApi]);
+        offsetLocation.set(targetPosition);
+        location.set(targetPosition);
+        target.set(targetPosition);
+        translate.to(targetPosition);
+        translate.toggleActive(true);
+
+        setTimeout(() => {
+          if (!mountedRef.current) return;
+          scrollBody.useDuration(25);
+          scrollBody.useFriction(0.68);
+        }, 0);
+      });
+    },
+    [emblaApi]
+  );
 
   // Data fetching effect - only runs once
   useEffect(() => {
     mountedRef.current = true;
-    
+
     const fetchProductsData = async () => {
       // Check cache first
       try {
         const cachedProducts = sessionStorage.getItem(CACHE_KEY);
         const cacheTimestamp = sessionStorage.getItem(CACHE_TIMESTAMP_KEY);
-        
+
         if (cachedProducts && cacheTimestamp) {
           const age = Date.now() - parseInt(cacheTimestamp);
           if (age < CACHE_DURATION) {
@@ -209,15 +237,15 @@ export default function BestSeller() {
 
         setLoading(true);
         setError(null);
-        
+
         const response = await api.get("/product/getAllProduct?discount=true");
-        
+
         if (response.status !== 200) {
           throw new Error(`HTTP ${response.status}`);
         }
 
         const responseData = response.data;
-        
+
         if (!responseData.success) {
           throw new Error("API returned unsuccessful response");
         }
@@ -226,26 +254,31 @@ export default function BestSeller() {
 
         if (Array.isArray(responseData.data)) {
           productsArray = responseData.data;
-        } else if (responseData.data?.data && Array.isArray(responseData.data.data)) {
+        } else if (
+          responseData.data?.data &&
+          Array.isArray(responseData.data.data)
+        ) {
           productsArray = responseData.data.data;
         } else {
           productsArray = responseData.data || [];
         }
-        
-        const formattedProducts = productsArray.slice(0, 12).map(formatProductData);
-        
+
+        const formattedProducts = productsArray
+          .slice(0, 12)
+          .map(formatProductData);
+
         setProducts(formattedProducts);
-        
+
         // Cache results
         sessionStorage.setItem(CACHE_KEY, JSON.stringify(formattedProducts));
         sessionStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
-
       } catch (err) {
         if (!mountedRef.current) return;
-        
-        const errorMessage = err instanceof Error ? err.message : "Failed to load products";
+
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to load products";
         setError(errorMessage);
-        
+
         // Try to use stale cache on error
         const cachedProducts = sessionStorage.getItem(CACHE_KEY);
         if (cachedProducts) {
@@ -276,84 +309,93 @@ export default function BestSeller() {
   }, []);
 
   // Drag handler utilities
-  const getClientX = useCallback((
-    event: MouseEvent | TouchEvent | React.MouseEvent | React.TouchEvent
-  ): number => {
-    if ("touches" in event && event.touches.length > 0) {
-      return event.touches[0].clientX;
-    }
-    if ("clientX" in event) {
-      return event.clientX;
-    }
-    return 0;
-  }, []);
+  const getClientX = useCallback(
+    (
+      event: MouseEvent | TouchEvent | React.MouseEvent | React.TouchEvent
+    ): number => {
+      if ("touches" in event && event.touches.length > 0) {
+        return event.touches[0].clientX;
+      }
+      if ("clientX" in event) {
+        return event.clientX;
+      }
+      return 0;
+    },
+    []
+  );
 
   // Thumb drag handler
-  const onThumbDrag = useCallback((
-    e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
-  ) => {
-    if (!scrollbarRef.current || !emblaApi) return;
+  const onThumbDrag = useCallback(
+    (
+      e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
+    ) => {
+      if (!scrollbarRef.current || !emblaApi) return;
 
-    e.stopPropagation();
-    setIsDraggingThumb(true);
+      e.stopPropagation();
+      setIsDraggingThumb(true);
 
-    const scrollbarRect = scrollbarRef.current.getBoundingClientRect();
-    const thumbWidth = scrollbarRect.width * 0.25;
+      const scrollbarRect = scrollbarRef.current.getBoundingClientRect();
+      const thumbWidth = scrollbarRect.width * 0.25;
 
-    const updateProgress = (clientX: number) => {
-      if (!scrollbarRef.current) return;
-      
+      const updateProgress = (clientX: number) => {
+        if (!scrollbarRef.current) return;
+
+        const offsetX = clientX - scrollbarRect.left - thumbWidth / 2;
+        const maxOffset = scrollbarRect.width - thumbWidth;
+        const newProgress = Math.max(0, Math.min(1, offsetX / maxOffset));
+
+        setScrollProgress(newProgress);
+        scrollToProgress(newProgress);
+      };
+
+      const onMove = (moveEvent: MouseEvent | TouchEvent) => {
+        updateProgress(getClientX(moveEvent));
+      };
+
+      const onUp = () => {
+        setIsDraggingThumb(false);
+
+        if (emblaApi) {
+          const engine = emblaApi.internalEngine();
+          engine.scrollBody.useDuration(25);
+          engine.scrollBody.useFriction(0.68);
+        }
+
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup", onUp);
+        document.removeEventListener("touchmove", onMove);
+        document.removeEventListener("touchend", onUp);
+      };
+
+      updateProgress(getClientX(e));
+
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
+      document.addEventListener("touchmove", onMove, { passive: false });
+      document.addEventListener("touchend", onUp);
+    },
+    [emblaApi, scrollToProgress, getClientX]
+  );
+
+  // Track click handler
+  const onTrackClick = useCallback(
+    (
+      e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
+    ) => {
+      if (!scrollbarRef.current || !emblaApi) return;
+
+      const scrollbarRect = scrollbarRef.current.getBoundingClientRect();
+      const thumbWidth = scrollbarRect.width * 0.25;
+      const clientX = getClientX(e);
       const offsetX = clientX - scrollbarRect.left - thumbWidth / 2;
       const maxOffset = scrollbarRect.width - thumbWidth;
       const newProgress = Math.max(0, Math.min(1, offsetX / maxOffset));
 
       setScrollProgress(newProgress);
       scrollToProgress(newProgress);
-    };
-
-    const onMove = (moveEvent: MouseEvent | TouchEvent) => {
-      updateProgress(getClientX(moveEvent));
-    };
-
-    const onUp = () => {
-      setIsDraggingThumb(false);
-
-      if (emblaApi) {
-        const engine = emblaApi.internalEngine();
-        engine.scrollBody.useDuration(25);
-        engine.scrollBody.useFriction(0.68);
-      }
-
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
-      document.removeEventListener("touchmove", onMove);
-      document.removeEventListener("touchend", onUp);
-    };
-
-    updateProgress(getClientX(e));
-
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
-    document.addEventListener("touchmove", onMove, { passive: false });
-    document.addEventListener("touchend", onUp);
-  }, [emblaApi, scrollToProgress, getClientX]);
-
-  // Track click handler
-  const onTrackClick = useCallback((
-    e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
-  ) => {
-    if (!scrollbarRef.current || !emblaApi) return;
-
-    const scrollbarRect = scrollbarRef.current.getBoundingClientRect();
-    const thumbWidth = scrollbarRect.width * 0.25;
-    const clientX = getClientX(e);
-    const offsetX = clientX - scrollbarRect.left - thumbWidth / 2;
-    const maxOffset = scrollbarRect.width - thumbWidth;
-    const newProgress = Math.max(0, Math.min(1, offsetX / maxOffset));
-
-    setScrollProgress(newProgress);
-    scrollToProgress(newProgress);
-  }, [emblaApi, scrollToProgress, getClientX]);
+    },
+    [emblaApi, scrollToProgress, getClientX]
+  );
 
   // Navigation handlers
   const handlePrev = useCallback(() => {
@@ -391,13 +433,14 @@ export default function BestSeller() {
   }, [emblaApi, onScroll]);
 
   // Memoized product cards
-  const productCards = useMemo(() => 
-    products.map((product) => (
-      <MemoizedProductCard 
-        key={`${product.id}-${product.currentPrice}`} 
-        product={product} 
-      />
-    )),
+  const productCards = useMemo(
+    () =>
+      products.map((product) => (
+        <MemoizedProductCard
+          key={`${product.id}-${product.currentPrice}`}
+          product={product}
+        />
+      )),
     [products]
   );
 
@@ -419,7 +462,7 @@ export default function BestSeller() {
           <div className="text-red-500 text-center">
             Failed to load products
           </div>
-          <button 
+          <button
             onClick={() => {
               sessionStorage.removeItem(CACHE_KEY);
               sessionStorage.removeItem(CACHE_TIMESTAMP_KEY);
@@ -486,9 +529,7 @@ export default function BestSeller() {
           className="overflow-hidden cursor-grab active:cursor-grabbing"
           ref={emblaRef}
         >
-          <div className="flex gap-4 touch-action-pan-y">
-            {productCards}
-          </div>
+          <div className="flex gap-4 touch-action-pan-y">{productCards}</div>
         </div>
 
         <button
@@ -496,12 +537,12 @@ export default function BestSeller() {
           className="hidden absolute left-0 top-1/2 -translate-y-1/2 bg-white w-10 h-10 md:w-12 md:h-12 rounded-full md:flex items-center justify-center hover:bg-gray-100 transition shadow-lg z-10 border border-gray-200"
           aria-label="Previous products"
         >
-          <Image 
-            src={Leftarrow} 
-            width={12} 
-            height={12} 
-            alt="leftArrow" 
-            priority 
+          <Image
+            src={Leftarrow}
+            width={12}
+            height={12}
+            alt="leftArrow"
+            priority
             className="w-3 h-3 md:w-auto md:h-auto"
           />
         </button>
@@ -510,11 +551,11 @@ export default function BestSeller() {
           className="hidden absolute right-0 top-1/2 -translate-y-1/2 bg-white w-10 h-10 md:w-12 md:h-12 rounded-full md:flex items-center justify-center hover:bg-gray-100 transition shadow-lg z-10 border border-gray-200"
           aria-label="Next products"
         >
-          <Image 
-            src={rightArrow} 
-            width={12} 
-            height={12} 
-            alt="rightArrow" 
+          <Image
+            src={rightArrow}
+            width={12}
+            height={12}
+            alt="rightArrow"
             priority
             className="w-3 h-3 md:w-auto md:h-auto"
           />

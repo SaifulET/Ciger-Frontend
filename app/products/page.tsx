@@ -1,6 +1,9 @@
 import React, { Suspense } from "react";
 import ProductsPage from "@/app/components/Products/ProductPages";
 import { Metadata } from "next";
+import Navbar from "../components/LeadingPage/Navbar2";
+import Advertise from "../components/LeadingPage/Advertise";
+import Footer from "../components/FooterSection/Footer";
 
 // Force the page to be dynamic so metadata updates per request
 export const dynamic = "force-dynamic";
@@ -12,21 +15,43 @@ interface SearchParams {
   discount?: string;
   new?: string;
   best?: string;
-  keyword?:string;
+  keyword?: string;
 }
 
-const ProductPage = async ({ 
-  searchParams 
-}: { 
-  searchParams: Promise<SearchParams> 
+const ProductPage = async ({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
 }) => {
   const params = await searchParams;
-  
+
   return (
     <div className="md:p-8">
-      <Suspense fallback={<div>Loading...</div>}>
-        <ProductsPage />
-      </Suspense>
+      
+
+ <>
+      <div className="bg-[#f1eeee] p-0 m-0">
+        <div>
+          <Advertise/>
+        </div>
+        <div>
+          <Navbar />
+        </div>
+      </div>
+      <div className="bg-[#f1eeee] m-0 p-0 ">
+        <Suspense fallback={<div>Loading...</div>}>   <ProductsPage />
+        </Suspense>
+     
+      </div>
+      <div className="">
+        <Footer/>
+
+      </div>
+
+    </>
+
+       
+      
     </div>
   );
 };
@@ -44,7 +69,7 @@ export async function generateMetadata({
 
   // Build title
   let title = "";
-  
+
   if (keyword) title = `Search results for "${keyword}"`;
   else if (sub && subPro) title = `Explore ${subPro} in ${sub}`;
   else if (sub) title = `Shop ${sub} `;
@@ -53,13 +78,16 @@ export async function generateMetadata({
   if (discount === "true") title += "Discounted Product";
   if (isNew === "true") title += "New Arrival Product";
   if (best === "true") title += "Best Seller Product";
-title += " | Discover Amazing Products";
+  title += " | Discover Amazing Products";
   // Build description
   let description = "Find the best products that match your needs.";
-  
-  if (keyword) description = `Results for "${keyword}" across all categories and brands.`;
-  else if (sub && subPro) description = `Browse ${subPro} in ${sub} and discover top products.`;
-  else if (sub) description = `Browse products in ${sub} and find your favorites.`;
+
+  if (keyword)
+    description = `Results for "${keyword}" across all categories and brands.`;
+  else if (sub && subPro)
+    description = `Browse ${subPro} in ${sub} and discover top products.`;
+  else if (sub)
+    description = `Browse products in ${sub} and find your favorites.`;
 
   if (brand) description += ` Featuring products by ${brand}.`;
   if (discount === "true") description += " Enjoy special discounted prices!";

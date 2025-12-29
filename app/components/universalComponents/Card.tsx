@@ -24,7 +24,6 @@ export default function ProductCard({
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("Add to cart:", product.id);
     // Add your cart logic here
   };
 

@@ -651,7 +651,6 @@ export default function CartDrawer() {
                           }
                         } catch (error) {
                           // Handle errors if needed
-                          console.error("Error during checkout:", error);
                         }
                       }}
                       disabled={

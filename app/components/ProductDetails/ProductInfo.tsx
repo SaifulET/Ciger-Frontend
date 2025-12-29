@@ -76,7 +76,6 @@ export default function ProductInfo({
           setExceed("⚠️ Your quantity exceeds available stock");
         }
       } catch (error) {
-        console.log("Failed to add to cart:", error);
       }
     } else return setExceed("⚠️ Your quantity exceeds available stock");
   };
@@ -90,7 +89,6 @@ export default function ProductInfo({
       try {
         await updateQuantity(cartItem._id, currentQuantity + 1, userId);
       } catch (error) {
-        console.error("Failed to increase quantity:", error);
       }
     } else {
       // If item not in cart, add it
@@ -109,14 +107,12 @@ export default function ProductInfo({
       try {
         await updateQuantity(cartItem._id, currentQuantity - 1, userId);
       } catch (error) {
-        console.error("Failed to decrease quantity:", error);
       }
     } else {
       // If quantity is 1, remove the item from cart
       try {
         await removeItem(cartItem._id, userId);
       } catch (error) {
-        console.error("Failed to remove item:", error);
       }
     }
   };

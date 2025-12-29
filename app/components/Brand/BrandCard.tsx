@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Brand } from "./types";
 
 export default function BrandCard({ brand }: { brand: Brand }) {
-  console.log(brand,"8");
   
   // Encode the brand name to handle special characters like &
   const encodedBrandName = encodeURIComponent(brand.name);

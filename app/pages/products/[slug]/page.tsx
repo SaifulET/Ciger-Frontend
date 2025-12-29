@@ -1,4 +1,4 @@
-// app/pages/product/[id]/page.tsx
+// app/pages/product/[slug]/page.tsx
 import { Suspense } from "react";
 import ProductDetailPage from "@/app/components/ProductDetails/ProductDetailspage";
 import { Metadata } from "next";
@@ -6,15 +6,18 @@ import { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 interface Params {
-  id: string;
+  slug: string;
 }
 
 // Debug function to see what's happening
-async function fetchProductForMetadata(id: string) {
+async function fetchProductForMetadata(slug: string) {
   
   try {
     // First, let's check what URL we're trying to fetch
-    const apiUrl = `https://backend.smokenza.com/product/getProductById/${id}`;
+    // Assuming your API accepts slugs, you might need to update the endpoint
+    const apiUrl = `https://backend.smokenza.com/product/getProductBySlug/${slug}`;
+    // If your API doesn't have a slug endpoint, you might need to use:
+    // const apiUrl = `https://backend.smokenza.com/product/getProductBySlug/${slug}`;
     
     const response = await fetch(apiUrl, {
       cache: "no-store",
@@ -47,12 +50,13 @@ export default async function SingleProductPage({
 }: { 
   params: Promise<Params> 
 }) {
-  const { id } = await params;
+  const { slug } = await params;
   
+  // Pass the slug to your product detail component if needed
   return (
     <div>
       <Suspense fallback={<div>Loading product details...</div>}>
-        <ProductDetailPage />
+        <ProductDetailPage  />
       </Suspense>
     </div>
   );
@@ -64,10 +68,10 @@ export async function generateMetadata({
 }: { 
   params: Promise<Params> 
 }): Promise<Metadata> {
-  const { id } = await params;
+  const { slug } = await params;
   
   try {
-    const product = await fetchProductForMetadata(id);
+    const product = await fetchProductForMetadata(slug);
     
     if (!product) {
       return {

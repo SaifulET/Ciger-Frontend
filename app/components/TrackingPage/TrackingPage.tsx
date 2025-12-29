@@ -60,14 +60,12 @@ export default function TrackingPage() {
         const result: ApiResponse = await response.data;
         
         if (result.success && result.data) {
-          console.log(result)
           setUserOrders(result.data);
         } else {
           setError('Failed to fetch orders');
         }
       } catch (err) {
         setError('Error fetching orders');
-        console.error('Error fetching orders:', err);
       } finally {
         setLoading(false);
       }

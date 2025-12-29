@@ -70,6 +70,6 @@
   { "label": "Discounts", "link": "/pages/discounts" },
  
 
-  { "label": "Blogs", "link": "/blog" },
+  { "label": "Blogs", "link": "/blogs" },
   { "label": "Contact Us", "link": "/pages/contact" }
 ]

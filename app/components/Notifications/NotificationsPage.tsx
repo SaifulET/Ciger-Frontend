@@ -81,9 +81,7 @@ export default function NotificationsPage() {
         }
 
         const result = response.data;
-        console.log(result)
         if (result.success && Array.isArray(result.data)) {
-          console.log(result.data)
           const transformedNotifications: Notification[] = result.data.map((item: ApiNotification) => ({
             id: item._id,
             userId: item.userId,
@@ -103,7 +101,6 @@ export default function NotificationsPage() {
         setError(err instanceof Error ? err.message : 'An error occurred while fetching notifications');
       alert(err);
        
-        console.log('Error fetching notifications:', err);
       } finally {
         setLoading(false);
       }

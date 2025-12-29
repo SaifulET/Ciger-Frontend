@@ -99,7 +99,6 @@ export default function ShoppingCart() {
     newChecked.delete(cartItemId);
     setCheckedItems(newChecked);
   };
-  console.log("93", checkedItems, "93");
   const handleUpdateQuantity = (
     cartItemId: string,
     action: "increase" | "decrease"
@@ -129,7 +128,6 @@ export default function ShoppingCart() {
       timestamp: new Date().toISOString(),
     };
 
-    console.log("Checkout Data:", checkoutData);
     const checkedId = await api.post("/cart/checkedid", {
       cartIds: checkoutData.selectedItemIds,
       userId: userId,

@@ -12,6 +12,7 @@ interface BlogItem {
 
 export default function BlogDetailsClient({ id }: { id?: string }) {
   const params = useParams();
+  
   const blogId = id || params.id; // fallback to useParams
 
   const [blog, setBlog] = useState<BlogItem | null>(null);

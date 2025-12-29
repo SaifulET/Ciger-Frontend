@@ -13,8 +13,8 @@ import useUserStore from "@/app/store/userStore";
 
 export default function ProductDetailPage() {
   const params = useParams();
-  const productId = params.id as string;
-  
+  const productslug = params.slug as string;
+const productId = productslug.split("-")[0];  
   const [isClient, setIsClient] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState("");
@@ -61,7 +61,6 @@ export default function ProductDetailPage() {
 
   const handleAddReview = () => {
     if (reviewText.trim() && rating > 0) {
-      console.log(user,"add")
       addReview(productId, {
         text: reviewText,
         rating: rating,

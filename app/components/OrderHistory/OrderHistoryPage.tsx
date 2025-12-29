@@ -26,7 +26,6 @@ export default function OrderHistoryPage() {
 
   // Transform store data to component format
   const transformedOrders: Order[] = useMemo(() => {
-    console.log(orders,ordersLoading,"dk")
     if (!orders || orders.length === 0) return [];
     
     return orders.map((apiOrder) => ({

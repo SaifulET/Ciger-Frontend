@@ -23,11 +23,9 @@ const CouponComponent = () => {
       try {
         setLoading(true);
         const response = await api.get("discount/getAllDiscount");
-        console.log(response.data.data,'26')
         setCoupons(response.data.data);
       } catch (err) {
         setError('Failed to fetch discounts');
-        console.error('Error fetching discounts:', err);
       } finally {
         setLoading(false);
       }
@@ -36,11 +34,9 @@ const CouponComponent = () => {
     fetchDiscounts();
   }, []);
 
-console.log(coupons,"39")
   // Transform the API data to match the CouponDeals component props
    let transformedCoupons;
   if(coupons.length>0){
-    console.log(coupons,"43")
     transformedCoupons = coupons.map(discount => ({
       
     couponCode: discount.code,

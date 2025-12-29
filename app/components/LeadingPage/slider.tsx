@@ -40,7 +40,6 @@ export default function Slider() {
         setError("Failed to load carousel images");
       }
     } catch (err) {
-      console.error("Error fetching carousel images:", err);
       setError("Error loading carousel images");
     } finally {
       setLoading(false);

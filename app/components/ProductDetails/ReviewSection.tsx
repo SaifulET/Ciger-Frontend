@@ -37,7 +37,6 @@ export default function ReviewsSection({
   reviewsPerPage,
   handleAddReview,
 }: ReviewsSectionProps) {
-  console.log(product,"product")
   const isLoggedIn = !!Cookies.get("token");
   
   const totalReviewPages = Math.ceil(product.reviews.length / reviewsPerPage);

@@ -37,7 +37,6 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
     try {
       await updateOrder(order.id, { state: 'cancelled' });
     } catch (error) {
-      console.error('Failed to cancel order:', error);
     }
   };
 

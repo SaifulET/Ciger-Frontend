@@ -19,7 +19,6 @@ export async function getBrandsData(): Promise<BrandsData> {
     
     return responseData;
   } catch (error) {
-    console.error('Error fetching brands:', error);
     return {
       success: false,
       count: 0,

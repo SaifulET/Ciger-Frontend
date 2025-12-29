@@ -54,7 +54,6 @@ const SignInPage: NextPage = () => {
       }
     } catch (error) {
       setErrorMessage("An unexpected error occurred. Please try again.");
-      console.error("Login error:", error);
     } finally {
       setIsLoading(false);
     }

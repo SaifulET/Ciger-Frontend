@@ -10,12 +10,14 @@ interface BlogItem {
   name: string;
   description: string;
   image: string;
+  slug?: string; // Optional if you want to use it
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-  const resolvedParams = await params; // <-- unwrap the promise
-  const id = resolvedParams.id;
-  console.log("generateMetadata ID:", id);
+// Both functions should use the same params type
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const resolvedParams = await params;
+  const IdSlug = resolvedParams.slug;
+  const id = IdSlug.split("-")[0]; // Extract ID from slug
 
   if (!id) {
     return {
@@ -31,7 +33,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     const res = await api.get(`/blog/getBlogById/${id}`);
     if (res.data.success) blog = res.data.data;
   } catch (err) {
-    console.error("Error fetching blog for metadata:", err);
   }
 
   if (!blog) {
@@ -43,15 +44,18 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   }
 
   const cleanDescription = blog.description?.replace(/<[^>]+>/g, "").slice(0, 160);
+  
+  // Use the full slug for canonical URL for better SEO
+  const canonicalSlug = blog.slug || IdSlug;
 
   return {
     title: `${blog.name} | Smokenza Blog`,
     description: cleanDescription,
-    alternates: { canonical: `https://smokenza.com/blog/${id}` },
+    alternates: { canonical: `https://smokenza.com/blog/${canonicalSlug}` },
     openGraph: {
       title: blog.name,
       description: cleanDescription,
-      url: `https://smokenza.com/blog/${id}`,
+      url: `https://smokenza.com/blog/${canonicalSlug}`,
       siteName: "Smokenza",
       images: [{ url: blog.image, width: 1200, height: 630, alt: blog.name }],
       type: "article",
@@ -66,12 +70,13 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 
 // Server component
-export default async function Page({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = await params; // <-- unwrap promise
-  const id = resolvedParams.id;
+export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = await params;
+  const IdSlug = resolvedParams.slug;
+  const id = IdSlug.split("-")[0]; // Extract ID from slug
 
-  return(
-          <>
+  return (
+    <>
       <div className="bg-[#f1eeee] p-0 m-0">
         <div>
           <Advertise/>
@@ -85,12 +90,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       </div>
       <div className="">
         <Footer/>
-
       </div>
-
+      
     </>
-   
-  ) 
-  
-  
+  );
 }

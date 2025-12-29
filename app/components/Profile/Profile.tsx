@@ -159,9 +159,7 @@ export default function ProfilePage() {
   const fetchProfileData = useCallback(async () => {
     try {
       setIsLoading(true);
-      console.log('Fetching profile data for user:', user);
       const response = await api.get(`/profile/profiles/${user}`);
-      console.log('Profile data response:', response);
       if (response.data.success && response.data.data) {
         const userData = response.data.data;
         const formattedData: ProfileData = {
@@ -187,7 +185,6 @@ export default function ProfilePage() {
       }
     } catch (error) {
       
-      console.log("Error fetching profile data:", error);
     } finally {
       setIsLoading(false);
     }
@@ -224,14 +221,12 @@ export default function ProfilePage() {
           const file = new File([blob], 'profile-image.jpg', { type: mimeType });
           formDataToSend.append('image', file);
         } catch (error) {
-          console.error('Error converting base64 to file:', error);
         }
       } else if (tempImage instanceof File) {
         // If tempImage is already a File object
         formDataToSend.append('image', tempImage);
       }
       
-      console.log('Sending FormData with image:', selectedFile || tempImage);
       
       // Send request with FormData
       
@@ -255,7 +250,6 @@ export default function ProfilePage() {
       }
       return false;
     } catch (error) {
-      console.error("Error updating profile data:", error);
       return false;
     } finally {
       setIsLoading(false);
@@ -265,7 +259,6 @@ export default function ProfilePage() {
   // Fetch data when user changes and hasn't been fetched yet
  useEffect(() => {
   if (user ) {
-    console.log('User changed, fetching profile data...',user);
     fetchProfileData();
   }
 }, []);
@@ -330,7 +323,6 @@ export default function ProfilePage() {
         }
       };
       reader.onerror = () => {
-        console.error('Error reading file');
       };
       reader.readAsDataURL(file);
       

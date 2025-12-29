@@ -6,21 +6,18 @@ import Image from "next/image";
 import Leftarrow from "@/public/leftArrow.svg";
 import { RelatedProduct } from "./product";
 import { useProductsStore } from "../../store/productDetailsStore";
-import ProductCard from "../Product/ProductCard";
+import ProductCard from "../Products/ProductCard";
 
 interface Props {
   relatedProducts: RelatedProduct[];
   currentIndex: number;
   setCurrentIndex: (index: number) => void;
- 
-
 }
 
 export default function RelatedProducts({
   relatedProducts,
   currentIndex,
   setCurrentIndex,
-
 }: Props) {
   const { loading } = useProductsStore();
   const [emblaRef, emblaApi] = useEmblaCarousel({
@@ -39,12 +36,9 @@ export default function RelatedProducts({
   const [isUsingButtons, setIsUsingButtons] = useState(false);
 
   const handleAddCart = (id: string) => {
-    console.log("Add to cart:", id);
-  
   };
 
   const handleView = (id: string) => {
-    console.log("View product:", id);
     // You can implement navigation to product detail page
   };
 
@@ -73,7 +67,8 @@ export default function RelatedProducts({
       if (!emblaApi) return;
 
       const engine = emblaApi.internalEngine();
-      const { limit, location, target, offsetLocation, scrollBody, translate } = engine;
+      const { limit, location, target, offsetLocation, scrollBody, translate } =
+        engine;
 
       const targetPosition = limit.max + (limit.min - limit.max) * progress;
 
@@ -103,7 +98,9 @@ export default function RelatedProducts({
   };
 
   const onThumbDrag = useCallback(
-    (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    (
+      e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
+    ) => {
       if (!scrollbarRef.current || !emblaApi) return;
 
       e.preventDefault();
@@ -153,7 +150,9 @@ export default function RelatedProducts({
   );
 
   const onTrackClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    (
+      e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
+    ) => {
       if (!scrollbarRef.current || !emblaApi) return;
 
       const scrollbarRect = scrollbarRef.current.getBoundingClientRect();
@@ -189,7 +188,7 @@ export default function RelatedProducts({
 
     const onSettle = () => setIsUsingButtons(false);
     emblaApi.on("settle", onSettle);
-    
+
     return () => {
       emblaApi.off("settle", onSettle);
     };
@@ -235,7 +234,7 @@ export default function RelatedProducts({
         <h2 className="text-[28px] font-semibold text-gray-900 pb-[16px] md:pb-[32px]">
           Products related to this item
         </h2>
-        
+
         <div className="relative md:px-[64px]">
           {/* Carousel container */}
           <div
@@ -253,10 +252,7 @@ export default function RelatedProducts({
                   key={product.id}
                   className="flex-shrink-0 w-[calc(50%-8px)] sm:w-[calc(50%-8px)] md:w-[calc(33.333%-11px)] lg:w-[calc(25%-12px)]"
                 >
-                  <ProductCard
-                    product={product}
-                   
-                  />
+                  <ProductCard product={product} />
                 </div>
               ))}
             </div>
