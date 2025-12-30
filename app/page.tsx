@@ -22,6 +22,7 @@ export default function Home() {
 
     <>
     <Head>
+      <link rel="preconnect" href="https://backend.smokenza.com" />
 
       <title>Smokenza | Premium Smoking Products & Accessories</title>
 <meta

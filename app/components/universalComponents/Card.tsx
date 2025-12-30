@@ -52,6 +52,7 @@ export default function ProductCard({
               src={product.image}
               alt={product.name}
               fill
+               priority
               className="object-cover"
               onError={(e) => {
                 // Fallback for broken images

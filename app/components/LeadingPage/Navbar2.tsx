@@ -373,6 +373,7 @@ const Navbar: React.FC = () => {
               className="object-fit  w-0  lg:w-[220px] lg:h-[60px]"
               src={logo}
               alt="Logo"
+              priority
             />
           </div>
         </Link>
@@ -443,6 +444,7 @@ const Navbar: React.FC = () => {
                               }
                               alt={suggestion.name}
                               fill
+                              priority
                               className="object-cover rounded"
                               sizes="40px"
                             />
@@ -505,6 +507,7 @@ const Navbar: React.FC = () => {
                         alt={`profile`}
                         width={40}
                         height={40}
+                        priority
                         className="object-cover w-8 h-8 rounded-full"
                       />
                     )}
@@ -610,6 +613,7 @@ const Navbar: React.FC = () => {
                         <Image
                           className="object-fit w-[150px]  flex item-center mb-[10px]"
                           src={logo}
+                          priority
                           alt="Logo"
                         />
                       </div>
@@ -804,6 +808,7 @@ const Navbar: React.FC = () => {
                                   }
                                   alt={suggestion.name}
                                   fill
+                                  priority
                                   className="object-cover rounded"
                                   sizes="40px"
                                 />
@@ -868,6 +873,7 @@ const Navbar: React.FC = () => {
                         className="object-fit w-[150px] h-[50px] flex item-center mb-[10px]"
                         src={logo}
                         alt="Logo"
+                        priority
                       />
                     </div>
                   </Link>
@@ -920,6 +926,7 @@ const Navbar: React.FC = () => {
                             alt={`profile`}
                             width={40}
                             height={40}
+                            priority
                             className="object-cover w-8 h-8 rounded-full"
                           />
                         )}

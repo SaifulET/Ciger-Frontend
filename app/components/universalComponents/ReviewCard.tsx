@@ -46,7 +46,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ Review }) => {
 
         {/* Rating */}
         <div className="flex items-center gap-1">
-          <Image src={starIcon} alt="star" width={16} height={16} /> {/* star from local */}
+          <Image src={starIcon} alt="star" width={16} height={16}  priority/> {/* star from local */}
           <span className="text-sm font-medium">{rating}</span>
         </div>
       </div>

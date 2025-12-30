@@ -51,6 +51,7 @@ const BlogCard: React.FC<BlogCardProps> = ({ product }) => {
           className="object-fill h-[220px] w-[255px] m-auto rounded"
           width={362}
           height={200}
+           priority
           sizes="(max-width: 362px) 100vw, 362px"
         />
       </div>

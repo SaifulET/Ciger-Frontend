@@ -22,6 +22,7 @@ export default function BrandCard({ brand }: { brand: Brand }) {
               src={brand.image}
               alt={brand.name}
               fill
+              priority
               className="object-cover rounded"
             />
           </div>

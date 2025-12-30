@@ -73,6 +73,7 @@ export default function FaqSection() {
                   alt="Question"
                   width={20}
                   height={20}
+                  priority
                 />
                 <h3 className="font-semibold text-[#212121]">{faq.question}</h3>
               </div>
@@ -87,6 +88,7 @@ export default function FaqSection() {
                 alt="toggle"
                 width={20}
                 height={20}
+                priority
               />
             </div>
 

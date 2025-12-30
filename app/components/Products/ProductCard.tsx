@@ -75,11 +75,15 @@ export default function ProductCard({ product, onAddCart }: ProductCardProps) {
           )}
 
           <div className="aspect-square flex items-center justify-center bg-gray-100 rounded-lg mb-4 relative mt-4 overflow-hidden">
-            <img
-              src={product?.image}
-              alt={product?.name}
-              className="product Image"
-            />
+            <Image
+  src={product?.image}
+  alt={product?.name}
+  className="product Image"
+  width={500}      
+  height={500}     
+  priority       
+  quality={80}     
+/>
             
             {/* Out of Stock Overlay for Image */}
             {product.available === 0 && (

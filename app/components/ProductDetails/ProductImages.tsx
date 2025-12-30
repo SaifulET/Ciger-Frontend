@@ -1,5 +1,6 @@
 import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
 
 interface ProductImagesProps {
   images: string[];
@@ -29,7 +30,17 @@ export default function ProductImages({ images, currentImageIndex, setCurrentIma
         <div className="flex gap-2 px-[16px] md:px-[32px] bg-white pb-[16px] md:pb-[32px]">
           {images.map((img, idx) => (
             <button key={idx} onClick={() => setCurrentImageIndex(idx)} className={`w-24 h-24 rounded border-2 overflow-hidden ${currentImageIndex === idx ? "border-yellow-600" : "border-gray-200"}`}>
-              <img src={img} alt={`Thumb ${idx}`} className="w-full h-full object-cover" />
+              
+<Image
+  src={img}
+  alt={`Thumb ${idx}`}
+  className="w-full h-full object-cover"
+  width={500}       // Set approximate width
+  height={500}      // Set approximate height
+  priority={false}  // Only true for above-the-fold images (optional)
+  quality={80}      // Optional: optimize quality
+  style={{ objectFit: 'cover' }} // For responsive cropping
+/>
             </button>
           ))}
         </div>

@@ -337,13 +337,13 @@ export default function ReviewSection() {
           onClick={handlePrev}
           className="hidden absolute left-0 top-1/2 -translate-y-1/2 bg-white w-10 h-10 md:w-12 md:h-12 rounded-full lg:flex items-center justify-center hover:bg-gray-100 transition shadow-lg z-10"
         >
-          <Image src={Leftarrow} width={12} height={12} alt="leftArrow" />
+          <Image src={Leftarrow} width={12} height={12} priority alt="leftArrow" />
         </button>
         <button
           onClick={handleNext}
           className="hidden absolute right-0 top-1/2 -translate-y-1/2 bg-white w-10 h-10 md:w-12 md:h-12 rounded-full lg:flex items-center justify-center hover:bg-gray-100 transition shadow-lg z-10"
         >
-          <Image src={rightArrow} width={12} height={12} alt="rightArrow" />
+          <Image src={rightArrow} width={12} height={12} priority alt="rightArrow" />
         </button>
 
         {/* Custom Scrollbar */}

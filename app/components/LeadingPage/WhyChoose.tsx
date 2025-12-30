@@ -45,6 +45,7 @@ export default function ValueSection() {
                 alt={item.title}
                 width={48}
                 height={48}
+                priority
                 className="object-contain"
               />
             </div>

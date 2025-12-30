@@ -30,15 +30,10 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
         <div 
           key={image.id}
           className="group cursor-pointer overflow-hidden rounded-xl bg-white shadow-lg "
-          onClick={() => handleImageClick(image.link)}
+          
         >
           <div className="relative aspect-[4/3] overflow-hidden">
-            <img 
-              src={image.image} 
-              alt={image.name}
-              className="object-fit "
-              loading="lazy"
-            />
+            
             <div className="absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/10" />
           </div>
           <div className="bg-gray-50 px-4 py-3 text-center transition-colors duration-300 group-hover:bg-gray-100 md:px-6 md:py-4">

@@ -54,6 +54,7 @@ export default function BlogPage({ blogs }: BlogPageProps) {
                 src={blog.image}
                 alt={blog.title}
               fill
+              priority
                 className="object-fill md:object-fit"
                
               />

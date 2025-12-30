@@ -259,6 +259,7 @@ export default function ShoppingCart() {
                             alt={"Blank"}
                             width={30}
                             height={30}
+                            priority
                             className={`object-contain  ${
                               isOutOfStock ? "opacity-50" : ""
                             }`}

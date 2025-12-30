@@ -1921,19 +1921,20 @@ amount_to_collect || 0;
                       alt="Mastercard"
                       width={40}
                       height={25}
+                      priority
                     />
                   </div>
                   <div className="flex items-center gap-2">
-                    <Image src={visa} alt="Visa" width={40} height={25} />
+                    <Image src={visa} alt="Visa" priority width={40} height={25} />
                   </div>
                   <div className="flex items-center gap-2">
-                    <Image src={American} alt="american" width={40} height={25} />
+                    <Image src={American} alt="american" priority width={40} height={25} />
                   </div>
                   <div className="flex items-center gap-2">
-                    <Image src={discover} alt="discover" width={40} height={25} />
+                    <Image src={discover} alt="discover" priority width={40} height={25} />
                   </div>
                   <div className="flex items-center gap-2">
-                    <Image src={paypal} alt="paypal" width={40} height={25} />
+                    <Image src={paypal} alt="paypal" priority width={40} height={25} />
                   </div>
                 </div>
               </div>

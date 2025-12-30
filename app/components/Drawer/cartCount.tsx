@@ -438,6 +438,7 @@ export default function CartDrawer() {
                                     alt={productName}
                                     width={56}
                                     height={56}
+                                    priority
                                     className={`object-cover w-full h-full ${
                                       isOutOfStock ? "opacity-50" : ""
                                     }`}
@@ -449,6 +450,7 @@ export default function CartDrawer() {
                                     alt={productName}
                                     width={56}
                                     height={56}
+                                    priority
                                     className={`object-cover w-full h-full ${
                                       isOutOfStock ? "opacity-50" : ""
                                     }`}

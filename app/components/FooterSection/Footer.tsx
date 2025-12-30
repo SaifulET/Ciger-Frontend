@@ -92,16 +92,16 @@ export default function Footer() {
             {/* Social Media Icons */}
             <div className="flex items-center gap-6 mt-2">
               <a href="#" className="hover:opacity-80 transition-opacity">
-                <Image src={fbIcon} width={20} height={20} alt="facebook" />
+                <Image src={fbIcon} width={20} height={20} priority alt="facebook" />
               </a>
               <a href="#" className="hover:opacity-80 transition-opacity">
-                <Image src={instaIcon} width={20} height={20} alt="instagram" />
+                <Image src={instaIcon} width={20} height={20} priority alt="instagram" />
               </a>
               <a href="#" className="hover:opacity-80 transition-opacity">
-                <Image src={youtubeIcon} width={20} height={20} alt="youtube" />
+                <Image src={youtubeIcon} width={20} height={20} priority alt="youtube" />
               </a>
               <a href="#" className="hover:opacity-80 transition-opacity">
-                <Image src={tiktokIcon} width={20} height={20} alt="tiktok" />
+                <Image src={tiktokIcon} width={20} height={20} priority alt="tiktok" />
               </a>
             </div>
 
@@ -112,6 +112,7 @@ export default function Footer() {
                 alt="Discover" 
                 width={60} 
                 height={24}
+                priority
                 className="scale-80 md:scale-100 hover:scale-105 transition-transform duration-200"
               />
               <Image 
@@ -119,6 +120,7 @@ export default function Footer() {
                 alt="MasterCard" 
                 width={60} 
                 height={24}
+                priority
                 className="scale-80 md:scale-100 hover:scale-105 transition-transform duration-200"
               />
               <Image 
@@ -126,6 +128,7 @@ export default function Footer() {
                 alt="PayPal" 
                 width={60} 
                 height={24}
+                priority
                 className="scale-80 md:scale-100 hover:scale-105 transition-transform duration-200"
               />
               <Image 
@@ -133,6 +136,7 @@ export default function Footer() {
                 alt="visa" 
                 width={60} 
                 height={24}
+                priority
                 className="scale-80 md:scale-100 hover:scale-105 transition-transform duration-200"
               />
               <Image 
@@ -140,6 +144,7 @@ export default function Footer() {
                 alt="american express" 
                 width={60} 
                 height={24}
+                priority
                 className="scale-80 md:scale-100 hover:scale-105 transition-transform duration-200"
               />
             </div>
