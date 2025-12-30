@@ -1,0 +1,11 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /*?sort=
+Disallow: /*?filter=
+Allow: /products/
+Allow: /blogs/
+Allow:/auth/
+Allow:/pages/
+Sitemap: https://www.smokenza.com/sitemap.xml
