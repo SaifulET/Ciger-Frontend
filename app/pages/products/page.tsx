@@ -1,6 +1,7 @@
 import React, { Suspense } from "react";
 import ProductsPage from "@/app/components/Products/ProductPages";
 import { Metadata } from "next";
+import Head from "next/head";
 
 // Force the page to be dynamic so metadata updates per request
 export const dynamic = "force-dynamic";
@@ -23,11 +24,27 @@ const ProductPage = async ({
   const params = await searchParams;
   
   return (
-    <div className="md:p-8">
+
+
+    <>
+
+    <Head>
+
+      <title>All Products | Smokenza</title>
+<meta
+  name="description"
+  content="Explore all premium products at Smokenza. Browse smoking accessories, e-liquids, and more from top brands. Find your favorite products and order online today!"
+/>
+
+    </Head>
+    
+     <div className="md:p-8">
       <Suspense fallback={<div>Loading...</div>}>
         <ProductsPage />
       </Suspense>
     </div>
+    </>
+   
   );
 };
 

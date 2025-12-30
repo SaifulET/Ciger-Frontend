@@ -4,7 +4,7 @@ import BlogPage from '@/app/components/Blogpage/BlogComponent'
 import api from '@/lib/axios'
 import React, { useState, useEffect } from 'react'
 import blogImg from "@/public/blog.jpg" // Your local placeholder image
-
+import Head from 'next/head';
 // Your API response interfaces
 interface Blog {
   _id: number
@@ -72,9 +72,21 @@ function Page() {
   }
 
   return (
-    <div className=''>
+    <>
+
+<Head>
+       <title>Blog | Smokenza</title>
+<meta
+  name="description"
+  content="Read Smokenza blogs for the latest updates, tips, and insights on smoking accessories, lifestyle, and more. Discover guides, reviews, and news all in one place."
+/>
+      </Head>
+     <div className=''>
+      
       <BlogPage blogs={blogs} />
     </div>
+    </>
+   
   )
 }
 

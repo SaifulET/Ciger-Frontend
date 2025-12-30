@@ -1,6 +1,7 @@
 import ContactForm from '@/app/components/ContactForm/ContactForm'
 import React from 'react'
 import type { Metadata } from "next";
+import Head from 'next/head';
 
 export const metadata: Metadata = {
   title: "Contact Smokenza | Customer Support & Assistance",
@@ -48,11 +49,25 @@ export const metadata: Metadata = {
 
 function page() {
   return (
-    <div className='mx-[16px] md:mx-[32px] py-[16px] md:py-[32px]'>
+
+    <>
+
+
+    <Head>
+<title>Contact Admin | Smokenza</title>
+<meta
+  name="description"
+  content="Get in touch with the Smokenza team for support, inquiries, or feedback. Our admin is ready to assist you with any questions about orders, products, or services."
+/>
+
+    </Head>
+     <div className='mx-[16px] md:mx-[32px] py-[16px] md:py-[32px]'>
      
        <ContactForm/>
         
     </div>
+    </>
+   
   )
 }
 

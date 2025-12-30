@@ -11,6 +11,7 @@ import NewArrival from "./components/LeadingPage/NewArrivals";
 import Discount from "./components/LeadingPage/Discount";
 import ReviewSection from "./components/LeadingPage/ReviewSection";
 import Advertise from "./components/LeadingPage/Advertise";
+import Head from "next/head";
 
 
 
@@ -18,7 +19,18 @@ import Advertise from "./components/LeadingPage/Advertise";
 
 export default function Home() {
   return (
-    <div className="bg-[#f1eeee]">
+
+    <>
+    <Head>
+
+      <title>Smokenza | Premium Smoking Products & Accessories</title>
+<meta
+  name="description"
+  content="Welcome to Smokenza! Explore our latest arrivals, best sellers, exclusive discounts, and premium smoking products. Read reviews, check our blog, FAQs, and browse top brands—all in one place."
+/>
+
+    </Head>
+     <div className="bg-[#f1eeee]">
       <div>
         <Advertise/>
       </div>
@@ -59,5 +71,7 @@ export default function Home() {
         <Footer/>
       </div>
     </div>
+    </>
+   
   );
 }

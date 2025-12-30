@@ -5,6 +5,7 @@ import ProductDetailPage from "@/app/components/ProductDetails/ProductDetailspag
 import Navbar from "@/app/components/LeadingPage/Navbar2";
 import Advertise from "@/app/components/LeadingPage/Advertise";
 import Footer from "@/app/components/FooterSection/Footer";
+import Head from "next/head";
 
 export const dynamic = "force-dynamic";
 
@@ -36,10 +37,8 @@ export default async function SingleProductPage({
 }) {
   const { slug } = await params;
   
-  console.log("📦 URL Slug received:", slug);
   
   if (!slug) {
-    console.log("❌ No slug provided");
     notFound();
   }
   
@@ -47,52 +46,52 @@ export default async function SingleProductPage({
   const [id, ...slugParts] = slug.split('-');
   const productSlug = slugParts.join('-');
   
-  console.log("🔍 Extracted:", { id, productSlug });
   
   // Validate ID format (MongoDB ObjectId)
   if (!id || !/^[a-fA-F0-9]{24}$/.test(id)) {
-    console.log("❌ Invalid ID format:", id);
     notFound();
   }
   
-  console.log("🔄 Fetching product for ID:", id);
   const product = await fetchProductById(id);
   
-  console.log("🛒 Product API Response:", product);
   
   if (!product) {
-    console.log("❌ Product not found for ID:", id);
     notFound();
   }
   
   // Debug: Check what properties exist
-  console.log("🔎 Product object keys:", Object.keys(product));
-  console.log("🔎 Product slug from API:", product.slug);
-  console.log("🔎 Product ID from API:", product.id || product._id);
+
   
   // Use correct ID property (MongoDB often uses _id)
   const productId = product.id || product._id;
   
   // Check if slug from URL matches product slug
   if (productSlug !== product.slug) {
-    console.log("🔄 Slug mismatch - Redirecting");
-    console.log("  URL Slug:", productSlug);
-    console.log("  API Slug:", product.slug);
-    console.log("  Redirecting to:", `/products/${productId}-${product.slug}`);
+   
     
     // Make sure we have both ID and slug before redirecting
     if (productId && product.slug) {
       redirect(`/products/${productId}-${product.slug}`);
     } else {
       
-      console.log("❌ Cannot redirect - Missing ID or slug");
       // notFound();
     }
   }
 
-  console.log("✅ All good! Rendering product page");
   
   return (
+
+    <>
+
+    <Head>
+
+<title>{product.name} | Smokenza</title>
+<meta
+  name="description"
+  content={`Discover ${product.name}at Smokenza. Check detailed specifications, features, and pricing. Order online and enjoy fast delivery of this premium smoking product.`}
+/>
+
+    </Head>
     <div>
       {/* Uncomment this when ready */}
        <>
@@ -120,5 +119,7 @@ export default async function SingleProductPage({
       
      
     </div>
+    </>
+    
   );
 }

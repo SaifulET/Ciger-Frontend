@@ -4,6 +4,7 @@ import { Metadata } from "next";
 import Navbar from "../components/LeadingPage/Navbar2";
 import Advertise from "../components/LeadingPage/Advertise";
 import Footer from "../components/FooterSection/Footer";
+import Head from "next/head";
 
 // Force the page to be dynamic so metadata updates per request
 export const dynamic = "force-dynamic";
@@ -26,6 +27,18 @@ const ProductPage = async ({
   const params = await searchParams;
 
   return (
+
+    <>
+
+    <Head>
+
+<title>All Products with Filters | Smokenza</title>
+<meta
+  name="description"
+  content="Explore all products at Smokenza with advanced filters. Browse smoking accessories, e-liquids, and more by category, brand, price, and features to find exactly what you need."
+/>
+
+    </Head>
     <div className="md:p-8">
       
 
@@ -53,6 +66,8 @@ const ProductPage = async ({
        
       
     </div>
+    </>
+    
   );
 };
 

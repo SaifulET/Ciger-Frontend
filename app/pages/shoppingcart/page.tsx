@@ -1,5 +1,6 @@
 import ShoppingCart from '@/app/components/ShoppingCart/ShoppingCart'
 import type { Metadata } from 'next'
+import Head from 'next/head'
 import React from 'react'
 
 export const metadata: Metadata = {
@@ -89,6 +90,16 @@ function CartStructuredData() {
 function Page() {
   return (
     <>
+
+    <Head>
+
+<title>Shopping Cart | Smokenza</title>
+<meta
+  name="description"
+  content="Review the items in your Smokenza shopping cart. Update quantities, apply coupons, and proceed to secure checkout for fast delivery."
+/>
+
+    </Head>
       <CartStructuredData />
       <div className='p-[16px] md:p-[32px]'>
         <ShoppingCart />

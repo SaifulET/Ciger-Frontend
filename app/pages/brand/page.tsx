@@ -2,6 +2,7 @@
 import BrandsPage from '@/app/components/Brand/BrandPage'
 import React from 'react'
 import { Metadata } from 'next'
+import Head from 'next/head'
 
 // ✅ Metadata for Brand page
 export const metadata: Metadata = {
@@ -31,8 +32,21 @@ export const metadata: Metadata = {
 // ✅ Brand page component
 export default function BrandPageWrapper() {
   return (
-    <div className='py-[16px] md:py-[32px] px-[16px] md:px-[32px]'>
+<>
+<Head>
+  <title>All Brands | Smokenza</title>
+<meta
+  name="description"
+  content="Explore all premium brands available at Smokenza. Find your favorite smoking accessories, e-liquids, and more from top brands in one place."
+/>
+</Head>
+
+ <div className='py-[16px] md:py-[32px] px-[16px] md:px-[32px]'>
       <BrandsPage />
     </div>
+</>
+
+
+   
   )
 }

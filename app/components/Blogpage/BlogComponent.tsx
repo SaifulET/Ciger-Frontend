@@ -23,6 +23,7 @@ interface BlogPageProps {
   blogs: BlogItem[]; // Passed from another page or fetched
 }
 
+
 export default function BlogPage({ blogs }: BlogPageProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 5;

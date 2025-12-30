@@ -2,6 +2,7 @@
 import { Suspense } from "react";
 import ProductDetailPage from "@/app/components/ProductDetails/ProductDetailspage";
 import { Metadata } from "next";
+import Head from "next/head";
 
 export const dynamic = "force-dynamic";
 
@@ -54,11 +55,24 @@ export default async function SingleProductPage({
   
   // Pass the slug to your product detail component if needed
   return (
-    <div>
+    <>
+    <Head>
+
+<title>{slug} | Smokenza</title>
+<meta
+  name="description"
+  content={`Discover ${slug} at Smokenza. Check detailed specifications, features, and pricing of this top-quality smoking accessory. Order now for fast delivery!`}
+/>
+
+    </Head>
+    
+      <div>
       <Suspense fallback={<div>Loading product details...</div>}>
         <ProductDetailPage  />
       </Suspense>
     </div>
+    </>
+  
   );
 }
 

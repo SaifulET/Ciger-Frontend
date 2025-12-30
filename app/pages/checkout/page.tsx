@@ -1,6 +1,7 @@
 import CheckoutPage from '@/app/components/CheckoutComponent/Checkout'
 import React from 'react'
 import type { Metadata } from 'next'
+import Head from 'next/head'
 
 export const metadata: Metadata = {
   title: 'Checkout | Smokeza Store - Premium Smoking Essentials',
@@ -32,9 +33,22 @@ export const metadata: Metadata = {
 
 function Page() {
   return (
-    <div className=''>
+
+    <>
+<Head>
+<title>Payment Options | Smokenza USA</title>
+<meta
+  name="description"
+  content="Smokenza accepts all major credit and debit cards in the USA. Enjoy a secure and convenient checkout with Visa, MasterCard, American Express, Discover, and more."
+/>
+</Head>
+
+
+     <div className=''>
       <CheckoutPage />
     </div>
+    </>
+   
   )
 }
 

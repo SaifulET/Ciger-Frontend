@@ -1,6 +1,7 @@
 import CouponComponent from '@/app/components/CouponDeal/CouponComponent'
 import React from 'react'
 import type { Metadata } from "next";
+import Head from 'next/head';
 
 export const metadata: Metadata = {
   title: "Smokenza Coupon Codes & Discounts | Save on Premium Cigars",
@@ -50,9 +51,23 @@ function page() {
 
   
   return (
-    <div >
+
+    <>
+
+
+    <Head>
+<title>Coupon & Discount Codes | Smokenza</title>
+<meta
+  name="description"
+  content="Save big with the latest Smokenza coupon and discount codes. Get exclusive deals on smoking accessories, e-liquids, and more. Check and apply your promo codes at checkout!"
+/>
+
+    </Head>
+     <div >
         <CouponComponent/>
         </div>
+    </>
+   
   )
 }
 

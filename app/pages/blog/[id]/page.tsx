@@ -3,6 +3,7 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import api from "@/lib/axios";
+import Head from "next/head";
 
 interface BlogItem {
   _id: string;
@@ -57,7 +58,17 @@ export default function BlogDetails() {
   }
 
   return (
-    <div className="mx-[16px] md:mx-[32px] py-[16px] md:py-[32px]">
+
+    <>
+<Head>
+<title>{blog.name}</title>
+<meta
+  name="description"
+  content={ blog.description}
+/>
+
+</Head>
+      <div className="mx-[16px] md:mx-[32px] py-[16px] md:py-[32px]">
       <div className="flex flex-col items-center px-8 py-10 gap-8 bg-white rounded-xl">
         <h2 className="text-center text-[24px] font-semibold ">
           {blog.name}
@@ -86,5 +97,7 @@ export default function BlogDetails() {
       
       </div>   
     </div>
+    </>
+  
   );
 }
