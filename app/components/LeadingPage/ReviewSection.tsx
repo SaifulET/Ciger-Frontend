@@ -4,7 +4,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import rightArrow from "@/public/rightArrow.svg";
 import Image from "next/image";
 import Leftarrow from "@/public/leftArrow.svg";
-import profile from "@/public/profile.svg";
+import profile from "@/public/user-group.svg";
 import ReviewCard from "../universalComponents/ReviewCard";
 import api from "@/lib/axios";
 
@@ -85,7 +85,7 @@ export default function ReviewSection() {
             rating: review.rating,
             location: review.userId.location || '',
             review: review.review,
-            image: review.userId.image || profile,
+            image: review.userId.image || "https://www.svgrepo.com/show/335455/profile-default.svg",
           }));
           setReviews(formattedReviews);
         } else {
