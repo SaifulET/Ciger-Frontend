@@ -393,7 +393,7 @@ const relatedProducts: RelatedProduct[] =filteredProducts.map(apiProduct => ({
             name: apiProduct.name,
             image: apiProduct.images[0] || '',
             currentPrice: apiProduct.price,
-            originalPrice: apiProduct.discount > 0 ? ((apiProduct.price *100)/apiProduct.discount) :0,
+            originalPrice: apiProduct.discount > 0 ? ((apiProduct.price *100)/(100-apiProduct.discount)) :0,
             newBestSeller: apiProduct.newBestSeller,
             newSeller: apiProduct.newSeller,
             available:apiProduct.available,
