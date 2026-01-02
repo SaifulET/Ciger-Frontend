@@ -199,6 +199,7 @@ export default function ProductCarousel() {
     },
     [emblaApi, scrollToProgress]
   );
+  
 
   // ✅ Fixed useEffect hooks
   useEffect(() => {
@@ -328,42 +329,43 @@ export default function ProductCarousel() {
                 touchAction: "pan-y pinch-zoom",
               }}
             >
-              {brands.map((brand) => (
-                <div
-                  key={brand._id}
-                  className="flex-shrink-0 w-[calc(50%-16px)] sm:w-[calc(50%-16px)] md:w-[calc(25%-16px)] lg:w-[calc(20%-16px)] px-2 flex justify-center"
-                >
-                  <Link
-                    href={{
-                      pathname: "/pages/products",
-                      query: { brand: brand.name },
-                    }}
-                    className="block bg-white duration-300"
-                  >
-                    <div className="mb-[16px] w-[150px] h-[120px] flex items-center justify-center bg-white">
-                      {brand.image && (
-                        <div className="w-[80px] h-[80px] flex items-center justify-center bg-white md:w-[150px] md:h-[120px]">
-                          <Image
-                            src={brand.image}
-                            alt={brand.name}
-                            width={150}
-                            height={120}
-                            priority
-                            className="object-contain w-full h-full rounded"
-                            style={{
-                              maxWidth: "100%",
-                              maxHeight: "100%",
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex justify-center text-center font-montserrat text-[18px] font-semibold leading-[28px] md:leading-[36px]">
-                      {brand.name}
-                    </div>
-                  </Link>
-                </div>
-              ))}
+             {brands.map((brand) => {
+  // const encodedBrandName = encodeURIComponent(brand.name);
+  
+  return (
+    <div
+      key={brand._id}
+      className="flex-shrink-0 w-[calc(50%-16px)] sm:w-[calc(50%-16px)] md:w-[calc(25%-16px)] lg:w-[calc(20%-16px)] px-2 flex justify-center"
+    >
+      <Link
+       href={`/pages/products?brand=${brand.name.replace(/ /g, '%20')}`}
+        className="block bg-white duration-300"
+      >
+        <div className="mb-[16px] w-[150px] h-[120px] flex items-center justify-center bg-white">
+          {brand.image && (
+            <div className="w-[80px] h-[80px] flex items-center justify-center bg-white md:w-[150px] md:h-[120px]">
+              <Image
+                src={brand.image}
+                alt={brand.name}
+                width={150}
+                height={120}
+                priority
+                className="object-contain w-full h-full rounded"
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "100%",
+                }}
+              />
+            </div>
+          )}
+        </div>
+        <div className="flex justify-center text-center font-montserrat text-[18px] font-semibold leading-[28px] md:leading-[36px]">
+          {brand.name}
+        </div>
+      </Link>
+    </div>
+  );
+})}
             </div>
           </div>
         </div>
