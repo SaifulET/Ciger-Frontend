@@ -52,7 +52,7 @@ type Product = {
 };
 
 // CONSTANTS
-const DEFAULT_IMAGE = "/default-product.png";
+const DEFAULT_IMAGE = "";
 const INITIAL_FETCH_DELAY = 100;
 const CACHE_KEY = "best-seller-products";
 const CACHE_TIMESTAMP_KEY = "best-seller-products-timestamp";
@@ -84,7 +84,7 @@ const formatProductData = (item: ProductApiItem): Product => {
 
   const originalPrice =
     item.discount > 0 && item.price > 0
-      ? Math.round((item.price * 100) / item.discount)
+      ? Math.round((item.price * 100) / (100-item.discount))
       : undefined;
 
   const currentPriceValue = item.currentPrice || item.price || 0;

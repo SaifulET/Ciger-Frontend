@@ -233,7 +233,7 @@ export default function ProductInfo({
         )} */}
         {product.discount != undefined && product.discount > 0 && (
           <span className="text-[18px] font-semibold text-gray-600 line-through">
-            ${((product.price * 100) / product.discount).toFixed(2)}
+            ${((product.price * 100) / (100-product.discount)).toFixed(2)}
           </span>
         )}
       </div>
