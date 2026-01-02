@@ -1,5 +1,12 @@
 "use client";
-import React, { useState, useEffect, useRef, useCallback, memo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  memo,
+} from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Image from "next/image";
 import rightArrow from "@/public/rightArrow.svg";
@@ -45,29 +52,39 @@ type Product = {
 };
 
 // CONSTANTS
-const CONSTANTS = {
-  DEFAULT_IMAGE: "",
-  CACHE_KEY: "discount-products",
-  CACHE_TIMESTAMP_KEY: "discount-products-timestamp",
-  CACHE_DURATION: 5 * 60 * 1000,
-} as const;
+const DEFAULT_IMAGE = "";
+const INITIAL_FETCH_DELAY = 100;
+const CACHE_KEY = "discount-products";
+const CACHE_TIMESTAMP_KEY = "discount-products-timestamp";
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-// UTILITIES
+// UTILS - Move outside component
 const validateImageUrl = (url: string | null | undefined): string => {
-  if (!url || url === "null" || url === "undefined" || url === "") {
-    return CONSTANTS.DEFAULT_IMAGE;
+  if (
+    !url ||
+    url === "null" ||
+    url === "undefined" ||
+    url === "" ||
+    url.startsWith("null")
+  ) {
+    return DEFAULT_IMAGE;
   }
-  return url.startsWith("http") || url.startsWith("/") ? url : `/${url}`;
+
+  if (url.startsWith("http") || url.startsWith("/")) {
+    return url;
+  }
+
+  return `/${url}`;
 };
 
 const formatProductData = (item: ProductApiItem): Product => {
   const imageUrl = item.images?.[0]
     ? validateImageUrl(item.images[0])
-    : CONSTANTS.DEFAULT_IMAGE;
+    : DEFAULT_IMAGE;
 
   const originalPrice =
     item.discount > 0 && item.price > 0
-      ? (item.price * 100) / (100 - item.discount)
+      ? ((item.price * 100) / (100-item.discount))
       : undefined;
 
   const currentPriceValue = item.currentPrice || item.price || 0;
@@ -77,7 +94,7 @@ const formatProductData = (item: ProductApiItem): Product => {
       : parseFloat(currentPriceValue) || 0;
 
   return {
-    id: item._id || `product-${Math.random().toString(36).slice(2, 11)}`,
+    id: item._id || `product-${Math.random().toString(36).substr(2, 9)}`,
     brand: item?.brandId?.name ?? "Unknown Brand",
     name: item?.name || item.title || "Product Name",
     image: imageUrl,
@@ -92,9 +109,7 @@ const formatProductData = (item: ProductApiItem): Product => {
 
 // Memoized Product Card Wrapper
 const MemoizedProductCard = memo(({ product }: { product: Product }) => (
-  <div 
-    className="flex-shrink-0 w-[calc(50%-8px)] sm:w-[calc(50%-8px)] md:w-[calc(33.333%-11px)] lg:w-[calc(25%-12px)]"
-  >
+  <div className="flex-shrink-0 w-[calc(50%-8px)] sm:w-[calc(50%-8px)] md:w-[calc(33.333%-11px)] lg:w-[calc(25%-12px)]">
     <ProductCard product={product as ProductType} />
   </div>
 ));
@@ -126,13 +141,13 @@ const LoadingSkeleton = () => (
 );
 
 // Main Component
-export default function DiscountCarousel() {
+export default function BestSeller() {
+  // STATE
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
     loop: false,
     dragFree: true,
     containScroll: "trimSnaps",
-    watchDrag: true,
     skipSnaps: true,
   });
 
@@ -140,26 +155,80 @@ export default function DiscountCarousel() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isDraggingThumb, setIsDraggingThumb] = useState(false);
   const [isDraggingCarousel, setIsDraggingCarousel] = useState(false);
-  const [isUsingButtons, setIsUsingButtons] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Refs for cleanup
   const mountedRef = useRef(true);
+  const scrollRafRef = useRef<number | null>(null);
+  const fetchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Fetch products from API
+  // Optimized scroll handler with RAF
+  const onScroll = useCallback(() => {
+    if (!emblaApi || isDraggingThumb || !mountedRef.current) return;
+
+    if (scrollRafRef.current) {
+      cancelAnimationFrame(scrollRafRef.current);
+    }
+
+    scrollRafRef.current = requestAnimationFrame(() => {
+      if (!emblaApi || !mountedRef.current) return;
+      const progress = Math.max(0, Math.min(1, emblaApi.scrollProgress()));
+      setScrollProgress(progress);
+    });
+  }, [emblaApi, isDraggingThumb]);
+
+  // Optimized scrollToProgress
+  const scrollToProgress = useCallback(
+    (progress: number) => {
+      if (!emblaApi) return;
+
+      requestAnimationFrame(() => {
+        const engine = emblaApi.internalEngine();
+        const {
+          limit,
+          location,
+          target,
+          offsetLocation,
+          scrollBody,
+          translate,
+        } = engine;
+
+        const targetPosition = limit.max + (limit.min - limit.max) * progress;
+
+        scrollBody.useDuration(0);
+        scrollBody.useFriction(0);
+
+        offsetLocation.set(targetPosition);
+        location.set(targetPosition);
+        target.set(targetPosition);
+        translate.to(targetPosition);
+        translate.toggleActive(true);
+
+        setTimeout(() => {
+          if (!mountedRef.current) return;
+          scrollBody.useDuration(25);
+          scrollBody.useFriction(0.68);
+        }, 0);
+      });
+    },
+    [emblaApi]
+  );
+
+  // Data fetching effect - only runs once
   useEffect(() => {
     mountedRef.current = true;
 
     const fetchProductsData = async () => {
       // Check cache first
       try {
-        const cachedProducts = sessionStorage.getItem(CONSTANTS.CACHE_KEY);
-        const cacheTimestamp = sessionStorage.getItem(CONSTANTS.CACHE_TIMESTAMP_KEY);
+        const cachedProducts = sessionStorage.getItem(CACHE_KEY);
+        const cacheTimestamp = sessionStorage.getItem(CACHE_TIMESTAMP_KEY);
 
         if (cachedProducts && cacheTimestamp) {
           const age = Date.now() - parseInt(cacheTimestamp);
-          if (age < CONSTANTS.CACHE_DURATION) {
+          if (age < CACHE_DURATION) {
             setProducts(JSON.parse(cachedProducts));
             setLoading(false);
             return;
@@ -198,13 +267,11 @@ export default function DiscountCarousel() {
           .slice(0, 12)
           .map(formatProductData);
 
-        if (mountedRef.current) {
-          setProducts(formattedProducts);
-        }
+        setProducts(formattedProducts);
 
         // Cache results
-        sessionStorage.setItem(CONSTANTS.CACHE_KEY, JSON.stringify(formattedProducts));
-        sessionStorage.setItem(CONSTANTS.CACHE_TIMESTAMP_KEY, Date.now().toString());
+        sessionStorage.setItem(CACHE_KEY, JSON.stringify(formattedProducts));
+        sessionStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
       } catch (err) {
         if (!mountedRef.current) return;
 
@@ -213,7 +280,7 @@ export default function DiscountCarousel() {
         setError(errorMessage);
 
         // Try to use stale cache on error
-        const cachedProducts = sessionStorage.getItem(CONSTANTS.CACHE_KEY);
+        const cachedProducts = sessionStorage.getItem(CACHE_KEY);
         if (cachedProducts) {
           setProducts(JSON.parse(cachedProducts));
           setError(null);
@@ -225,78 +292,45 @@ export default function DiscountCarousel() {
       }
     };
 
-    fetchProductsData();
+    // Small delay to prevent blocking main thread
+    fetchTimeoutRef.current = setTimeout(() => {
+      fetchProductsData();
+    }, INITIAL_FETCH_DELAY);
 
     return () => {
       mountedRef.current = false;
+      if (scrollRafRef.current) {
+        cancelAnimationFrame(scrollRafRef.current);
+      }
+      if (fetchTimeoutRef.current) {
+        clearTimeout(fetchTimeoutRef.current);
+      }
     };
   }, []);
 
-  // Navigation handlers
-  const handlePrev = useCallback(() => {
-    if (emblaApi) {
-      setIsUsingButtons(true);
-      emblaApi.scrollPrev();
-    }
-  }, [emblaApi]);
-
-  const handleNext = useCallback(() => {
-    if (emblaApi) {
-      setIsUsingButtons(true);
-      emblaApi.scrollNext();
-    }
-  }, [emblaApi]);
-
-  const onScroll = useCallback(() => {
-    if (!emblaApi || isDraggingThumb) return;
-    const progress = Math.max(0, Math.min(1, emblaApi.scrollProgress()));
-    setScrollProgress(progress);
-  }, [emblaApi, isDraggingThumb]);
-
-  const scrollToProgress = useCallback(
-    (progress: number) => {
-      if (!emblaApi) return;
-
-      const engine = emblaApi.internalEngine();
-      const { limit, location, target, offsetLocation, scrollBody, translate } = engine;
-
-      const targetPosition = limit.max + (limit.min - limit.max) * progress;
-
-      scrollBody.useDuration(0);
-      scrollBody.useFriction(0);
-
-      offsetLocation.set(targetPosition);
-      location.set(targetPosition);
-      target.set(targetPosition);
-      translate.to(targetPosition);
-      translate.toggleActive(true);
+  // Drag handler utilities
+  const getClientX = useCallback(
+    (
+      event: MouseEvent | TouchEvent | React.MouseEvent | React.TouchEvent
+    ): number => {
+      if ("touches" in event && event.touches.length > 0) {
+        return event.touches[0].clientX;
+      }
+      if ("clientX" in event) {
+        return event.clientX;
+      }
+      return 0;
     },
-    [emblaApi]
+    []
   );
 
-  // Unified handler for mouse + touch
-  const getClientX = (
-    event:
-      | MouseEvent
-      | TouchEvent
-      | React.MouseEvent<HTMLDivElement>
-      | React.TouchEvent<HTMLDivElement>
-  ): number => {
-    if ("touches" in event && event.touches.length > 0) {
-      return event.touches[0].clientX;
-    }
-    // @ts-expect-error - clientX exists on MouseEvent
-    return event.clientX;
-  };
-
-  // Thumb drag handler with touch support
+  // Thumb drag handler
   const onThumbDrag = useCallback(
     (
       e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
     ) => {
       if (!scrollbarRef.current || !emblaApi) return;
 
-      e.preventDefault();
       e.stopPropagation();
       setIsDraggingThumb(true);
 
@@ -304,6 +338,8 @@ export default function DiscountCarousel() {
       const thumbWidth = scrollbarRect.width * 0.25;
 
       const updateProgress = (clientX: number) => {
+        if (!scrollbarRef.current) return;
+
         const offsetX = clientX - scrollbarRect.left - thumbWidth / 2;
         const maxOffset = scrollbarRect.width - thumbWidth;
         const newProgress = Math.max(0, Math.min(1, offsetX / maxOffset));
@@ -313,7 +349,6 @@ export default function DiscountCarousel() {
       };
 
       const onMove = (moveEvent: MouseEvent | TouchEvent) => {
-        moveEvent.preventDefault();
         updateProgress(getClientX(moveEvent));
       };
 
@@ -339,10 +374,10 @@ export default function DiscountCarousel() {
       document.addEventListener("touchmove", onMove, { passive: false });
       document.addEventListener("touchend", onUp);
     },
-    [emblaApi, scrollToProgress]
+    [emblaApi, scrollToProgress, getClientX]
   );
 
-  // Track click handler with touch support
+  // Track click handler
   const onTrackClick = useCallback(
     (
       e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
@@ -359,50 +394,55 @@ export default function DiscountCarousel() {
       setScrollProgress(newProgress);
       scrollToProgress(newProgress);
     },
-    [emblaApi, scrollToProgress]
+    [emblaApi, scrollToProgress, getClientX]
   );
+
+  // Navigation handlers
+  const handlePrev = useCallback(() => {
+    if (emblaApi) {
+      emblaApi.scrollPrev();
+    }
+  }, [emblaApi]);
+
+  const handleNext = useCallback(() => {
+    if (emblaApi) {
+      emblaApi.scrollNext();
+    }
+  }, [emblaApi]);
 
   // Embla event listeners
   useEffect(() => {
-    if (!emblaApi) return;
+    if (!emblaApi || !mountedRef.current) return;
 
     const onPointerDown = () => setIsDraggingCarousel(true);
     const onPointerUp = () => setIsDraggingCarousel(false);
 
     emblaApi.on("pointerDown", onPointerDown);
     emblaApi.on("pointerUp", onPointerUp);
-
-    return () => {
-      emblaApi.off("pointerDown", onPointerDown);
-      emblaApi.off("pointerUp", onPointerUp);
-    };
-  }, [emblaApi]);
-
-  useEffect(() => {
-    if (!emblaApi) return;
-
-    const onSettle = () => setIsUsingButtons(false);
-    emblaApi.on("settle", onSettle);
-
-    return () => {
-      emblaApi.off("settle", onSettle);
-    };
-  }, [emblaApi]);
-
-  useEffect(() => {
-    if (!emblaApi) return;
-
-    onScroll();
     emblaApi.on("scroll", onScroll);
     emblaApi.on("reInit", onScroll);
     emblaApi.on("settle", onScroll);
 
     return () => {
+      emblaApi.off("pointerDown", onPointerDown);
+      emblaApi.off("pointerUp", onPointerUp);
       emblaApi.off("scroll", onScroll);
       emblaApi.off("reInit", onScroll);
       emblaApi.off("settle", onScroll);
     };
   }, [emblaApi, onScroll]);
+
+  // Memoized product cards
+  const productCards = useMemo(
+    () =>
+      products.map((product) => (
+        <MemoizedProductCard
+          key={`${product.id}-${product.currentPrice}`}
+          product={product}
+        />
+      )),
+    [products]
+  );
 
   // Loading state
   if (loading) {
@@ -424,8 +464,8 @@ export default function DiscountCarousel() {
           </div>
           <button
             onClick={() => {
-              sessionStorage.removeItem(CONSTANTS.CACHE_KEY);
-              sessionStorage.removeItem(CONSTANTS.CACHE_TIMESTAMP_KEY);
+              sessionStorage.removeItem(CACHE_KEY);
+              sessionStorage.removeItem(CACHE_TIMESTAMP_KEY);
               window.location.reload();
             }}
             className="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
@@ -489,19 +529,7 @@ export default function DiscountCarousel() {
           className="overflow-hidden cursor-grab active:cursor-grabbing"
           ref={emblaRef}
         >
-          <div 
-            className="flex gap-4"
-            style={{
-              touchAction: "pan-y pinch-zoom",
-            }}
-          >
-            {products.map((product) => (
-              <MemoizedProductCard
-                key={`${product.id}-${product.currentPrice}`}
-                product={product}
-              />
-            ))}
-          </div>
+          <div className="flex gap-4 touch-action-pan-y">{productCards}</div>
         </div>
 
         <button
@@ -533,7 +561,6 @@ export default function DiscountCarousel() {
           />
         </button>
 
-        {/* Custom Scrollbar */}
         <div className="flex justify-center mt-6">
           <div
             ref={scrollbarRef}
@@ -549,7 +576,7 @@ export default function DiscountCarousel() {
                 width: "25%",
                 left: `${scrollProgress * 75}%`,
                 transition:
-                  isDraggingThumb || isDraggingCarousel || isUsingButtons
+                  isDraggingThumb || isDraggingCarousel
                     ? "none"
                     : "left 100ms ease-out",
               }}
