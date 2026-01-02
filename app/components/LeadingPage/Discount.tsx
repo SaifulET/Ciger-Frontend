@@ -84,7 +84,7 @@ const formatProductData = (item: ProductApiItem): Product => {
 
   const originalPrice =
     item.discount > 0 && item.price > 0
-      ? Math.round((item.price * 100) / (100-item.discount))
+      ? ((item.price * 100) / (100-item.discount))
       : undefined;
 
   const currentPriceValue = item.currentPrice || item.price || 0;
