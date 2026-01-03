@@ -238,7 +238,7 @@ export default function BestSeller() {
         setLoading(true);
         setError(null);
 
-        const response = await api.get("/product/getAllProduct?discount=true");
+        const response = await api.get("/product/getDiscountedProduct?discount=true");
 
         if (response.status !== 200) {
           throw new Error(`HTTP ${response.status}`);
